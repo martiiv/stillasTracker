@@ -18,6 +18,7 @@ func handle() {
 	fmt.Println("Listening on port" + getPort())
 	r := mux.NewRouter()
 	fmt.Println(r)
+	//TODO Legg inn alle endpoints her se POSTMAN for dokumentasjon
 	//r.HandleFunc(baseURL+"unit", ) //country endpoint
 	//r.HandleFunc(baseURL+"unit", ) //country endpoint
 	//r.HandleFunc(baseURL+"unit", ) //country endpoint
