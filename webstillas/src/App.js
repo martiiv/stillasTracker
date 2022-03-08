@@ -1,8 +1,10 @@
 import './App.css';
-
+import TopBar from "./components/topBar/topBar";
 function App() {
   return (
-    <h1> Hello MBStillas</h1>
+
+      <TopBar />
+
   );
 }
 
