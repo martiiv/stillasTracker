@@ -15,6 +15,12 @@ Version 0.1
 Last modified Martin Iversen
 */
 
+/**
+Generic request function
+Takes in a writer and reader in addition to the API request url
+The function handles the request and returns the body of the request
+
+*/
 func genericRequest(w http.ResponseWriter, r *http.Request, request string) []byte {
 	w.Header().Set("Content-Type", "application/json")
 	client := &http.Client{}
@@ -35,8 +41,4 @@ func genericRequest(w http.ResponseWriter, r *http.Request, request string) []by
 	}
 
 	return body
-}
-
-func getErrorMessage() {
-
 }
