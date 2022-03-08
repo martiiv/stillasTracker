@@ -13,8 +13,8 @@ Last update 08.03.2022 Martin Iversen
 */
 func main() {
 	fmt.Println("Starting API")
-
 	startTime = time.Now()
 	fmt.Println("initialized handler")
 	handle()
+
 }

@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
 	"os"
 )
 
@@ -15,7 +16,8 @@ Last edit 08.03.2022 by Martin Iversen
 */
 func handle() {
 	fmt.Println("Listening on port" + getPort())
-	//r := mux.NewRouter()
+	r := mux.NewRouter()
+	fmt.Println(r)
 	//r.HandleFunc(baseURL+"unit", ) //country endpoint
 	//r.HandleFunc(baseURL+"unit", ) //country endpoint
 	//r.HandleFunc(baseURL+"unit", ) //country endpoint
