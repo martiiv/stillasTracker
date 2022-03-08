@@ -12,7 +12,7 @@ class MapPage extends React.Component {
     }
     render() {
         return(
-            <h1>Place Code Here</h1>
+            <h1>Place Map Here</h1>
         );
     }
 }

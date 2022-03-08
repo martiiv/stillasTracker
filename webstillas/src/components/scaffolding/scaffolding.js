@@ -12,7 +12,7 @@ class Scaffolding extends React.Component {
     }
     render() {
         return(
-            <h1>Place Code Here</h1>
+            <h1>Place Scaffolding Here</h1>
         );
     }
 }

@@ -12,7 +12,7 @@ class Projects extends React.Component {
     }
     render() {
         return(
-            <h1>Place Code Here</h1>
+            <h1>Place Projects Here</h1>
         );
     }
 }
