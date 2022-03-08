@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 )
 
 /**
@@ -13,7 +12,7 @@ Last update 08.03.2022 Martin Iversen
 */
 func main() {
 	fmt.Println("Starting API")
-	startTime = time.Now()
+	//startTime = time.Now()
 	fmt.Println("initialized handler")
 
 }

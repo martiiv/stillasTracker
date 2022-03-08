@@ -1,4 +1,4 @@
-package endpoints
+package apiTools
 
 /**
 Class error handling, this class will contain all code concerning
