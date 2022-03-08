@@ -15,6 +15,5 @@ func main() {
 	fmt.Println("Starting API")
 	startTime = time.Now()
 	fmt.Println("initialized handler")
-	handle()
 
 }
