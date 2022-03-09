@@ -1,15 +1,19 @@
 .toolbar{
     background: #F28A04;
-    align-items: center;
-    align-content: center;
+
 }
 
 .button{
     width: 300px;
+    height: fit-content;
 }
 
 
 
 .links{
     margin-inside: 50px;
+}
+
+.appbar{
+    position: fixed;
 }
