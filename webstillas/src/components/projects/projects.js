@@ -11,7 +11,6 @@ class Projects extends React.Component {
             <div>
                 <h1>Place Projects Here</h1>
             </div>
-
         );
     }
 }
