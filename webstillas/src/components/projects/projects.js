@@ -1,6 +1,7 @@
 import React from "react";
 import "./projects.css"
 import PreView from "./elements/preView"
+import {Container, Grid} from "@material-ui/core";
 /**
  Class that will create an overview of the projects
  */
@@ -8,10 +9,11 @@ import PreView from "./elements/preView"
 class Projects extends React.Component {
     render() {
         return(
-            <div>
-                <h1>Place Projects Here</h1>
-                <PreView />
-¨            </div>
+            <Container>
+                <Grid lg={2} xs={25} md={30}>
+                    <PreView />
+                </Grid>
+¨            </Container>
         );
     }
 }
