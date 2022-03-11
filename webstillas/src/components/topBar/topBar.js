@@ -12,7 +12,7 @@ import {Link} from "react-router-dom";
 class TopBar extends React.Component {
     render() {
         return(
-            <AppBar position="sticky">
+            <AppBar position="relative">
                 <Toolbar className="toolbar" >
                     <Link className="link" to="/prosjekt">
                         <Button className="button">Prosjekter</Button>
