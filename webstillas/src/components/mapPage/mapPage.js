@@ -1,14 +1,15 @@
 import React from "react";
 import "./mapPage.css"
-import mapboxgl from 'mapbox-gl'; // eslint-disable-line import/no-webpack-loader-syntax
+import mapboxgl from 'mapbox-gl';
 
-mapboxgl.accessToken = "API_KEY"
+mapboxgl.accessToken = 'pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ';
 
 
 
 /**
 Class that will create the map-page of the application
  */
+//Kode hentet fra https://docs.mapbox.com/help/tutorials/use-mapbox-gl-js-with-react/
 
 class MapPage extends React.Component {
     constructor(props) {
