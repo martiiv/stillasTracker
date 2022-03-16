@@ -2,11 +2,10 @@ package endpoints
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
 	"os"
 )
 
-const baseURL = "/myLift/stillasTracker/v1/"
+const baseURL = "/stillastracking/v1/api"
 
 /**
 Class API handler
@@ -16,13 +15,15 @@ Last edit 08.03.2022 by Martin Iversen
 */
 func handle() {
 	fmt.Println("Listening on port" + getPort())
-	r := mux.NewRouter()
-	fmt.Println(r)
-	//r.HandleFunc(baseURL+"unit", ) //country endpoint
-	//r.HandleFunc(baseURL+"unit", ) //country endpoint
-	//r.HandleFunc(baseURL+"unit", ) //country endpoint
-	//r.HandleFunc(baseURL+"unit", ) //country endpoint
-	//r.HandleFunc(baseURL+"unit", ) //country endpoint
+	//TODO Legg inn alle endpoints her se POSTMAN for dokumentasjon
+
+	//Scaffolding endpoints
+	//http.HandleFunc(baseURL + "/unit") //Scaffolding unit: GET,Post and DELETE
+	//r.HandleFunc(baseURL+"/unit/{id}/history", ) //country endpoint
+	//r.HandleFunc(baseURL+"/unit/{id}", ) //country endpoint
+	//Project endpoint
+	//r.HandleFunc(baseURL+"project/{id}&scaffolding=true", )
+	//r.HandleFunc(baseURL+"project", ) //DELETE, POST, GET
 }
 
 /*
