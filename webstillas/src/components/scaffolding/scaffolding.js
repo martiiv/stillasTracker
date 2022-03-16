@@ -7,9 +7,6 @@ import "./scaffolding.css"
  */
 
 class Scaffolding extends React.Component {
-    constructor(props) {
-        super(props);
-    }
     render() {
         return(
             <h1>Place Scaffolding Here</h1>
