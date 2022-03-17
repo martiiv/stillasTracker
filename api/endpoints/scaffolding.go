@@ -15,6 +15,8 @@ The class contains the following functions:
 Version 0.1
 Last modified Martin Iversen
 */
-func scaffoldingrequest(w http.ResponseWriter, r *http.Request) {
+func scaffoldingRequest(w http.ResponseWriter, r *http.Request) {
+	switch w.Header() {
 
+	}
 }

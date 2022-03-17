@@ -16,10 +16,9 @@ Last edit 08.03.2022 by Martin Iversen
 */
 func handle() {
 	fmt.Println("Listening on port" + getPort())
-	//TODO Legg inn alle endpoints her se POSTMAN for dokumentasjon
 
 	//Scaffolding endpoints
-	http.HandleFunc(baseURL+"/unit", scaffoldingrequest) //country endpoint
+	http.HandleFunc(baseURL+"/unit", scaffoldingRequest) //country endpoint
 	//Project endpoint
 	http.HandleFunc(baseURL+"project", projectRequest) //DELETE, POST, GET
 	http.HandleFunc(baseURL+"/storage", storageRequest)
