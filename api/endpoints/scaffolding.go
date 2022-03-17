@@ -1,6 +1,9 @@
 package endpoints
 
-import "net/http"
+import (
+	"net/http"
+	"stillasTracker/api/apiTools"
+)
 
 /**
 Class scaffolding
@@ -16,7 +19,10 @@ Version 0.1
 Last modified Martin Iversen
 */
 func scaffoldingRequest(w http.ResponseWriter, r *http.Request) {
-	switch w.Header() {
+	w.Header().Set("Content-Type", "application/json")
+	url := apiTools.GetRequestURL(w, r)
+	switch url {
 
 	}
+
 }
