@@ -1,6 +1,12 @@
 package endpoints
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
+import (
+	"stillasTracker/api/Database"
+)
 
 /**
 Class projects
@@ -23,8 +29,9 @@ func projectRequest(w http.ResponseWriter, r *http.Request) {
 	requestType := r.Method
 	switch requestType {
 	case "GET":
-		getProjectDetails(w, r)
+		fmt.Println("Hello World")
 	case "POST":
+		createProject(w, r)
 	case "PUT":
 	case "DELETE":
 	}
@@ -34,6 +41,12 @@ func storageRequest(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func getProjectDetails(w http.ResponseWriter, r *http.Request) {
+func createProject(w http.ResponseWriter, r *http.Request) {
+	documentPath := Database.Client.Collection("Location").Doc("Project").Collection("Active").Doc("1")
 
+	project := map[string]interface{}{
+		"capital": true,
+	}
+
+	Database.AddDocument(documentPath, project)
 }
