@@ -1,5 +1,7 @@
 package endpoints
 
+import "net/http"
+
 /**
 Class scaffolding
 This class will contain all functions used for the handling of scaffolding units
@@ -13,3 +15,6 @@ The class contains the following functions:
 Version 0.1
 Last modified Martin Iversen
 */
+func scaffoldingrequest(w http.ResponseWriter, r *http.Request) {
+
+}
