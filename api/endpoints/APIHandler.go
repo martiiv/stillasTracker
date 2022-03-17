@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 )
 
@@ -18,12 +19,12 @@ func handle() {
 	//TODO Legg inn alle endpoints her se POSTMAN for dokumentasjon
 
 	//Scaffolding endpoints
-	//http.HandleFunc(baseURL + "/unit") //Scaffolding unit: GET,Post and DELETE
-	//r.HandleFunc(baseURL+"/unit/{id}/history", ) //country endpoint
-	//r.HandleFunc(baseURL+"/unit/{id}", ) //country endpoint
+	http.HandleFunc(baseURL+"/unit", scaffoldingrequest) //country endpoint
 	//Project endpoint
-	//r.HandleFunc(baseURL+"project/{id}&scaffolding=true", )
-	//r.HandleFunc(baseURL+"project", ) //DELETE, POST, GET
+	http.HandleFunc(baseURL+"project", projectRequest) //DELETE, POST, GET
+	http.HandleFunc(baseURL+"/storage", storageRequest)
+	//Profile endpoint
+	http.HandleFunc(baseURL+"/user/", profileRequest)
 }
 
 /*

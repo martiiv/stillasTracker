@@ -1,5 +1,7 @@
 package endpoints
 
+import "net/http"
+
 /**
 Class profiles
 This class will contain all data formating and modification regarding the users of the system
@@ -12,3 +14,6 @@ Class contains the following functions:
 Version 0.1
 Last modified Martin Iversen
 */
+func profileRequest(w http.ResponseWriter, r *http.Request) {
+
+}

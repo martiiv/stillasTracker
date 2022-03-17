@@ -1,5 +1,7 @@
 package endpoints
 
+import "net/http"
+
 /**
 Class projects
 This class will contain all data formating and handling of the clients projects
@@ -12,3 +14,10 @@ Class contains the following functions:
 Version 0.1
 Last modified Martin Iversen
 */
+func projectRequest(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func storageRequest(w http.ResponseWriter, r *http.Request) {
+
+}
