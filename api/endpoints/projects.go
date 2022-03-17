@@ -14,10 +14,26 @@ Class contains the following functions:
 Version 0.1
 Last modified Martin Iversen
 */
+
+/**
+Main function to switch between the different request types.
+*/
 func projectRequest(w http.ResponseWriter, r *http.Request) {
 
+	requestType := r.Method
+	switch requestType {
+	case "GET":
+		getProjectDetails(w, r)
+	case "POST":
+	case "PUT":
+	case "DELETE":
+	}
 }
 
 func storageRequest(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func getProjectDetails(w http.ResponseWriter, r *http.Request) {
 
 }

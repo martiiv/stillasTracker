@@ -1,10 +1,12 @@
 package _struct
 
+// Period Start date and end date of the project.
 type Period struct {
 	StartDate string `json:"startDate"`
 	EndDate   string `json:"endDate"`
 }
 
+// Address of the project sight.
 type Address struct {
 	Street       string `json:"street"`
 	Zipcode      string `json:"zipcode"`
@@ -12,11 +14,14 @@ type Address struct {
 	County       string `json:"county"`
 }
 
+// Customer information for the project.
 type Customer struct {
 	Name   string `json:"name"`
 	Number int    `json:"number"`
+	Email  string
 }
 
+// Scaffolding information at the project for expected and registered scaffolding units.
 type Scaffolding struct {
 	Units []struct {
 		Type     string `json:"type"`
@@ -27,6 +32,7 @@ type Scaffolding struct {
 	} `json:"units"`
 }
 
+// Geofence at the project sight
 type Geofence struct {
 	WPosition struct {
 		Latitude  float64 `json:"latitude"`
@@ -46,6 +52,7 @@ type Geofence struct {
 	} `json:"z-position"`
 }
 
+// Project a collection of information.
 type Project struct {
 	ProjectID   int     `json:"projectID"`
 	ProjectName string  `json:"projectName"`
@@ -60,14 +67,17 @@ type Project struct {
 	Geofence
 }
 
+// IDStruct to insert id of each project.
 type IDStruct []struct {
 	ID int `json:"id"`
 }
 
+// StateStruct to change the state of a project.
 type StateStruct struct {
 	State string `json:"state"`
 }
 
+// MovingStruct for moving a scaffolding piece.
 type MovingStruct []struct {
 	Type     string `json:"type"`
 	Quantity int    `json:"quantity"`
