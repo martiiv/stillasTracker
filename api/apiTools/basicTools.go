@@ -3,6 +3,7 @@ package apiTools
 import (
 	"io/ioutil"
 	"net/http"
+	"net/url"
 )
 
 /**
@@ -41,4 +42,17 @@ func genericRequest(w http.ResponseWriter, r *http.Request, request string) []by
 	}
 
 	return body
+}
+
+//GetRequestURL function returns the url of the request
+func GetRequestURL(w http.ResponseWriter, r *http.Request) *url.URL {
+	w.Header().Set("Content-Type", "application/json")
+
+	link := r.URL.Path
+	u, err := url.Parse(link)
+	if err != nil {
+		getErrorMessage(w, err)
+	}
+
+	return u
 }
