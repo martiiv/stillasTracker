@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 )
@@ -14,16 +15,18 @@ Will initialize all the endpoints and set ports
 Version 0.1
 Last edit 08.03.2022 by Martin Iversen
 */
-func handle() {
+func Handle() {
 	fmt.Println("Listening on port" + getPort())
 
 	//Scaffolding endpoints
 	http.HandleFunc(baseURL+"/unit", scaffoldingRequest) //country endpoint
 	//Project endpoint
-	http.HandleFunc(baseURL+"project", projectRequest) //DELETE, POST, GET
+	http.HandleFunc(baseURL+"/project", projectRequest) //DELETE, POST, GET
 	http.HandleFunc(baseURL+"/storage", storageRequest)
 	//Profile endpoint
 	http.HandleFunc(baseURL+"/user/", profileRequest)
+	log.Println(http.ListenAndServe(getPort(), nil))
+
 }
 
 /*

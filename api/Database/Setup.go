@@ -18,10 +18,10 @@ var Ctx context.Context
 var Client *firestore.Client
 
 //Code taken from https://firebase.google.com/docs/firestore/quickstart#go
-func databaseConnection() {
+func DatabaseConnection() {
 	// Creates instance of firebase
 	Ctx = context.Background()
-	sa := option.WithCredentialsFile("stillas-16563-firebase-adminsdk-wd82v-a9fe8919b7.json") //Initializes database
+	sa := option.WithCredentialsFile("Database/stillas-16563-firebase-adminsdk-wd82v-a9fe8919b7.json") //Initializes database
 	app, err := firebase.NewApp(Ctx, nil, sa)
 	if err != nil {
 		log.Println("error occured when initializing database" + err.Error())
@@ -32,7 +32,6 @@ func databaseConnection() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	defer Client.Close()
 }
 
 /**
@@ -87,6 +86,7 @@ structure is the data structure of how the data should be added into the databas
 func AddDocument(document *firestore.DocumentRef, structure map[string]interface{}) error {
 	_, err := document.Set(Ctx, structure)
 	if err != nil {
+		fmt.Println(err.Error())
 		return err
 	}
 	return nil
