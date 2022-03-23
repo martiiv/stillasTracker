@@ -41,8 +41,8 @@ Will return all the documents from a specific collection.
 iteratorRequest is the path to the collection of choice.
 */
 
-func GetCollectionData(iteratorRequest *firestore.DocumentIterator) []*firestore.DocumentSnapshot {
-	var documents []*firestore.DocumentSnapshot
+func GetCollectionData(iteratorRequest *firestore.DocumentIterator) []map[string]interface{} {
+	var documents []map[string]interface{}
 
 	iter := iteratorRequest
 	for {
@@ -54,7 +54,7 @@ func GetCollectionData(iteratorRequest *firestore.DocumentIterator) []*firestore
 			log.Fatalf("Failed to iterate: %v", err)
 		}
 
-		documents = append(documents, doc)
+		documents = append(documents, doc.Data())
 	}
 
 	return documents
