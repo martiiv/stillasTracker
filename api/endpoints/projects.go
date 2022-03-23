@@ -96,15 +96,16 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//deleteProject deletes selected projects from the database.
 func deleteProject(w http.ResponseWriter, r *http.Request) {
-	b, err := io.ReadAll(r.Body)
-	// b, err := ioutil.ReadAll(resp.Body)  Go.1.15 and earlier
+	//TODO make this to a standalone function
+	bytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	var deleteID _struct.IDStruct
-	json := json.Unmarshal(b, &deleteID)
+	json := json.Unmarshal(bytes, &deleteID)
 	fmt.Println(json)
 
 	for _, num := range deleteID {
@@ -113,7 +114,6 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 
 		_, err := Database.Client.Collection("Location").Doc("Project").Collection("Active").Doc(id).Delete(Database.Ctx)
 		if err != nil {
-			// Handle any errors in an appropriate way, such as returning them.
 			log.Printf("An error has occurred: %s", err)
 		}
 		fmt.Println(num.ID)
@@ -122,6 +122,8 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//createProject will create a Project and add it to the database
+//TODO read struct from body
 func createProject() {
 	project := _struct.Project{
 		ProjectID:   3,
