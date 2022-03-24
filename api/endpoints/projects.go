@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"google.golang.org/api/iterator"
 	"io"
 	"log"
 	"net/http"
@@ -130,7 +131,7 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 //TODO read struct from body
 func createProject() {
 	project := _struct.Project{
-		ProjectID:   3,
+		ProjectID:   4,
 		ProjectName: "GjovikRaadhus",
 		Latitude:    60.79497726217587,
 		Longitude:   10.692896676125931,
@@ -188,26 +189,59 @@ func copyDocumentProject(documentPath *firestore.DocumentRef) _struct.Project {
 	return project
 }
 
+//updateState will change the state of the project. In an atomic operation the project will change state,
+//be moved into the state collection and deleted form the old state collection.
 func updateState(w http.ResponseWriter, r *http.Request) {
+	batch := Database.Client.Batch()
 
 	var stateStruct _struct.StateStruct
-	json.NewDecoder(r.Body).Decode(&stateStruct)
+	err := json.NewDecoder(r.Body).Decode(&stateStruct)
+	if err != nil {
+		return
+	}
 
-	document := Database.Client.Collection("Location").Doc("Project").Collection("Active").Doc(strconv.Itoa(stateStruct.ID))
+	var documentReference *firestore.DocumentRef
+	collection := Database.Client.Collection("Location").Doc("Project").Collections(Database.Ctx)
+	for {
+		collRef, err := collection.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			break
+		}
+		document := Database.Client.Collection("Location").Doc("Project").Collection(collRef.ID).Documents(Database.Ctx)
+		for {
+			documentRef, err := document.Next()
+			if err == iterator.Done {
+				break
+			}
 
+			if documentRef.Ref.ID == strconv.Itoa(stateStruct.ID) {
+				fmt.Printf("Found ID in  collection: %s\n", collRef.ID)
+				documentReference = documentRef.Ref
+				break
+			}
+		}
+	}
+
+	project, err := Database.GetDocumentData(documentReference)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	newPath := Database.Client.Collection("Location").Doc("Project").Collection(stateStruct.State).Doc(strconv.Itoa(stateStruct.ID))
+	batch.Create(newPath, project)
+
+	batch.Delete(documentReference)
 	update := firestore.Update{
 		Path:  "state",
 		Value: stateStruct.State,
 	}
-
 	var updates []firestore.Update
 	updates = append(updates, update)
 
-	//Database.UpdateDocument(document, updates)
-
-	batch := Database.Client.Batch()
-
-	batch.Update(document, updates)
+	batch.Update(newPath, updates)
 
 	batch.Commit(Database.Ctx)
 
