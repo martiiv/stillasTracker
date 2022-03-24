@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"cloud.google.com/go/firestore"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -56,6 +57,7 @@ func projectRequest(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		createProject()
 	case "PUT":
+		updateState(w, r)
 	case "DELETE":
 		deleteProject(w, r)
 
@@ -86,7 +88,9 @@ func storageRequest(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fmt.Fprint(w, string(jsonStr))
+
 	}
+
 }
 
 /**
@@ -160,4 +164,51 @@ func createProject() {
 	fmt.Println(firebaseInput)
 
 	Database.AddDocument(documentPath, firebaseInput)
+}
+
+//copyDocumentProject will get a document, and save it inside a struct.
+func copyDocumentProject(documentPath *firestore.DocumentRef) _struct.Project {
+	document, err := documentPath.Get(Database.Ctx)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	data := document.Data()
+	jsonStr, err := json.Marshal(data)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	var project _struct.Project
+	err = json.Unmarshal(jsonStr, &project)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	return project
+}
+
+func updateState(w http.ResponseWriter, r *http.Request) {
+
+	var stateStruct _struct.StateStruct
+	json.NewDecoder(r.Body).Decode(&stateStruct)
+
+	document := Database.Client.Collection("Location").Doc("Project").Collection("Active").Doc(strconv.Itoa(stateStruct.ID))
+
+	update := firestore.Update{
+		Path:  "state",
+		Value: stateStruct.State,
+	}
+
+	var updates []firestore.Update
+	updates = append(updates, update)
+
+	//Database.UpdateDocument(document, updates)
+
+	batch := Database.Client.Batch()
+
+	batch.Update(document, updates)
+
+	batch.Commit(Database.Ctx)
+
 }
