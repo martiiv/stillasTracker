@@ -29,12 +29,31 @@ Version 0.1
 Last modified Martin Iversen
 */
 
-var start int = 3
-
-func counter() int {
-	start++
-	return start - 1
+/*const project = _struct.Project{
+		ProjectID:   4,
+		ProjectName: "GjovikRaadhus",
+		Latitude:    60.79497726217587,
+		Longitude:   10.692896676125931,
+		Size:        430,
+		State:       "Active",
+		Period: _struct.Period{
+		StartDate: "2020-05-09T22:00:00Z",
+		EndDate:   "2020-02-19T23:00:00Z",
+		},
+		Address: _struct.Address{
+		Street:       "Kauffeldts Plass 1",
+		Zipcode:      "2815",
+		Municipality: "Gjovik",
+		County:       "Innlandet",
+		},
+		Customer: _struct.Customer{
+		Name:   "Ola",
+		Number: 932818193,
+		Email:  "sjka@sosi.com",
+		},
+		Geofence: _struct.Geofence{},
 }
+*/
 
 func CheckIDFromURL(r *http.Request) (string, error) {
 	url := strings.Split(r.RequestURI, "/")
@@ -54,7 +73,7 @@ func projectRequest(w http.ResponseWriter, r *http.Request) {
 	requestType := r.Method
 	switch requestType {
 	case "GET":
-		storageRequest(w, r)
+		getProject(w, r)
 	case "POST":
 		createProject()
 	case "PUT":
@@ -98,7 +117,73 @@ func storageRequest(w http.ResponseWriter, r *http.Request) {
 getProject will fetch the information from the selected project.
 */
 func getProject(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	id, err := CheckIDFromURL(r)
+	if err != nil {
 
+		//collection := Database.Client.Collection("Location").Doc("Project").Collection("Active").Documents(Database.Ctx)
+
+		var projects []_struct.Project
+
+		collection := Database.Client.Collection("Location").Doc("Project").Collections(Database.Ctx)
+		for {
+			collRef, err := collection.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				break
+			}
+			document := Database.Client.Collection("Location").Doc("Project").Collection(collRef.ID).Documents(Database.Ctx)
+			for {
+				documentRef, err := document.Next()
+				if err == iterator.Done {
+					break
+				}
+
+				var project _struct.Project
+				doc, _ := Database.GetDocumentData(documentRef.Ref)
+				projectByte, err := json.Marshal(doc)
+				err = json.Unmarshal(projectByte, &project)
+				if err != nil {
+					fmt.Println(err.Error())
+				}
+
+				projects = append(projects, project)
+			}
+		}
+
+		err := json.NewEncoder(w).Encode(projects)
+		if err != nil {
+			return
+		}
+
+	} else {
+
+		intID, err := strconv.Atoi(id)
+
+		documentReference := iterateProjects(intID)
+		data, _ := Database.GetDocumentData(documentReference)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+		jsonStr, err := json.Marshal(data)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		var project _struct.Project
+		err = json.Unmarshal(jsonStr, &project)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
+		err = json.NewEncoder(w).Encode(project)
+		if err != nil {
+			return
+		}
+	}
 }
 
 //deleteProject deletes selected projects from the database.
@@ -130,32 +215,8 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 //createProject will create a Project and add it to the database
 //TODO read struct from body
 func createProject() {
-	project := _struct.Project{
-		ProjectID:   4,
-		ProjectName: "GjovikRaadhus",
-		Latitude:    60.79497726217587,
-		Longitude:   10.692896676125931,
-		Size:        430,
-		State:       "Active",
-		Period: _struct.Period{
-			StartDate: "2020-05-09T22:00:00Z",
-			EndDate:   "2020-02-19T23:00:00Z",
-		},
-		Address: _struct.Address{
-			Street:       "Kauffeldts Plass 1",
-			Zipcode:      "2815",
-			Municipality: "Gjovik",
-			County:       "Innlandet",
-		},
-		Customer: _struct.Customer{
-			Name:   "Ola",
-			Number: 932818193,
-			Email:  "sjka@sosi.com",
-		},
-		Geofence: _struct.Geofence{},
-	}
 
-	id := strconv.Itoa(project.ProjectID)
+	/*id := strconv.Itoa(project.ProjectID)
 	documentPath := Database.Client.Collection("Location").Doc("Project").Collection("Active").Doc(id)
 
 	var firebaseInput map[string]interface{}
@@ -164,7 +225,7 @@ func createProject() {
 
 	fmt.Println(firebaseInput)
 
-	Database.AddDocument(documentPath, firebaseInput)
+	Database.AddDocument(documentPath, firebaseInput)*/
 }
 
 //copyDocumentProject will get a document, and save it inside a struct.
@@ -200,30 +261,7 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var documentReference *firestore.DocumentRef
-	collection := Database.Client.Collection("Location").Doc("Project").Collections(Database.Ctx)
-	for {
-		collRef, err := collection.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			break
-		}
-		document := Database.Client.Collection("Location").Doc("Project").Collection(collRef.ID).Documents(Database.Ctx)
-		for {
-			documentRef, err := document.Next()
-			if err == iterator.Done {
-				break
-			}
-
-			if documentRef.Ref.ID == strconv.Itoa(stateStruct.ID) {
-				fmt.Printf("Found ID in  collection: %s\n", collRef.ID)
-				documentReference = documentRef.Ref
-				break
-			}
-		}
-	}
+	documentReference := iterateProjects(stateStruct.ID)
 
 	project, err := Database.GetDocumentData(documentReference)
 	if err != nil {
@@ -245,4 +283,32 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 
 	batch.Commit(Database.Ctx)
 
+}
+
+func iterateProjects(id int) *firestore.DocumentRef {
+	var documentReference *firestore.DocumentRef
+	collection := Database.Client.Collection("Location").Doc("Project").Collections(Database.Ctx)
+	for {
+		collRef, err := collection.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			break
+		}
+		document := Database.Client.Collection("Location").Doc("Project").Collection(collRef.ID).Documents(Database.Ctx)
+		for {
+			documentRef, err := document.Next()
+			if err == iterator.Done {
+				break
+			}
+
+			if documentRef.Ref.ID == strconv.Itoa(id) {
+				fmt.Printf("Found ID in  collection: %s\n", collRef.ID)
+				documentReference = documentRef.Ref
+				break
+			}
+		}
+	}
+	return documentReference
 }
