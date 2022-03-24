@@ -6,6 +6,7 @@ import (
 	"stillasTracker/api/Database"
 	"stillasTracker/api/struct"
 	"strconv"
+	"strings"
 )
 
 /**
@@ -41,11 +42,13 @@ func scaffoldingRequest(w http.ResponseWriter, r *http.Request) {
 /**
 getPart function gets all scaffolding parts, some parts or one part
 a user can search based on projects, id or type
-
 */
 func getPart(w http.ResponseWriter, r *http.Request) {
 	//var scaffoldingPart _struct.ScaffoldingType
-
+	url := r.URL.Path
+	splitUrl := strings.Split(url, "/")
+	id := splitUrl[5]
+	print(id)
 	w.Header().Set("Content-Type", "application/json")
 
 }
