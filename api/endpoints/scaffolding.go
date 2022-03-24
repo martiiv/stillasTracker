@@ -44,13 +44,34 @@ getPart function gets all scaffolding parts, some parts or one part
 a user can search based on projects, id or type
 */
 func getPart(w http.ResponseWriter, r *http.Request) {
-	//var scaffoldingPart _struct.ScaffoldingType
-	url := r.URL.Path
-	splitUrl := strings.Split(url, "/")
-	id := splitUrl[5]
-	print(id)
 	w.Header().Set("Content-Type", "application/json")
+	url := r.URL.Path //Defining the url and splitting it on /
+	splitUrl := strings.Split(url, "/")
 
+	switch len(splitUrl) {
+
+	case 5: //Case 5 means that only an id is passed in the URL, we return one spesific scaffolding part with the id
+		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[4]).Doc(splitUrl[5])
+
+		part, err := Database.GetDocumentData(objectPath)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		err = json.NewEncoder(w).Encode(part)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+
+	case 4: //Case 4 means that a type of scaffolding is wanted however, not a specific one since no ID is passed in
+		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[4]).Documents(Database.Ctx)
+		partList := Database.GetCollectionData(objectPath)
+
+		err := json.NewEncoder(w).Encode(partList)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+	}
 }
 
 /**
