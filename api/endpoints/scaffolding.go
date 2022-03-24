@@ -71,6 +71,10 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
+
+	case 3: //Case 3 means that the user wants all the scaffolding parts int the database
+		//objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts")
+
 	}
 }
 
