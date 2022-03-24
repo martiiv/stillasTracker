@@ -1,8 +1,11 @@
 package endpoints
 
 import (
+	"encoding/json"
 	"net/http"
-	"stillasTracker/api/apiTools"
+	"stillasTracker/api/Database"
+	"stillasTracker/api/struct"
+	"strconv"
 )
 
 /**
@@ -20,9 +23,45 @@ Last modified Martin Iversen
 */
 func scaffoldingRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	url := apiTools.GetRequestURL(w, r)
-	switch url {
+
+	switch r.Method {
+	case http.MethodGet:
+
+	case http.MethodPost:
+		createPart(w, r)
+
+	case http.MethodDelete:
+
+	case http.MethodPut:
 
 	}
+}
 
+func createPart(w http.ResponseWriter, r *http.Request) {
+	var scaffoldList _struct.AddScaffolding
+
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewDecoder(r.Body).Decode(&scaffoldList)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	print("%v new scaffolding units added to the system \n "+"the following units were added:", len(scaffoldList))
+
+	for i := range scaffoldList {
+		newPartPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(scaffoldList[i].Type).Doc(strconv.Itoa(scaffoldList[i].ID))
+
+		var firebasePart map[string]interface{}
+		part, err := json.Marshal(scaffoldList[i])
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+		err = json.Unmarshal(part, &firebasePart)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+
+		Database.AddDocument(newPartPath, firebasePart)
+		print(scaffoldList[i].Type + "\n")
+	}
 }
