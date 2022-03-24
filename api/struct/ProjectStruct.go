@@ -74,6 +74,7 @@ type IDStruct []struct {
 
 // StateStruct to change the state of a project.
 type StateStruct struct {
+	ID    int    `json:"id"`
 	State string `json:"state"`
 }
 
