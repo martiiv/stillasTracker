@@ -21,7 +21,7 @@ var Client *firestore.Client
 func DatabaseConnection() {
 	// Creates instance of firebase
 	Ctx = context.Background()
-	sa := option.WithCredentialsFile("Database/stillas-16563-firebase-adminsdk-wd82v-a9fe8919b7.json") //Initializes database
+	sa := option.WithCredentialsFile("api/Database/stillas-16563-firebase-adminsdk-wd82v-a9fe8919b7.json") //Initializes database
 	app, err := firebase.NewApp(Ctx, nil, sa)
 	if err != nil {
 		log.Println("error occured when initializing database" + err.Error())

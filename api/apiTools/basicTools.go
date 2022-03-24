@@ -1,7 +1,6 @@
 package apiTools
 
 import (
-	"io/ioutil"
 	"net/http"
 	"net/url"
 )
@@ -16,32 +15,14 @@ Version 0.1
 Last modified Martin Iversen
 */
 
-//genericRequest
+// GetRequestBody
 /**
 Generic request function
 Takes in a writer and reader in addition to the API request url
 The function handles the request and returns the body of the request
 */
-func genericRequest(w http.ResponseWriter, r *http.Request, request string) []byte {
-	w.Header().Set("Content-Type", "application/json")
-	client := &http.Client{}
+func GetRequestBody(w http.ResponseWriter, r *http.Request) {
 
-	apiRequest, err := http.NewRequest(http.MethodGet, request, nil)
-	if err != nil {
-		getErrorMessage(w, err)
-	}
-
-	response, err := client.Do(apiRequest)
-	if err != nil {
-		getErrorMessage(w, err)
-	}
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		getErrorMessage(w, err)
-	}
-
-	return body
 }
 
 //GetRequestURL function returns the url of the request
