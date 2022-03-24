@@ -19,10 +19,10 @@ func Handle() {
 	fmt.Println("Listening on port" + getPort())
 
 	//Scaffolding endpoints
-	http.HandleFunc(baseURL+"/unit", scaffoldingRequest) //country endpoint
+	http.HandleFunc(baseURL+"/unit/", scaffoldingRequest) //GET POST PUT DELETE
 	//Project endpoint
-	http.HandleFunc(baseURL+"/project", projectRequest) //DELETE, POST, GET
-	http.HandleFunc(baseURL+"/storage", storageRequest)
+	http.HandleFunc(baseURL+"/project/", projectRequest) //DELETE, POST, GET
+	http.HandleFunc(baseURL+"/storage/", storageRequest)
 	//Profile endpoint
 	http.HandleFunc(baseURL+"/user/", profileRequest)
 	log.Println(http.ListenAndServe(getPort(), nil))
