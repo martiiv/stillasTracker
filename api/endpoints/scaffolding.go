@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"encoding/json"
+	"google.golang.org/api/iterator"
 	"net/http"
 	"stillasTracker/api/Database"
 	"stillasTracker/api/struct"
@@ -73,7 +74,32 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 		}
 
 	case 3: //Case 3 means that the user wants all the scaffolding parts int the database
-		//objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts")
+		partPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collections(Database.Ctx)
+		for {
+			scaffoldingType, err := partPath.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusNoContent)
+				break
+			}
+			document := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(scaffoldingType.ID).Documents(Database.Ctx)
+			for {
+				partRef, err := document.Next()
+				if err == iterator.Done {
+					break
+				}
+				part, err := Database.GetDocumentData(partRef.Ref)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusNoContent)
+				}
+				err = json.NewEncoder(w).Encode(part)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusBadRequest)
+				}
+			}
+		}
 
 	}
 }
