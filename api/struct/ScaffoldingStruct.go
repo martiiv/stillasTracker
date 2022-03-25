@@ -51,5 +51,6 @@ type AddScaffolding []struct {
 }
 
 type DeleteScaffolding []struct {
-	Id int `json:"id"`
+	Id   int    `json:"id"`
+	Type string `json:"type"`
 }
