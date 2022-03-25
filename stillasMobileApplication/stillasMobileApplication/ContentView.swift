@@ -2,21 +2,20 @@
 //  ContentView.swift
 //  stillasMobileApplication
 //
-//  Created by Aleksander Aaboen on 08/03/2022.
+//  Created by Tormod Mork Müller on 24/03/2022.
 //
 
 import SwiftUI
 
+/**
+    ContentView is responsible for the views in the application.
+    This will need enum and TabView on a later stage to switch between views.
+ */
 struct ContentView: View {
     var body: some View {
-        Text("Hello, MBstillas !")
-            .padding()
+        MapView()
     }
 }
-
-
-
-
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {

@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		274C541127EE02F2002CE76A /* BlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 274C541027EE02F2002CE76A /* BlurView.swift */; };
+		274C541327EE0316002CE76A /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 274C541227EE0316002CE76A /* MapView.swift */; };
+		274C541527EE0339002CE76A /* CustomCorners.swift in Sources */ = {isa = PBXBuildFile; fileRef = 274C541427EE0339002CE76A /* CustomCorners.swift */; };
 		4D17100627D755400026C216 /* stillasMobileApplicationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D17100527D755400026C216 /* stillasMobileApplicationApp.swift */; };
 		4D17100827D755400026C216 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D17100727D755400026C216 /* ContentView.swift */; };
 		4D17100A27D755410026C216 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4D17100927D755410026C216 /* Assets.xcassets */; };
@@ -14,6 +17,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		274C541027EE02F2002CE76A /* BlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurView.swift; sourceTree = "<group>"; };
+		274C541227EE0316002CE76A /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		274C541427EE0339002CE76A /* CustomCorners.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCorners.swift; sourceTree = "<group>"; };
 		4D17100227D755400026C216 /* stillasMobileApplication.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = stillasMobileApplication.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D17100527D755400026C216 /* stillasMobileApplicationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stillasMobileApplicationApp.swift; sourceTree = "<group>"; };
 		4D17100727D755400026C216 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -32,6 +38,32 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		274C540E27EE02C4002CE76A /* BlurView */ = {
+			isa = PBXGroup;
+			children = (
+				274C541027EE02F2002CE76A /* BlurView.swift */,
+			);
+			path = BlurView;
+			sourceTree = "<group>";
+		};
+		274C540F27EE02DD002CE76A /* MapView */ = {
+			isa = PBXGroup;
+			children = (
+				274C541227EE0316002CE76A /* MapView.swift */,
+			);
+			path = MapView;
+			sourceTree = "<group>";
+		};
+		27E5158527EE00D900EFE9A1 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				274C540F27EE02DD002CE76A /* MapView */,
+				274C540E27EE02C4002CE76A /* BlurView */,
+				274C541427EE0339002CE76A /* CustomCorners.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		4D170FF927D755400026C216 = {
 			isa = PBXGroup;
 			children = (
@@ -51,6 +83,7 @@
 		4D17100427D755400026C216 /* stillasMobileApplication */ = {
 			isa = PBXGroup;
 			children = (
+				27E5158527EE00D900EFE9A1 /* Views */,
 				4D17100527D755400026C216 /* stillasMobileApplicationApp.swift */,
 				4D17100727D755400026C216 /* ContentView.swift */,
 				4D17100927D755410026C216 /* Assets.xcassets */,
@@ -138,7 +171,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				4D17100827D755400026C216 /* ContentView.swift in Sources */,
+				274C541327EE0316002CE76A /* MapView.swift in Sources */,
 				4D17100627D755400026C216 /* stillasMobileApplicationApp.swift in Sources */,
+				274C541127EE02F2002CE76A /* BlurView.swift in Sources */,
+				274C541527EE0339002CE76A /* CustomCorners.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -269,6 +305,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"stillasMobileApplication/Preview Content\"";
+				DEVELOPMENT_TEAM = 9M752RTPAF;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -297,6 +334,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"stillasMobileApplication/Preview Content\"";
+				DEVELOPMENT_TEAM = 9M752RTPAF;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
