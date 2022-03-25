@@ -75,7 +75,7 @@ func projectRequest(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		getProject(w, r)
 	case "POST":
-		createProject()
+		createProject(w, r)
 	case "PUT":
 		updateState(w, r)
 	case "DELETE":
@@ -187,6 +187,7 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 }
 
 //deleteProject deletes selected projects from the database.
+//Todo read from body
 func deleteProject(w http.ResponseWriter, r *http.Request) {
 	//TODO make this to a standalone function
 	bytes, err := io.ReadAll(r.Body)
@@ -214,9 +215,21 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 
 //createProject will create a Project and add it to the database
 //TODO read struct from body
-func createProject() {
+func createProject(w http.ResponseWriter, r *http.Request) {
 
-	/*id := strconv.Itoa(project.ProjectID)
+	correctBody := checkProjectBody(r.Body)
+	if !correctBody {
+		http.Error(w, "Body is not correct", http.StatusBadRequest)
+		return
+	}
+
+	var project _struct.Project
+	err := json.NewDecoder(r.Body).Decode(&project)
+	if err != nil {
+		return
+	}
+
+	id := strconv.Itoa(project.ProjectID)
 	documentPath := Database.Client.Collection("Location").Doc("Project").Collection("Active").Doc(id)
 
 	var firebaseInput map[string]interface{}
@@ -225,17 +238,19 @@ func createProject() {
 
 	fmt.Println(firebaseInput)
 
-	Database.AddDocument(documentPath, firebaseInput)*/
+	Database.AddDocument(documentPath, firebaseInput)
 }
 
 //updateState will change the state of the project. In an atomic operation the project will change state,
 //be moved into the state collection and deleted form the old state collection.
 func updateState(w http.ResponseWriter, r *http.Request) {
 	batch := Database.Client.Batch()
-	form := r.ParseForm()
-	fmt.Println(form)
 
-	checkStateBody(w, r.Body)
+	correctBody := checkStateBody(r.Body)
+	if !correctBody {
+		http.Error(w, "Body is not correct", http.StatusBadRequest)
+		return
+	}
 
 	var stateStruct _struct.StateStruct
 	err := json.NewDecoder(r.Body).Decode(&stateStruct)
@@ -295,33 +310,169 @@ func iterateProjects(id int) *firestore.DocumentRef {
 	return documentReference
 }
 
-func checkStateBody(w http.ResponseWriter, body io.ReadCloser) bool {
+func checkStateBody(body io.ReadCloser) bool {
 
 	bodyS, err := io.ReadAll(body)
 	if err != nil {
 		err.Error()
 	}
 
+	state := []string{"Active", "Inactive", "Upcoming"}
 	var dat map[string]interface{}
 
 	err = json.Unmarshal(bodyS, &dat)
 	if err != nil {
 		return false
 	}
+	_, stateBool := dat["state"]
+	_, idBool := dat["id"]
+	_, isFloat := dat["id"].(float64)
 
-	if _, ok := dat["state"]; !ok {
+	var correctValues bool
+	if stateBool && idBool && isFloat {
+		for _, states := range state {
+			if dat["state"] == states {
+				correctValues = true
+			}
+		}
+	}
+
+	return correctValues
+
+}
+
+//checkProjectBody function that will verify the correct format of project struct
+func checkProjectBody(body io.ReadCloser) bool {
+	bodyS, err := io.ReadAll(body)
+	if err != nil {
+		err.Error()
+	}
+
+	var project map[string]interface{}
+	err = json.Unmarshal(bodyS, &project)
+	if err != nil {
 		return false
-	} else {
-		if dat["state"] != "^[0-9]*$" {
+	}
+
+	mandatoryFields := []string{"projectID", "projectName", "longitude", "latitude", "size",
+		"state", "customer", "period"}
+
+	period := project["period"]
+	correctPeriod := checkPeriod(period)
+	costumer := project["customer"]
+	correctCustomer := checkCustomer(costumer)
+	geoFence := project["geofence"]
+	correctGeofence := checkGeofence(geoFence)
+
+	correctField := true
+	for _, field := range mandatoryFields {
+		_, ok := project[field]
+		if !ok {
+			correctField = false
+		}
+	}
+
+	if !correctPeriod || !correctCustomer || !correctGeofence {
+		correctField = false
+	}
+
+	return correctField
+
+}
+
+//checkPeriod function that will verify the correct format of period struct
+func checkPeriod(period interface{}) bool {
+	periodByte, err := json.Marshal(period)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var periods map[string]interface{}
+	err = json.Unmarshal(periodByte, &periods)
+	if err != nil {
+		return false
+	}
+
+	nestedPeriod := []string{"startDate", "endDate"}
+	for _, period := range nestedPeriod {
+		_, ok := periods[period]
+		if !ok {
 			return false
 		}
 	}
 
-	if _, ok := dat["id"]; !ok {
+	return true
+}
+
+//checkCustomer function that will verify the correct format of customer struct
+func checkCustomer(customer interface{}) bool {
+	periodByte, err := json.Marshal(customer)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var customerMap map[string]interface{}
+	err = json.Unmarshal(periodByte, &customerMap)
+	if err != nil {
 		return false
 	}
 
-	fmt.Println(dat)
-	return true
+	nestedPeriod := []string{"name", "email", "number"}
+	for _, period := range nestedPeriod {
+		_, ok := customerMap[period]
+		if !ok {
+			return false
+		}
+	}
 
+	return true
+}
+
+//checkGeofence function that will verify the correct format of geofence struct
+func checkGeofence(fence interface{}) bool {
+	periodByte, err := json.Marshal(fence)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var geofenceMap map[string]interface{}
+	err = json.Unmarshal(periodByte, &geofenceMap)
+	if err != nil {
+		return false
+	}
+
+	nestedPeriod := []string{"w-position", "x-position", "y-position", "z-position"}
+	for _, period := range nestedPeriod {
+		_, ok := geofenceMap[period]
+		if !ok {
+			return false
+		} else {
+			correctCoordinate := checkGeofenceCoordinates(geofenceMap[period])
+			if !correctCoordinate {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+//checkGeofenceCoordinates function that will verify the correct format of geofence position struct
+func checkGeofenceCoordinates(location interface{}) bool {
+	periodByte, err := json.Marshal(location)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var locationMap map[string]interface{}
+	err = json.Unmarshal(periodByte, &locationMap)
+	if err != nil {
+		return false
+	}
+
+	nestedPeriod := []string{"longitude", "latitude"}
+	for _, period := range nestedPeriod {
+		_, ok := locationMap[period]
+		if !ok {
+			return false
+		}
+	}
+
+	return true
 }

@@ -18,7 +18,7 @@ type Address struct {
 type Customer struct {
 	Name   string `json:"name"`
 	Number int    `json:"number"`
-	Email  string
+	Email  string `json:"email"`
 }
 
 // Scaffolding information at the project for expected and registered scaffolding units.
