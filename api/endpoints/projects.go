@@ -232,6 +232,10 @@ func createProject() {
 //be moved into the state collection and deleted form the old state collection.
 func updateState(w http.ResponseWriter, r *http.Request) {
 	batch := Database.Client.Batch()
+	form := r.ParseForm()
+	fmt.Println(form)
+
+	checkStateBody(w, r.Body)
 
 	var stateStruct _struct.StateStruct
 	err := json.NewDecoder(r.Body).Decode(&stateStruct)
@@ -291,11 +295,33 @@ func iterateProjects(id int) *firestore.DocumentRef {
 	return documentReference
 }
 
-func checkStateBody(body io.ReadCloser) {
-	file := json.NewDecoder(body)
-	err := file.Decode(&_struct.StateStruct{})
+func checkStateBody(w http.ResponseWriter, body io.ReadCloser) bool {
+
+	bodyS, err := io.ReadAll(body)
 	if err != nil {
-		return
+		err.Error()
 	}
-	fmt.Println(file)
+
+	var dat map[string]interface{}
+
+	err = json.Unmarshal(bodyS, &dat)
+	if err != nil {
+		return false
+	}
+
+	if _, ok := dat["state"]; !ok {
+		return false
+	} else {
+		if dat["state"] != "^[0-9]*$" {
+			return false
+		}
+	}
+
+	if _, ok := dat["id"]; !ok {
+		return false
+	}
+
+	fmt.Println(dat)
+	return true
+
 }
