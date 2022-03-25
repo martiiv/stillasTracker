@@ -50,7 +50,6 @@ type AddScaffolding []struct {
 	} `json:"location"`
 }
 
-//DeleteScaffolding used for deleteing scaffolding units
-type DeleteScaffolding struct {
+type DeleteScaffolding []struct {
 	Id int `json:"id"`
 }
