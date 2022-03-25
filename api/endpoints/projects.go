@@ -228,28 +228,6 @@ func createProject() {
 	Database.AddDocument(documentPath, firebaseInput)*/
 }
 
-//copyDocumentProject will get a document, and save it inside a struct.
-func copyDocumentProject(documentPath *firestore.DocumentRef) _struct.Project {
-	document, err := documentPath.Get(Database.Ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	data := document.Data()
-	jsonStr, err := json.Marshal(data)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	var project _struct.Project
-	err = json.Unmarshal(jsonStr, &project)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	return project
-}
-
 //updateState will change the state of the project. In an atomic operation the project will change state,
 //be moved into the state collection and deleted form the old state collection.
 func updateState(w http.ResponseWriter, r *http.Request) {
@@ -311,4 +289,13 @@ func iterateProjects(id int) *firestore.DocumentRef {
 		}
 	}
 	return documentReference
+}
+
+func checkStateBody(body io.ReadCloser) {
+	file := json.NewDecoder(body)
+	err := file.Decode(&_struct.StateStruct{})
+	if err != nil {
+		return
+	}
+	fmt.Println(file)
 }
