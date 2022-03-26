@@ -29,6 +29,7 @@ Class contains the following functions:
 Version 0.1
 Last modified Aleksander Aaboen
 */
+var projectCollection *firestore.DocumentRef
 
 func CheckIDFromURL(r *http.Request) (string, error) {
 	url := strings.Split(r.RequestURI, "/")
@@ -44,6 +45,8 @@ func CheckIDFromURL(r *http.Request) (string, error) {
 Main function to switch between the different request types.
 */
 func projectRequest(w http.ResponseWriter, r *http.Request) {
+
+	projectCollection = Database.Client.Doc("Location/Project")
 
 	requestType := r.Method
 	switch requestType {
@@ -71,12 +74,9 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	id, err := CheckIDFromURL(r)
 	if err != nil {
-
-		//collection := Database.Client.Collection("Location").Doc("Project").Collection("Active").Documents(Database.Ctx)
-
 		var projects []_struct.Project
 
-		collection := Database.Client.Collection("Location").Doc("Project").Collections(Database.Ctx)
+		collection := projectCollection.Collections(Database.Ctx)
 		for {
 			collRef, err := collection.Next()
 			if err == iterator.Done {
@@ -85,7 +85,7 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				break
 			}
-			document := Database.Client.Collection("Location").Doc("Project").Collection(collRef.ID).Documents(Database.Ctx)
+			document := projectCollection.Collection(collRef.ID).Documents(Database.Ctx)
 			for {
 				documentRef, err := document.Next()
 				if err == iterator.Done {
@@ -151,7 +151,7 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 	for _, num := range deleteID {
 
 		id := strconv.Itoa(num.ID)
-		_, err := Database.Client.Collection("Location").Doc("Project").Collection("Active").Doc(id).Delete(Database.Ctx)
+		_, err := projectCollection.Collection("Active").Doc(id).Delete(Database.Ctx)
 		if err != nil {
 			log.Printf("An error has occurred: %s", err)
 		}
@@ -180,7 +180,7 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 
 	id := strconv.Itoa(project.ProjectID)
 	state := project.State
-	documentPath := Database.Client.Collection("Location").Doc("Project").Collection(state).Doc(id)
+	documentPath := projectCollection.Collection(state).Doc(id)
 
 	var firebaseInput map[string]interface{}
 	json.Unmarshal(bytes, &firebaseInput)
@@ -234,7 +234,7 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 //iterateProjects will iterate through every project in active, inactive and upcoming projects.
 func iterateProjects(id int) *firestore.DocumentRef {
 	var documentReference *firestore.DocumentRef
-	collection := Database.Client.Collection("Location").Doc("Project").Collections(Database.Ctx)
+	collection := projectCollection.Collections(Database.Ctx)
 	for {
 		collRef, err := collection.Next()
 		if err == iterator.Done {
@@ -243,7 +243,7 @@ func iterateProjects(id int) *firestore.DocumentRef {
 		if err != nil {
 			break
 		}
-		document := Database.Client.Collection("Location").Doc("Project").Collection(collRef.ID).Documents(Database.Ctx)
+		document := projectCollection.Collection(collRef.ID).Documents(Database.Ctx)
 		for {
 			documentRef, err := document.Next()
 			if err == iterator.Done {
