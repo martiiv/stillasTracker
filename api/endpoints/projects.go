@@ -27,7 +27,7 @@ Class contains the following functions:
 	- getStorageFacility: The function returns the state of the storage facility (amount of scaffolding equipment)
 
 Version 0.1
-Last modified Martin Iversen
+Last modified Aleksander Aaboen
 */
 
 func CheckIDFromURL(r *http.Request) (string, error) {
@@ -59,32 +59,8 @@ func projectRequest(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//storageRequest will return all the scaffolding parts in the selected storage location.
 func storageRequest(w http.ResponseWriter, r *http.Request) {
-	id, err := CheckIDFromURL(r)
-	if err != nil {
-		collection := Database.Client.Collection("Location").Doc("Project").Collection("Active").Documents(Database.Ctx)
-		data := Database.GetCollectionData(collection)
-
-		jsonStr, err := json.Marshal(data)
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Fprint(w, string(jsonStr))
-
-	} else {
-		document, err := Database.Client.Collection("Location").Doc("Project").Collection("Active").Doc(id).Get(Database.Ctx)
-		if err != nil {
-			fmt.Println(err)
-		}
-		data := document.Data()
-		jsonStr, err := json.Marshal(data)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		fmt.Fprint(w, string(jsonStr))
-
-	}
 
 }
 
@@ -162,9 +138,7 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 }
 
 //deleteProject deletes selected projects from the database.
-//Todo read from body
 func deleteProject(w http.ResponseWriter, r *http.Request) {
-	//TODO make this to a standalone function
 	bytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Fatalln(err)
@@ -177,7 +151,6 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 	for _, num := range deleteID {
 
 		id := strconv.Itoa(num.ID)
-
 		_, err := Database.Client.Collection("Location").Doc("Project").Collection("Active").Doc(id).Delete(Database.Ctx)
 		if err != nil {
 			log.Printf("An error has occurred: %s", err)
@@ -189,7 +162,6 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 }
 
 //createProject will create a Project and add it to the database
-//TODO read struct from body
 func createProject(w http.ResponseWriter, r *http.Request) {
 	bytes, err := ioutil.ReadAll(r.Body)
 	correctBody := checkProjectBody(bytes)
@@ -259,6 +231,7 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//iterateProjects will iterate through every project in active, inactive and upcoming projects.
 func iterateProjects(id int) *firestore.DocumentRef {
 	var documentReference *firestore.DocumentRef
 	collection := Database.Client.Collection("Location").Doc("Project").Collections(Database.Ctx)
@@ -287,6 +260,7 @@ func iterateProjects(id int) *firestore.DocumentRef {
 	return documentReference
 }
 
+//checkStateBody will check if the body is of correct format, and if the values are correct datatypes.
 func checkStateBody(body []byte) bool {
 	var dat map[string]interface{}
 	err := json.Unmarshal(body, &dat)
@@ -453,6 +427,7 @@ func checkGeofenceCoordinates(location interface{}) bool {
 	return true
 }
 
+//checkState will check the value of the body, to ensure that the user has selected the correct state.
 func checkState(input string) bool {
 	state := []string{"Active", "Inactive", "Upcoming"}
 
