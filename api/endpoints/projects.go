@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"google.golang.org/api/iterator"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"regexp"
@@ -27,32 +28,6 @@ Class contains the following functions:
 
 Version 0.1
 Last modified Martin Iversen
-*/
-
-/*const project = _struct.Project{
-		ProjectID:   4,
-		ProjectName: "GjovikRaadhus",
-		Latitude:    60.79497726217587,
-		Longitude:   10.692896676125931,
-		Size:        430,
-		State:       "Active",
-		Period: _struct.Period{
-		StartDate: "2020-05-09T22:00:00Z",
-		EndDate:   "2020-02-19T23:00:00Z",
-		},
-		Address: _struct.Address{
-		Street:       "Kauffeldts Plass 1",
-		Zipcode:      "2815",
-		Municipality: "Gjovik",
-		County:       "Innlandet",
-		},
-		Customer: _struct.Customer{
-		Name:   "Ola",
-		Number: 932818193,
-		Email:  "sjka@sosi.com",
-		},
-		Geofence: _struct.Geofence{},
-}
 */
 
 func CheckIDFromURL(r *http.Request) (string, error) {
@@ -216,45 +191,47 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 //createProject will create a Project and add it to the database
 //TODO read struct from body
 func createProject(w http.ResponseWriter, r *http.Request) {
-
-	correctBody := checkProjectBody(r.Body)
+	bytes, err := ioutil.ReadAll(r.Body)
+	correctBody := checkProjectBody(bytes)
 	if !correctBody {
 		http.Error(w, "Body is not correct", http.StatusBadRequest)
 		return
 	}
 
 	var project _struct.Project
-	err := json.NewDecoder(r.Body).Decode(&project)
+
+	err = json.Unmarshal(bytes, &project)
 	if err != nil {
+		fmt.Fprint(w, err.Error())
 		return
 	}
 
 	id := strconv.Itoa(project.ProjectID)
-	documentPath := Database.Client.Collection("Location").Doc("Project").Collection("Active").Doc(id)
+	state := project.State
+	documentPath := Database.Client.Collection("Location").Doc("Project").Collection(state).Doc(id)
 
 	var firebaseInput map[string]interface{}
-	data, _ := json.Marshal(project)
-	json.Unmarshal(data, &firebaseInput)
-
-	fmt.Println(firebaseInput)
+	json.Unmarshal(bytes, &firebaseInput)
 
 	Database.AddDocument(documentPath, firebaseInput)
 }
 
-//updateState will change the state of the project. In an atomic operation the project will change state,
-//be moved into the state collection and deleted form the old state collection.
+/*updateState will change the state of the project. In an atomic operation the project will change state,
+be moved into the state collection and deleted form the old state collection.*/
 func updateState(w http.ResponseWriter, r *http.Request) {
 	batch := Database.Client.Batch()
+	data, err := ioutil.ReadAll(r.Body)
 
-	correctBody := checkStateBody(r.Body)
+	correctBody := checkStateBody(data)
 	if !correctBody {
 		http.Error(w, "Body is not correct", http.StatusBadRequest)
 		return
 	}
 
 	var stateStruct _struct.StateStruct
-	err := json.NewDecoder(r.Body).Decode(&stateStruct)
+	err = json.Unmarshal(data, &stateStruct)
 	if err != nil {
+		fmt.Fprint(w, err.Error())
 		return
 	}
 
@@ -310,17 +287,9 @@ func iterateProjects(id int) *firestore.DocumentRef {
 	return documentReference
 }
 
-func checkStateBody(body io.ReadCloser) bool {
-
-	bodyS, err := io.ReadAll(body)
-	if err != nil {
-		err.Error()
-	}
-
-	state := []string{"Active", "Inactive", "Upcoming"}
+func checkStateBody(body []byte) bool {
 	var dat map[string]interface{}
-
-	err = json.Unmarshal(bodyS, &dat)
+	err := json.Unmarshal(body, &dat)
 	if err != nil {
 		return false
 	}
@@ -330,26 +299,15 @@ func checkStateBody(body io.ReadCloser) bool {
 
 	var correctValues bool
 	if stateBool && idBool && isFloat {
-		for _, states := range state {
-			if dat["state"] == states {
-				correctValues = true
-			}
-		}
+		correctValues = checkState(dat["state"].(string))
 	}
-
 	return correctValues
-
 }
 
 //checkProjectBody function that will verify the correct format of project struct
-func checkProjectBody(body io.ReadCloser) bool {
-	bodyS, err := io.ReadAll(body)
-	if err != nil {
-		err.Error()
-	}
-
+func checkProjectBody(body []byte) bool {
 	var project map[string]interface{}
-	err = json.Unmarshal(bodyS, &project)
+	err := json.Unmarshal(body, &project)
 	if err != nil {
 		return false
 	}
@@ -363,6 +321,13 @@ func checkProjectBody(body io.ReadCloser) bool {
 	correctCustomer := checkCustomer(costumer)
 	geoFence := project["geofence"]
 	correctGeofence := checkGeofence(geoFence)
+	_, longitudeFloat := project["longitude"].(float64)
+	_, latitudeFloat := project["latitude"].(float64)
+	_, sizeFloat := project["size"].(float64)
+	_, projectID := project["projectID"].(float64)
+
+	validState := checkState(project["state"].(string))
+	correctFormat := validState && longitudeFloat && latitudeFloat && sizeFloat && projectID
 
 	correctField := true
 	for _, field := range mandatoryFields {
@@ -372,7 +337,7 @@ func checkProjectBody(body io.ReadCloser) bool {
 		}
 	}
 
-	if !correctPeriod || !correctCustomer || !correctGeofence {
+	if !correctPeriod || !correctCustomer || !correctGeofence || !correctFormat {
 		correctField = false
 	}
 
@@ -414,13 +379,17 @@ func checkCustomer(customer interface{}) bool {
 	if err != nil {
 		return false
 	}
-
 	nestedPeriod := []string{"name", "email", "number"}
 	for _, period := range nestedPeriod {
 		_, ok := customerMap[period]
 		if !ok {
 			return false
 		}
+	}
+
+	_, numberFloat := customerMap["number"].(float64)
+	if !numberFloat {
+		return false
 	}
 
 	return true
@@ -466,13 +435,33 @@ func checkGeofenceCoordinates(location interface{}) bool {
 		return false
 	}
 
-	nestedPeriod := []string{"longitude", "latitude"}
-	for _, period := range nestedPeriod {
+	coordinates := []string{"longitude", "latitude"}
+	for _, period := range coordinates {
 		_, ok := locationMap[period]
 		if !ok {
 			return false
 		}
 	}
 
+	_, longitudeFloat := locationMap["longitude"].(float64)
+	_, latitudeFloat := locationMap["latitude"].(float64)
+
+	if !latitudeFloat || !longitudeFloat {
+		return false
+	}
+
 	return true
+}
+
+func checkState(input string) bool {
+	state := []string{"Active", "Inactive", "Upcoming"}
+
+	var correctValues bool
+	for _, states := range state {
+		if input == states {
+			correctValues = true
+			break
+		}
+	}
+	return correctValues
 }
