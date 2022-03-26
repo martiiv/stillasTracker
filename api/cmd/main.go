@@ -18,5 +18,4 @@ func main() {
 	//startTime = time.Now()
 	fmt.Println("initialized handler")
 	endpoints.Handle()
-
 }

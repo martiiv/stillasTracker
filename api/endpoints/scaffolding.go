@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"encoding/json"
+	"google.golang.org/api/iterator"
 	"net/http"
 	"stillasTracker/api/Database"
 	"stillasTracker/api/struct"
@@ -33,7 +34,7 @@ func scaffoldingRequest(w http.ResponseWriter, r *http.Request) {
 		createPart(w, r) //Function for adding new scaffolding parts to the system
 
 	case http.MethodDelete:
-
+		deletePart(w, r)
 	case http.MethodPut:
 
 	}
@@ -48,10 +49,17 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.Path //Defining the url and splitting it on /
 	splitUrl := strings.Split(url, "/")
 
-	switch len(splitUrl) {
+	print(len(splitUrl))
 
-	case 5: //Case 5 means that only an id is passed in the URL, we return one spesific scaffolding part with the id
+	switch len(splitUrl) {
+	case 8: //Case 5 means that only an id is passed in the URL, we return one spesific scaffolding part with the id
 		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[4]).Doc(splitUrl[5])
+
+		for i := 0; i < len(splitUrl); i++ {
+			err := json.NewEncoder(w).Encode(splitUrl[i])
+			if err != nil {
+			}
+		}
 
 		part, err := Database.GetDocumentData(objectPath)
 		if err != nil {
@@ -63,7 +71,7 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
 
-	case 4: //Case 4 means that a type of scaffolding is wanted however, not a specific one since no ID is passed in
+	case 7: //Case 4 means that a type of scaffolding is wanted however, not a specific one since no ID is passed in
 		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[4]).Documents(Database.Ctx)
 		partList := Database.GetCollectionData(objectPath)
 
@@ -72,8 +80,35 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
 
-	case 3: //Case 3 means that the user wants all the scaffolding parts int the database
-		//objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts")
+	case 6: //Case 3 means that the user wants all the scaffolding parts int the database
+		partPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collections(Database.Ctx)
+		for {
+			scaffoldingType, err := partPath.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusNoContent)
+				break
+			}
+			document := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(scaffoldingType.ID).Documents(Database.Ctx)
+			for {
+				partRef, err := document.Next()
+				if err == iterator.Done {
+					break
+				}
+
+				part, err := Database.GetDocumentData(partRef.Ref)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusNoContent)
+				}
+
+				err = json.NewEncoder(w).Encode(part)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusBadRequest)
+				}
+			}
+		}
 
 	}
 }
@@ -119,6 +154,23 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 		err = json.NewEncoder(w).Encode(scaffoldList[i].Type + "\n")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}
+}
+
+func deletePart(w http.ResponseWriter, r *http.Request) {
+	var deleteList _struct.DeleteScaffolding
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewDecoder(r.Body).Decode(&deleteList)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	for i := range deleteList {
+		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(deleteList[i].Type).Doc(strconv.Itoa(deleteList[i].Id))
+		err := Database.DeleteDocument(objectPath)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
 	}
 }
