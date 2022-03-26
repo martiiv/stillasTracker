@@ -52,17 +52,17 @@ struct MapView: View {
                         
                         VStack {
                             Capsule()
-                                .fill(Color.white)
-                                .frame(width: 80, height: 5)
-                                .padding(.top)
+                                .fill(Color.gray)
+                                .frame(width: 40, height: 5)
+                                .padding(.top, 7)
                             
                             TextField("Search field", text: $searchText)
-                                .padding(.vertical, 10)
+                                .padding(.vertical, 7)
                                 .padding(.horizontal)
                                 .background(BlurView(style: .dark))
-                                .cornerRadius(30)
+                                .cornerRadius(10)
                                 .colorScheme(.dark)
-                                .padding(.top, 10)
+                                .padding(.top, 5)
                         }
                         .padding(.horizontal)
                         .frame(maxHeight: .infinity, alignment: .top)
