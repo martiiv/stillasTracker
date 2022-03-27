@@ -23,7 +23,7 @@ The class contains the following functions:
 Version 0.1
 Last modified Martin Iversen
 */
-func scaffoldingRequest(w http.ResponseWriter, r *http.Request) {
+func ScaffoldingRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	switch r.Method {
@@ -34,7 +34,8 @@ func scaffoldingRequest(w http.ResponseWriter, r *http.Request) {
 		createPart(w, r) //Function for adding new scaffolding parts to the system
 
 	case http.MethodDelete:
-		deletePart(w, r)
+		deletePart(w, r) //Function for deleting scaffolding part
+
 	case http.MethodPut:
 
 	}
