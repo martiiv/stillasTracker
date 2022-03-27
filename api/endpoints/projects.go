@@ -170,7 +170,7 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var project _struct.Project
+	var project _struct.NewProject
 
 	err = json.Unmarshal(bytes, &project)
 	if err != nil {
@@ -183,6 +183,7 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 	documentPath := projectCollection.Collection(state).Doc(id)
 
 	var firebaseInput map[string]interface{}
+	bytes, err = json.Marshal(project)
 	json.Unmarshal(bytes, &firebaseInput)
 
 	Database.AddDocument(documentPath, firebaseInput)
@@ -286,9 +287,6 @@ func checkProjectBody(body []byte) bool {
 		return false
 	}
 
-	mandatoryFields := []string{"projectID", "projectName", "longitude", "latitude", "size",
-		"state", "customer", "period"}
-
 	period := project["period"]
 	correctPeriod := checkPeriod(period)
 	costumer := project["customer"]
@@ -299,23 +297,13 @@ func checkProjectBody(body []byte) bool {
 	_, latitudeFloat := project["latitude"].(float64)
 	_, sizeFloat := project["size"].(float64)
 	_, projectID := project["projectID"].(float64)
+	_, projectName := project["projectName"].(string)
 
 	validState := checkState(project["state"].(string))
-	correctFormat := validState && longitudeFloat && latitudeFloat && sizeFloat && projectID
+	correctFormat := validState && longitudeFloat && latitudeFloat && sizeFloat &&
+		projectID && correctGeofence && correctCustomer && correctPeriod && projectName
 
-	correctField := true
-	for _, field := range mandatoryFields {
-		_, ok := project[field]
-		if !ok {
-			correctField = false
-		}
-	}
-
-	if !correctPeriod || !correctCustomer || !correctGeofence || !correctFormat {
-		correctField = false
-	}
-
-	return correctField
+	return correctFormat
 
 }
 

@@ -83,3 +83,40 @@ type MovingStruct []struct {
 	Type     string `json:"type"`
 	Quantity int    `json:"quantity"`
 }
+
+type NewProject struct {
+	ProjectID   int    `json:"projectID"`
+	ProjectName string `json:"projectName"`
+	Period      struct {
+		StartDate string `json:"startDate"`
+		EndDate   string `json:"endDate"`
+	} `json:"period"`
+	Size      int     `json:"size"`
+	State     string  `json:"state"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+	Adresse   string  `json:"adresse"`
+	Customer  struct {
+		Name   string `json:"name"`
+		Number int    `json:"number"`
+		Email  string `json:"email"`
+	} `json:"customer"`
+	Geofence struct {
+		WPosition struct {
+			Latitude  float64 `json:"latitude"`
+			Longitude float64 `json:"longitude"`
+		} `json:"w-position"`
+		XPosition struct {
+			Latitude  float64 `json:"latitude"`
+			Longitude float64 `json:"longitude"`
+		} `json:"x-position"`
+		YPosition struct {
+			Latitude  float64 `json:"latitude"`
+			Longitude float64 `json:"longitude"`
+		} `json:"y-position"`
+		ZPosition struct {
+			Latitude  float64 `json:"latitude"`
+			Longitude float64 `json:"longitude"`
+		} `json:"z-position"`
+	} `json:"geofence"`
+}
