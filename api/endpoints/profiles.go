@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"google.golang.org/api/iterator"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -52,7 +53,10 @@ func deleteProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var deleteID _struct.ProfileDelete
-	json.Unmarshal(bytes, &deleteID)
+	err = json.Unmarshal(bytes, &deleteID)
+	if err != nil {
+		return
+	}
 
 	for _, num := range deleteID {
 		_, err := iterateProfiles(num.Id).Delete(Database.Ctx)
@@ -65,6 +69,36 @@ func deleteProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateProfile(w http.ResponseWriter, r *http.Request) {
+	data, err := ioutil.ReadAll(r.Body)
+	batch := Database.Client.Batch()
+
+	var employeeStruct map[string]interface{}
+	err = json.Unmarshal(data, &employeeStruct)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	employee := employeeStruct["employeeID"].(float64)
+
+	documentReference := iterateProfiles(int(employee))
+
+	var updates []firestore.Update
+
+	for s, i := range employeeStruct {
+		update := firestore.Update{
+			Path:  s,
+			Value: i,
+		}
+		updates = append(updates, update)
+	}
+
+	batch.Update(documentReference, updates)
+	_, err = batch.Commit(Database.Ctx)
+	if err != nil {
+		http.Error(w, "could not save changes", http.StatusConflict)
+		return
+	}
 
 }
 
