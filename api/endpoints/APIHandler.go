@@ -9,19 +9,15 @@ import (
 
 const baseURL = "/stillastracking/v1/api"
 
-/**
-Class API handler
-Will initialize all the endpoints and set ports
-Version 0.1
-Last edit 08.03.2022 by Martin Iversen
-*/
+// Handle /**
 func Handle() {
 	fmt.Println("Listening on port" + getPort())
 
 	//Scaffolding endpoints
-	http.HandleFunc(baseURL+"/unit/", scaffoldingRequest) //GET POST PUT DELETE
+	http.HandleFunc(baseURL+"/unit/", ScaffoldingRequest) //GET POST PUT DELETE
 	//Project endpoint
 	http.HandleFunc(baseURL+"/project/", projectRequest) //DELETE, POST, GET
+
 	http.HandleFunc(baseURL+"/storage", storageRequest)
 	//Profile endpoint
 	http.HandleFunc(baseURL+"/user/", profileRequest)
