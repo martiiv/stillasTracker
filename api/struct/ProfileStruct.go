@@ -8,7 +8,7 @@ type Employee struct {
 	} `json:"name"`
 	DateOfBirth string `json:"dateOfBirth"`
 	Role        string `json:"role"`
-	Phone       int    `json:"phone"`
+	Phone       any    `json:"phone"`
 	Email       string `json:"email"`
 	Admin       bool   `json:"admin"`
 	Projects    []struct {

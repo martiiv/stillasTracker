@@ -79,6 +79,11 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !checkUpdate(employeeStruct) {
+		http.Error(w, "invalid body", http.StatusBadRequest)
+		return
+	}
+
 	employee := employeeStruct["employeeID"].(float64)
 
 	documentReference := iterateProfiles(int(employee))
@@ -104,6 +109,10 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 
 func createProfile(w http.ResponseWriter, r *http.Request) {
 	bytes, err := io.ReadAll(r.Body)
+	if !checkStruct(bytes) {
+		http.Error(w, "body invalid", http.StatusBadRequest)
+		return
+	}
 
 	var employee _struct.Employee
 
@@ -260,4 +269,120 @@ func iterateProfiles(id int) *firestore.DocumentRef {
 		}
 	}
 	return documentReference
+}
+
+func checkUpdate(update map[string]interface{}) bool {
+	fmt.Println(update)
+	var counter int
+	_, employeeID := update["employeeID"]
+	_, name := update["name"]
+
+	if name {
+		var ok bool
+		ok = checkName(update["name"])
+		if !ok {
+			return false
+		}
+	}
+
+	fields := []string{"name", "role", "phone", "email", "admin", "employeeID"}
+	if employeeID {
+		for _, field := range fields {
+			for f := range update {
+				if field == f {
+					counter++
+					break
+				}
+			}
+		}
+		if len(update) > (counter) {
+			return false
+		}
+
+	}
+
+	return true
+}
+
+func checkName(name interface{}) bool {
+	var counter int
+	nameByte, err := json.Marshal(name)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+
+	var nameMap map[string]interface{}
+	err = json.Unmarshal(nameByte, &nameMap)
+	if err != nil {
+		return false
+	}
+
+	validKeys := []string{"firstName", "lastName"}
+	for s := range nameMap {
+		for _, key := range validKeys {
+			if s == key {
+				counter++
+				break
+			}
+		}
+	}
+
+	if len(nameMap) > counter {
+		return false
+	}
+	fmt.Println(name)
+	return true
+}
+
+func checkStruct(body []byte) bool {
+	var userMap map[string]interface{}
+	err := json.Unmarshal(body, &userMap)
+	if err != nil {
+		return false
+	}
+
+	_, idFormat := userMap["employeeID"].(float64)
+	_, phoneFormat := userMap["phone"].(float64)
+	roles := []string{"admin", "installer", "storage"}
+	var roleFormat bool
+	for _, role := range roles {
+		if userMap["role"] == role {
+			roleFormat = true
+			break
+		}
+	}
+	_, emailFormat := userMap["email"].(string)
+	_, adminFormat := userMap["admin"].(bool)
+	_, dateFormat := userMap["dateOfBirth"].(string)
+	name := checkNameFormat(userMap["name"])
+
+	validFormat := idFormat && phoneFormat && roleFormat && emailFormat && adminFormat && name && dateFormat
+
+	if !validFormat {
+		return false
+	}
+
+	return true
+}
+
+func checkNameFormat(name interface{}) bool {
+	periodByte, err := json.Marshal(name)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	var nameMap map[string]interface{}
+	err = json.Unmarshal(periodByte, &nameMap)
+	if err != nil {
+		return false
+	}
+
+	_, firstName := nameMap["firstName"].(string)
+	_, lastName := nameMap["lastName"].(string)
+
+	if !firstName || !lastName {
+		return false
+	}
+	return true
 }
