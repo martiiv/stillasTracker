@@ -54,13 +54,9 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 
 	switch len(splitUrl) {
 	case 8: //Case 5 means that only an id is passed in the URL, we return one spesific scaffolding part with the id
-		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[4]).Doc(splitUrl[5])
+		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[5]).Doc(splitUrl[6])
 
-		for i := 0; i < len(splitUrl); i++ {
-			err := json.NewEncoder(w).Encode(splitUrl[i])
-			if err != nil {
-			}
-		}
+		json.NewEncoder(w).Encode(objectPath)
 
 		part, err := Database.GetDocumentData(objectPath)
 		if err != nil {

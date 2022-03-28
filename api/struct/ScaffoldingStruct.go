@@ -47,6 +47,7 @@ type AddScaffolding []struct {
 	Location     struct {
 		Longitude interface{} `json:"longitude"`
 		Latitude  interface{} `json:"latitude"`
+		Address   interface{} `json:"address"`
 	} `json:"location"`
 }
 
