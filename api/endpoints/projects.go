@@ -2,7 +2,6 @@ package endpoints
 
 import (
 	"cloud.google.com/go/firestore"
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -350,100 +349,6 @@ func batchedWrites(w http.ResponseWriter, r *http.Request) {
 		log.Printf("An error has occurred: %s", err)
 	}
 
-}
-
-func transactionAdd(w http.ResponseWriter, r *http.Request) {
-
-	scaffolds, inputScaffolding := getScaffoldingInput(w, r)
-
-	var fromPath *firestore.DocumentRef
-	var fromPaths []*firestore.DocumentRef
-
-	switch inputScaffolding.FromProjectID {
-	case 0:
-		for _, s := range inputScaffolding.InputScaffolding {
-			fromPath = Database.Client.Doc("Location/Storage/Inventory/" + s.Type)
-			fromPaths = append(fromPaths, fromPath)
-		}
-
-	default:
-		fromPath = iterateProjects(inputScaffolding.FromProjectID)
-	}
-
-	var newPaths []*firestore.DocumentRef
-
-	//newPath := iterateProjects(inputScaffolding.ToProjectID)
-	err := Database.Client.RunTransaction(Database.Ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-		var errTransaction error
-		var docs []*firestore.DocumentSnapshot
-		var tos []*firestore.DocumentSnapshot
-		var scaffoldingFroms []interface{}
-		var scaffoldingTos []interface{}
-		var sub = map[string]interface{}{}
-		var add = map[string]interface{}{}
-		var subArray []map[string]interface{}
-		var addArray []map[string]interface{}
-
-		//path := newPath.Path
-		for i := range inputScaffolding.InputScaffolding {
-
-			/*newPath.Path = path + "/StillasType/" + inputScaffolding.InputScaffolding[i].Type
-			newPaths = append(newPaths, newPath)*/
-
-			document1 := Database.Client.Doc("Location/Project/Active/1/StillasType/Flooring")
-			document2 := Database.Client.Doc("Location/Project/Active/1/StillasType/Spire")
-			newPaths = append(newPaths, document1, document2)
-
-			doc, err := tx.Get(fromPaths[i])
-			if err != nil {
-				return err
-			}
-			docs = append(docs, doc)
-
-			to, err := tx.Get(newPaths[i])
-			if err != nil {
-				return err
-			}
-			tos = append(tos, to)
-
-			scaffoldingFrom, err := doc.DataAt("Quantity.expected")
-			if err != nil {
-				return err
-			}
-			scaffoldingFroms = append(scaffoldingFroms, scaffoldingFrom)
-
-			scaffoldingTo, err := to.DataAt("Quantity.expected")
-			if err != nil {
-				return err
-			}
-			scaffoldingTos = append(scaffoldingTos, scaffoldingTo)
-
-			if scaffolds[0].Quantity.Expected > 100000 {
-				return nil
-			}
-
-			sub["Quantity"] = map[string]interface{}{}
-			sub["Quantity"].(map[string]interface{})["expected"] = scaffoldingFroms[i].(int64) - int64(scaffolds[i].Expected)
-			subArray = append(subArray, sub)
-
-			add["Quantity"] = map[string]interface{}{}
-			add["Quantity"].(map[string]interface{})["expected"] = scaffoldingTos[i].(int64) + int64(scaffolds[i].Expected)
-			addArray = append(addArray, add)
-
-		}
-
-		for i := range subArray {
-			errTransaction = tx.Set(newPaths[i], addArray[i], firestore.MergeAll)
-			errTransaction = tx.Set(fromPaths[i], subArray[i], firestore.MergeAll)
-		}
-
-		return errTransaction
-
-	})
-	if err != nil {
-		// Handle any errors appropriately in this section.
-		log.Printf("An error has occurred: %s", err)
-	}
 }
 
 //iterateProjects will iterate through every project in active, inactive and upcoming projects.
