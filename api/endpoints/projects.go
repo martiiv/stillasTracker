@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"google.golang.org/api/iterator"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"regexp"
@@ -26,34 +27,9 @@ Class contains the following functions:
 	- getStorageFacility: The function returns the state of the storage facility (amount of scaffolding equipment)
 
 Version 0.1
-Last modified Martin Iversen
+Last modified Aleksander Aaboen
 */
-
-/*const project = _struct.Project{
-		ProjectID:   4,
-		ProjectName: "GjovikRaadhus",
-		Latitude:    60.79497726217587,
-		Longitude:   10.692896676125931,
-		Size:        430,
-		State:       "Active",
-		Period: _struct.Period{
-		StartDate: "2020-05-09T22:00:00Z",
-		EndDate:   "2020-02-19T23:00:00Z",
-		},
-		Address: _struct.Address{
-		Street:       "Kauffeldts Plass 1",
-		Zipcode:      "2815",
-		Municipality: "Gjovik",
-		County:       "Innlandet",
-		},
-		Customer: _struct.Customer{
-		Name:   "Ola",
-		Number: 932818193,
-		Email:  "sjka@sosi.com",
-		},
-		Geofence: _struct.Geofence{},
-}
-*/
+var projectCollection *firestore.DocumentRef
 
 func CheckIDFromURL(r *http.Request) (string, error) {
 	url := strings.Split(r.RequestURI, "/")
@@ -70,12 +46,14 @@ Main function to switch between the different request types.
 */
 func projectRequest(w http.ResponseWriter, r *http.Request) {
 
+	projectCollection = Database.Client.Doc("Location/Project")
+
 	requestType := r.Method
 	switch requestType {
 	case "GET":
 		getProject(w, r)
 	case "POST":
-		createProject()
+		createProject(w, r)
 	case "PUT":
 		updateState(w, r)
 	case "DELETE":
@@ -84,32 +62,8 @@ func projectRequest(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//storageRequest will return all the scaffolding parts in the selected storage location.
 func storageRequest(w http.ResponseWriter, r *http.Request) {
-	id, err := CheckIDFromURL(r)
-	if err != nil {
-		collection := Database.Client.Collection("Location").Doc("Project").Collection("Active").Documents(Database.Ctx)
-		data := Database.GetCollectionData(collection)
-
-		jsonStr, err := json.Marshal(data)
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Fprint(w, string(jsonStr))
-
-	} else {
-		document, err := Database.Client.Collection("Location").Doc("Project").Collection("Active").Doc(id).Get(Database.Ctx)
-		if err != nil {
-			fmt.Println(err)
-		}
-		data := document.Data()
-		jsonStr, err := json.Marshal(data)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		fmt.Fprint(w, string(jsonStr))
-
-	}
 
 }
 
@@ -120,12 +74,9 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	id, err := CheckIDFromURL(r)
 	if err != nil {
-
-		//collection := Database.Client.Collection("Location").Doc("Project").Collection("Active").Documents(Database.Ctx)
-
 		var projects []_struct.Project
 
-		collection := Database.Client.Collection("Location").Doc("Project").Collections(Database.Ctx)
+		collection := projectCollection.Collections(Database.Ctx)
 		for {
 			collRef, err := collection.Next()
 			if err == iterator.Done {
@@ -134,7 +85,7 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				break
 			}
-			document := Database.Client.Collection("Location").Doc("Project").Collection(collRef.ID).Documents(Database.Ctx)
+			document := projectCollection.Collection(collRef.ID).Documents(Database.Ctx)
 			for {
 				documentRef, err := document.Next()
 				if err == iterator.Done {
@@ -188,7 +139,6 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 
 //deleteProject deletes selected projects from the database.
 func deleteProject(w http.ResponseWriter, r *http.Request) {
-	//TODO make this to a standalone function
 	bytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Fatalln(err)
@@ -201,8 +151,7 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 	for _, num := range deleteID {
 
 		id := strconv.Itoa(num.ID)
-
-		_, err := Database.Client.Collection("Location").Doc("Project").Collection("Active").Doc(id).Delete(Database.Ctx)
+		_, err := projectCollection.Collection("Active").Doc(id).Delete(Database.Ctx)
 		if err != nil {
 			log.Printf("An error has occurred: %s", err)
 		}
@@ -213,29 +162,49 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 }
 
 //createProject will create a Project and add it to the database
-//TODO read struct from body
-func createProject() {
+func createProject(w http.ResponseWriter, r *http.Request) {
+	bytes, err := ioutil.ReadAll(r.Body)
+	correctBody := checkProjectBody(bytes)
+	if !correctBody {
+		http.Error(w, "Body is not correct", http.StatusBadRequest)
+		return
+	}
 
-	/*id := strconv.Itoa(project.ProjectID)
-	documentPath := Database.Client.Collection("Location").Doc("Project").Collection("Active").Doc(id)
+	var project _struct.NewProject
+
+	err = json.Unmarshal(bytes, &project)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	id := strconv.Itoa(project.ProjectID)
+	state := project.State
+	documentPath := projectCollection.Collection(state).Doc(id)
 
 	var firebaseInput map[string]interface{}
-	data, _ := json.Marshal(project)
-	json.Unmarshal(data, &firebaseInput)
+	bytes, err = json.Marshal(project)
+	json.Unmarshal(bytes, &firebaseInput)
 
-	fmt.Println(firebaseInput)
-
-	Database.AddDocument(documentPath, firebaseInput)*/
+	Database.AddDocument(documentPath, firebaseInput)
 }
 
-//updateState will change the state of the project. In an atomic operation the project will change state,
-//be moved into the state collection and deleted form the old state collection.
+/*updateState will change the state of the project. In an atomic operation the project will change state,
+be moved into the state collection and deleted form the old state collection.*/
 func updateState(w http.ResponseWriter, r *http.Request) {
 	batch := Database.Client.Batch()
+	data, err := ioutil.ReadAll(r.Body)
+
+	correctBody := checkStateBody(data)
+	if !correctBody {
+		http.Error(w, "Body is not correct", http.StatusBadRequest)
+		return
+	}
 
 	var stateStruct _struct.StateStruct
-	err := json.NewDecoder(r.Body).Decode(&stateStruct)
+	err = json.Unmarshal(data, &stateStruct)
 	if err != nil {
+		fmt.Fprint(w, err.Error())
 		return
 	}
 
@@ -263,9 +232,10 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//iterateProjects will iterate through every project in active, inactive and upcoming projects.
 func iterateProjects(id int) *firestore.DocumentRef {
 	var documentReference *firestore.DocumentRef
-	collection := Database.Client.Collection("Location").Doc("Project").Collections(Database.Ctx)
+	collection := projectCollection.Collections(Database.Ctx)
 	for {
 		collRef, err := collection.Next()
 		if err == iterator.Done {
@@ -274,7 +244,7 @@ func iterateProjects(id int) *firestore.DocumentRef {
 		if err != nil {
 			break
 		}
-		document := Database.Client.Collection("Location").Doc("Project").Collection(collRef.ID).Documents(Database.Ctx)
+		document := projectCollection.Collection(collRef.ID).Documents(Database.Ctx)
 		for {
 			documentRef, err := document.Next()
 			if err == iterator.Done {
@@ -291,11 +261,170 @@ func iterateProjects(id int) *firestore.DocumentRef {
 	return documentReference
 }
 
-func checkStateBody(body io.ReadCloser) {
-	file := json.NewDecoder(body)
-	err := file.Decode(&_struct.StateStruct{})
+//checkStateBody will check if the body is of correct format, and if the values are correct datatypes.
+func checkStateBody(body []byte) bool {
+	var dat map[string]interface{}
+	err := json.Unmarshal(body, &dat)
 	if err != nil {
-		return
+		return false
 	}
-	fmt.Println(file)
+	_, stateBool := dat["state"]
+	_, idBool := dat["id"]
+	_, isFloat := dat["id"].(float64)
+
+	var correctValues bool
+	if stateBool && idBool && isFloat {
+		correctValues = checkState(dat["state"].(string))
+	}
+	return correctValues
+}
+
+//checkProjectBody function that will verify the correct format of project struct
+func checkProjectBody(body []byte) bool {
+	var project map[string]interface{}
+	err := json.Unmarshal(body, &project)
+	if err != nil {
+		return false
+	}
+
+	period := project["period"]
+	correctPeriod := checkPeriod(period)
+	costumer := project["customer"]
+	correctCustomer := checkCustomer(costumer)
+	geoFence := project["geofence"]
+	correctGeofence := checkGeofence(geoFence)
+	_, longitudeFloat := project["longitude"].(float64)
+	_, latitudeFloat := project["latitude"].(float64)
+	_, sizeFloat := project["size"].(float64)
+	_, projectID := project["projectID"].(float64)
+	_, projectName := project["projectName"].(string)
+
+	validState := checkState(project["state"].(string))
+	correctFormat := validState && longitudeFloat && latitudeFloat && sizeFloat &&
+		projectID && correctGeofence && correctCustomer && correctPeriod && projectName
+
+	return correctFormat
+
+}
+
+//checkPeriod function that will verify the correct format of period struct
+func checkPeriod(period interface{}) bool {
+	periodByte, err := json.Marshal(period)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var periods map[string]interface{}
+	err = json.Unmarshal(periodByte, &periods)
+	if err != nil {
+		return false
+	}
+
+	nestedPeriod := []string{"startDate", "endDate"}
+	for _, period := range nestedPeriod {
+		_, ok := periods[period]
+		if !ok {
+			return false
+		}
+	}
+
+	return true
+}
+
+//checkCustomer function that will verify the correct format of customer struct
+func checkCustomer(customer interface{}) bool {
+	periodByte, err := json.Marshal(customer)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var customerMap map[string]interface{}
+	err = json.Unmarshal(periodByte, &customerMap)
+	if err != nil {
+		return false
+	}
+	nestedPeriod := []string{"name", "email", "number"}
+	for _, period := range nestedPeriod {
+		_, ok := customerMap[period]
+		if !ok {
+			return false
+		}
+	}
+
+	_, numberFloat := customerMap["number"].(float64)
+	if !numberFloat {
+		return false
+	}
+
+	return true
+}
+
+//checkGeofence function that will verify the correct format of geofence struct
+func checkGeofence(fence interface{}) bool {
+	periodByte, err := json.Marshal(fence)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var geofenceMap map[string]interface{}
+	err = json.Unmarshal(periodByte, &geofenceMap)
+	if err != nil {
+		return false
+	}
+
+	nestedPeriod := []string{"w-position", "x-position", "y-position", "z-position"}
+	for _, period := range nestedPeriod {
+		_, ok := geofenceMap[period]
+		if !ok {
+			return false
+		} else {
+			correctCoordinate := checkGeofenceCoordinates(geofenceMap[period])
+			if !correctCoordinate {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+//checkGeofenceCoordinates function that will verify the correct format of geofence position struct
+func checkGeofenceCoordinates(location interface{}) bool {
+	periodByte, err := json.Marshal(location)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var locationMap map[string]interface{}
+	err = json.Unmarshal(periodByte, &locationMap)
+	if err != nil {
+		return false
+	}
+
+	coordinates := []string{"longitude", "latitude"}
+	for _, period := range coordinates {
+		_, ok := locationMap[period]
+		if !ok {
+			return false
+		}
+	}
+
+	_, longitudeFloat := locationMap["longitude"].(float64)
+	_, latitudeFloat := locationMap["latitude"].(float64)
+
+	if !latitudeFloat || !longitudeFloat {
+		return false
+	}
+
+	return true
+}
+
+//checkState will check the value of the body, to ensure that the user has selected the correct state.
+func checkState(input string) bool {
+	state := []string{"Active", "Inactive", "Upcoming"}
+
+	var correctValues bool
+	for _, states := range state {
+		if input == states {
+			correctValues = true
+			break
+		}
+	}
+	return correctValues
 }
