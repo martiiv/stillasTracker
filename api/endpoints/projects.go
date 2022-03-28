@@ -56,7 +56,7 @@ func projectRequest(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		createProject(w, r)
 	case "PUT":
-		transactionAdd(w, r)
+		batchedWrites(w, r)
 	case "DELETE":
 		deleteProject(w, r)
 
@@ -236,6 +236,11 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaffolding, _struct.InputScaffoldingWithID) {
 
 	data, err := ioutil.ReadAll(r.Body)
+	ok := checkTransaction(data)
+	if !ok {
+		http.Error(w, "body invalid", http.StatusBadRequest)
+		return nil, _struct.InputScaffoldingWithID{}
+	}
 
 	var inputScaffolding _struct.InputScaffoldingWithID
 	err = json.Unmarshal(data, &inputScaffolding)
@@ -261,62 +266,179 @@ func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaf
 	return scaffolds, inputScaffolding
 }
 
+func batchedWrites(w http.ResponseWriter, r *http.Request) {
+	batch := Database.Client.Batch()
+
+	scaffolds, inputScaffolding := getScaffoldingInput(w, r)
+
+	var fromPath *firestore.DocumentRef
+	var fromPaths []*firestore.DocumentRef
+
+	switch inputScaffolding.FromProjectID {
+	case 0:
+		for _, s := range inputScaffolding.InputScaffolding {
+			fromPath = Database.Client.Doc("Location/Storage/Inventory/" + s.Type)
+			fromPaths = append(fromPaths, fromPath)
+		}
+
+	default:
+		fromPath = iterateProjects(inputScaffolding.FromProjectID)
+	}
+
+	//var newPaths []*firestore.DocumentRef
+	newPath := iterateProjects(inputScaffolding.ToProjectID)
+
+	var sub = map[string]interface{}{}
+	var add = map[string]interface{}{}
+
+	path := newPath.Path
+	pathArr := strings.Split(path, "/")[5:]
+	var finalPath string
+	for _, s := range pathArr {
+		finalPath += s + "/"
+	}
+	finalPath = strings.TrimRight(finalPath, "/")
+
+	for i := range inputScaffolding.InputScaffolding {
+
+		fmt.Println(path)
+		pathN := finalPath + "/StillasType/" + inputScaffolding.InputScaffolding[i].Type
+
+		inputPath := Database.Client.Doc(pathN)
+
+		/*document1 := Database.Client.Doc("Location/Project/Active/1/StillasType/Flooring")
+		document2 := Database.Client.Doc("Location/Project/Active/1/StillasType/Spire")
+		newPaths = append(newPaths, document1, document2)
+		*/
+		doc, err := fromPaths[i].Get(Database.Ctx)
+		if err != nil {
+			return
+		}
+
+		to, err := inputPath.Get(Database.Ctx)
+		if err != nil {
+			return
+		}
+
+		scaffoldingFrom, err := doc.DataAt("Quantity.expected")
+		if err != nil {
+			return
+		}
+
+		scaffoldingTo, err := to.DataAt("Quantity.expected")
+		if err != nil {
+			return
+		}
+
+		if scaffolds[0].Quantity.Expected > 100000 {
+			return
+		}
+
+		sub["Quantity"] = map[string]interface{}{}
+		sub["Quantity"].(map[string]interface{})["expected"] = scaffoldingFrom.(int64) - int64(scaffolds[i].Expected)
+
+		add["Quantity"] = map[string]interface{}{}
+		add["Quantity"].(map[string]interface{})["expected"] = scaffoldingTo.(int64) + int64(scaffolds[i].Expected)
+
+		batch.Set(inputPath, add, firestore.MergeAll)
+		batch.Set(fromPaths[i], sub, firestore.MergeAll)
+
+	}
+	_, err := batch.Commit(Database.Ctx)
+	if err != nil {
+		// Handle any errors in an appropriate way, such as returning them.
+		log.Printf("An error has occurred: %s", err)
+	}
+
+}
+
 func transactionAdd(w http.ResponseWriter, r *http.Request) {
 
 	scaffolds, inputScaffolding := getScaffoldingInput(w, r)
 
 	var fromPath *firestore.DocumentRef
+	var fromPaths []*firestore.DocumentRef
 
 	switch inputScaffolding.FromProjectID {
 	case 0:
-		fromPath = Database.Client.Doc("Location/Storage/Inventory/Spire")
+		for _, s := range inputScaffolding.InputScaffolding {
+			fromPath = Database.Client.Doc("Location/Storage/Inventory/" + s.Type)
+			fromPaths = append(fromPaths, fromPath)
+		}
+
 	default:
 		fromPath = iterateProjects(inputScaffolding.FromProjectID)
 	}
 
-	newPath := iterateProjects(inputScaffolding.ToProjectID)
+	var newPaths []*firestore.DocumentRef
+
+	//newPath := iterateProjects(inputScaffolding.ToProjectID)
 	err := Database.Client.RunTransaction(Database.Ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-		doc, err := tx.Get(fromPath)
-		if err != nil {
-			return err
-		}
-
-		newPath.Path = newPath.Path + "/StillasType/Spire"
-
-		to, err := tx.Get(newPath)
-		if err != nil {
-			return err
-		}
-
-		scaffoldingFrom, err := doc.DataAt("Quantity.expected")
-		if err != nil {
-			return err
-		}
-
-		scaffoldingTo, err := to.DataAt("Quantity.expected")
-		if err != nil {
-			return err
-		}
-
-		//numb:= scaffoldingFrom.(int64)
-
-		if scaffolds[0].Quantity.Expected > 100000 {
-			return nil
-		}
-
+		var errTransaction error
+		var docs []*firestore.DocumentSnapshot
+		var tos []*firestore.DocumentSnapshot
+		var scaffoldingFroms []interface{}
+		var scaffoldingTos []interface{}
 		var sub = map[string]interface{}{}
-		sub["Quantity"] = map[string]interface{}{}
-		sub["Quantity"].(map[string]interface{})["expected"] = scaffoldingFrom.(int64) - int64(scaffolds[0].Expected)
-
-		err = tx.Set(fromPath, sub, firestore.MergeAll)
-
 		var add = map[string]interface{}{}
-		add["Quantity"] = map[string]interface{}{}
-		add["Quantity"].(map[string]interface{})["expected"] = scaffoldingTo.(int64) + int64(scaffolds[0].Expected)
+		var subArray []map[string]interface{}
+		var addArray []map[string]interface{}
 
-		err = tx.Set(newPath, add, firestore.MergeAll)
+		//path := newPath.Path
+		for i := range inputScaffolding.InputScaffolding {
 
-		return err
+			/*newPath.Path = path + "/StillasType/" + inputScaffolding.InputScaffolding[i].Type
+			newPaths = append(newPaths, newPath)*/
+
+			document1 := Database.Client.Doc("Location/Project/Active/1/StillasType/Flooring")
+			document2 := Database.Client.Doc("Location/Project/Active/1/StillasType/Spire")
+			newPaths = append(newPaths, document1, document2)
+
+			doc, err := tx.Get(fromPaths[i])
+			if err != nil {
+				return err
+			}
+			docs = append(docs, doc)
+
+			to, err := tx.Get(newPaths[i])
+			if err != nil {
+				return err
+			}
+			tos = append(tos, to)
+
+			scaffoldingFrom, err := doc.DataAt("Quantity.expected")
+			if err != nil {
+				return err
+			}
+			scaffoldingFroms = append(scaffoldingFroms, scaffoldingFrom)
+
+			scaffoldingTo, err := to.DataAt("Quantity.expected")
+			if err != nil {
+				return err
+			}
+			scaffoldingTos = append(scaffoldingTos, scaffoldingTo)
+
+			if scaffolds[0].Quantity.Expected > 100000 {
+				return nil
+			}
+
+			sub["Quantity"] = map[string]interface{}{}
+			sub["Quantity"].(map[string]interface{})["expected"] = scaffoldingFroms[i].(int64) - int64(scaffolds[i].Expected)
+			subArray = append(subArray, sub)
+
+			add["Quantity"] = map[string]interface{}{}
+			add["Quantity"].(map[string]interface{})["expected"] = scaffoldingTos[i].(int64) + int64(scaffolds[i].Expected)
+			addArray = append(addArray, add)
+
+		}
+
+		for i := range subArray {
+			errTransaction = tx.Set(newPaths[i], addArray[i], firestore.MergeAll)
+			errTransaction = tx.Set(fromPaths[i], subArray[i], firestore.MergeAll)
+		}
+
+		return errTransaction
+
 	})
 	if err != nil {
 		// Handle any errors appropriately in this section.
@@ -519,4 +641,48 @@ func checkState(input string) bool {
 		}
 	}
 	return correctValues
+}
+
+func checkTransaction(body []byte) bool {
+
+	var inputScaffolding map[string]interface{}
+	err := json.Unmarshal(body, &inputScaffolding)
+	if err != nil {
+		return false
+	}
+
+	_, toProject := inputScaffolding["toProjectID"].(float64)
+	_, fromProject := inputScaffolding["fromProjectID"].(float64)
+	_, scaffold := inputScaffolding["scaffold"]
+	scaffoldingInput := checkScaffoldingBody(inputScaffolding["scaffold"])
+
+	return (toProject && fromProject && scaffold && scaffoldingInput)
+
+}
+
+func checkScaffoldingBody(scaffold interface{}) bool {
+
+	periodByte, err := json.Marshal(scaffold)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var scaffoldMap []map[string]interface{}
+	err = json.Unmarshal(periodByte, &scaffoldMap)
+	if err != nil {
+		return false
+	}
+
+	for i, m := range scaffoldMap {
+		fmt.Println(i, m)
+		_, scaffoldingOk := scaffoldMap[i]["quantity"]
+		if !scaffoldingOk {
+			return false
+		}
+		_, typeOk := scaffoldMap[i]["type"]
+		if !typeOk {
+			return false
+		}
+	}
+
+	return true
 }
