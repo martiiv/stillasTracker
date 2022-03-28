@@ -55,7 +55,7 @@ func projectRequest(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		createProject(w, r)
 	case "PUT":
-		updateState(w, r)
+		batchedWrites(w, r)
 	case "DELETE":
 		deleteProject(w, r)
 
@@ -215,7 +215,7 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err.Error())
 	}
 
-	newPath := Database.Client.Collection("Location").Doc("Project").Collection(stateStruct.State).Doc(strconv.Itoa(stateStruct.ID))
+	newPath := projectCollection.Collection(stateStruct.State).Doc(strconv.Itoa(stateStruct.ID))
 	batch.Create(newPath, project)
 
 	batch.Delete(documentReference)
@@ -229,6 +229,125 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 	batch.Update(newPath, updates)
 
 	batch.Commit(Database.Ctx)
+
+}
+
+func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaffolding, _struct.InputScaffoldingWithID) {
+
+	data, err := ioutil.ReadAll(r.Body)
+	ok := checkTransaction(data)
+	if !ok {
+		http.Error(w, "body invalid", http.StatusBadRequest)
+		return nil, _struct.InputScaffoldingWithID{}
+	}
+
+	var inputScaffolding _struct.InputScaffoldingWithID
+	err = json.Unmarshal(data, &inputScaffolding)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return nil, _struct.InputScaffoldingWithID{}
+	}
+	var scaffolds []_struct.Scaffolding
+	for i := range inputScaffolding.InputScaffolding {
+
+		quantity := _struct.Quantity{
+			Expected:   inputScaffolding.InputScaffolding[i].Quantity,
+			Registered: 0,
+		}
+
+		scaffolding := _struct.Scaffolding{
+			Category: inputScaffolding.InputScaffolding[i].Type,
+			Quantity: quantity,
+		}
+
+		scaffolds = append(scaffolds, scaffolding)
+	}
+	return scaffolds, inputScaffolding
+}
+
+func batchedWrites(w http.ResponseWriter, r *http.Request) {
+	batch := Database.Client.Batch()
+
+	scaffolds, inputScaffolding := getScaffoldingInput(w, r)
+
+	var fromPath *firestore.DocumentRef
+	var fromPaths []*firestore.DocumentRef
+
+	switch inputScaffolding.FromProjectID {
+	case 0:
+		for _, s := range inputScaffolding.InputScaffolding {
+			fromPath = Database.Client.Doc("Location/Storage/Inventory/" + s.Type)
+			fromPaths = append(fromPaths, fromPath)
+		}
+
+	default:
+		fromPath = iterateProjects(inputScaffolding.FromProjectID)
+	}
+
+	//var newPaths []*firestore.DocumentRef
+	newPath := iterateProjects(inputScaffolding.ToProjectID)
+
+	var sub = map[string]interface{}{}
+	var add = map[string]interface{}{}
+
+	path := newPath.Path
+	pathArr := strings.Split(path, "/")[5:]
+	var finalPath string
+	for _, s := range pathArr {
+		finalPath += s + "/"
+	}
+	finalPath = strings.TrimRight(finalPath, "/")
+
+	for i := range inputScaffolding.InputScaffolding {
+
+		fmt.Println(path)
+		pathN := finalPath + "/StillasType/" + inputScaffolding.InputScaffolding[i].Type
+
+		inputPath := Database.Client.Doc(pathN)
+
+		/*document1 := Database.Client.Doc("Location/Project/Active/1/StillasType/Flooring")
+		document2 := Database.Client.Doc("Location/Project/Active/1/StillasType/Spire")
+		newPaths = append(newPaths, document1, document2)
+		*/
+		doc, err := fromPaths[i].Get(Database.Ctx)
+		if err != nil {
+			return
+		}
+
+		to, err := inputPath.Get(Database.Ctx)
+		if err != nil {
+			return
+		}
+
+		scaffoldingFrom, err := doc.DataAt("Quantity.expected")
+		if err != nil {
+			return
+		}
+
+		scaffoldingTo, err := to.DataAt("Quantity.expected")
+		if err != nil {
+			return
+		}
+
+		if scaffolds[0].Quantity.Expected > 100000 {
+			return
+		}
+
+		sub["Quantity"] = map[string]interface{}{}
+		sub["Quantity"].(map[string]interface{})["expected"] = scaffoldingFrom.(int64) - int64(scaffolds[i].Expected)
+
+		add["Quantity"] = map[string]interface{}{}
+		add["Quantity"].(map[string]interface{})["expected"] = scaffoldingTo.(int64) + int64(scaffolds[i].Expected)
+
+		batch.Set(inputPath, add, firestore.MergeAll)
+		batch.Set(fromPaths[i], sub, firestore.MergeAll)
+
+	}
+	_, err := batch.Commit(Database.Ctx)
+	if err != nil {
+		// Handle any errors in an appropriate way, such as returning them.
+		log.Printf("An error has occurred: %s", err)
+	}
 
 }
 
@@ -427,4 +546,48 @@ func checkState(input string) bool {
 		}
 	}
 	return correctValues
+}
+
+func checkTransaction(body []byte) bool {
+
+	var inputScaffolding map[string]interface{}
+	err := json.Unmarshal(body, &inputScaffolding)
+	if err != nil {
+		return false
+	}
+
+	_, toProject := inputScaffolding["toProjectID"].(float64)
+	_, fromProject := inputScaffolding["fromProjectID"].(float64)
+	_, scaffold := inputScaffolding["scaffold"]
+	scaffoldingInput := checkScaffoldingBody(inputScaffolding["scaffold"])
+
+	return (toProject && fromProject && scaffold && scaffoldingInput)
+
+}
+
+func checkScaffoldingBody(scaffold interface{}) bool {
+
+	periodByte, err := json.Marshal(scaffold)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var scaffoldMap []map[string]interface{}
+	err = json.Unmarshal(periodByte, &scaffoldMap)
+	if err != nil {
+		return false
+	}
+
+	for i, m := range scaffoldMap {
+		fmt.Println(i, m)
+		_, scaffoldingOk := scaffoldMap[i]["quantity"]
+		if !scaffoldingOk {
+			return false
+		}
+		_, typeOk := scaffoldMap[i]["type"]
+		if !typeOk {
+			return false
+		}
+	}
+
+	return true
 }
