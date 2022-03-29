@@ -37,18 +37,17 @@ struct ProfileDetails: View {
             MapView()
                 .ignoresSafeArea(edges: .top)
                 .frame(height: 300)
-            
+        
             CircleImage(image: user.image)
                 .offset(y: -130)
                 .padding(.bottom, -130)
-            
+        
             VStack(alignment: .leading) {
                 HStack {
                    Text(user.name)
                        .font(.title)
                    //FavoriteButton(isSet: $modelData.landmarks[landmarkIndex].isFavorite)
                }
-
 
                 HStack {
                     Text("Role: " + user.role)
