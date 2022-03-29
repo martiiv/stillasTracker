@@ -74,6 +74,16 @@ var CHANGESWERENOTMADE = ErrorStruct{
 	code:    http.StatusInternalServerError,
 }
 
+var COULDNOTFINDDATA = ErrorStruct{
+	message: "could not find data in database",
+	code:    http.StatusInternalServerError,
+}
+
+var CANNOTTRANSFERESCAFFOLDS = ErrorStruct{
+	message: "cannot transfere the amount of scaffolding",
+	code:    http.StatusInternalServerError,
+}
+
 func HandleError(err ErrorStruct, w http.ResponseWriter) {
 	http.Error(w, err.message, err.code)
 
