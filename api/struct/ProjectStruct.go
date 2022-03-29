@@ -23,13 +23,13 @@ type Customer struct {
 
 // Scaffolding information at the project for expected and registered scaffolding units.
 type Scaffolding struct {
-	Units []struct {
-		Type     string `json:"type"`
-		Quantity struct {
-			Expected   int `json:"expected"`
-			Registered int `json:"registered"`
-		} `json:"quantity"`
-	} `json:"units"`
+	Category string `json:"Category"`
+	Quantity
+}
+
+type Quantity struct {
+	Expected   int `json:"expected"`
+	Registered int `json:"registered"`
 }
 
 // Geofence at the project sight
@@ -63,7 +63,6 @@ type Project struct {
 	Period
 	Address
 	Customer
-	Scaffolding
 	Geofence
 }
 
@@ -85,38 +84,26 @@ type MovingStruct []struct {
 }
 
 type NewProject struct {
-	ProjectID   int    `json:"projectID"`
-	ProjectName string `json:"projectName"`
-	Period      struct {
-		StartDate string `json:"startDate"`
-		EndDate   string `json:"endDate"`
-	} `json:"period"`
-	Size      int     `json:"size"`
-	State     string  `json:"state"`
-	Latitude  float64 `json:"latitude"`
-	Longitude float64 `json:"longitude"`
-	Adresse   string  `json:"adresse"`
-	Customer  struct {
-		Name   string `json:"name"`
-		Number int    `json:"number"`
-		Email  string `json:"email"`
-	} `json:"customer"`
-	Geofence struct {
-		WPosition struct {
-			Latitude  float64 `json:"latitude"`
-			Longitude float64 `json:"longitude"`
-		} `json:"w-position"`
-		XPosition struct {
-			Latitude  float64 `json:"latitude"`
-			Longitude float64 `json:"longitude"`
-		} `json:"x-position"`
-		YPosition struct {
-			Latitude  float64 `json:"latitude"`
-			Longitude float64 `json:"longitude"`
-		} `json:"y-position"`
-		ZPosition struct {
-			Latitude  float64 `json:"latitude"`
-			Longitude float64 `json:"longitude"`
-		} `json:"z-position"`
-	} `json:"geofence"`
+	ProjectID   int     `json:"projectID"`
+	ProjectName string  `json:"projectName"`
+	Size        int     `json:"size"`
+	State       string  `json:"state"`
+	Latitude    float64 `json:"latitude"`
+	Longitude   float64 `json:"longitude"`
+	Period
+	Address
+	Customer
+	Geofence
+	Scaffolding
+}
+
+type InputScaffolding []struct {
+	Type     string `json:"type"`
+	Quantity int    `json:"quantity"`
+}
+
+type InputScaffoldingWithID struct {
+	ToProjectID      int `json:"toProjectID"`
+	FromProjectID    int `json:"fromProjectID"`
+	InputScaffolding `json:"scaffold"`
 }
