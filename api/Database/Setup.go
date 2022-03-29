@@ -3,12 +3,12 @@ package Database
 import (
 	"cloud.google.com/go/firestore"
 	"context"
+	firebase "firebase.google.com/go"
 	"fmt"
 	"google.golang.org/api/iterator"
-	"log"
-
-	firebase "firebase.google.com/go"
 	"google.golang.org/api/option"
+	"log"
+	"path/filepath"
 )
 
 // Ctx Initializing the context to be used with firebase
@@ -19,9 +19,14 @@ var Client *firestore.Client
 
 //Code taken from https://firebase.google.com/docs/firestore/quickstart#go
 func DatabaseConnection() {
+	file, err := filepath.Abs("Database/stillas-16563-firebase-adminsdk-wd82v-a9fe8919b7.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Creates instance of firebase
 	Ctx = context.Background()
-	sa := option.WithCredentialsFile("Database/stillas-16563-firebase-adminsdk-wd82v-a9fe8919b7.json") //Initializes database
+	sa := option.WithCredentialsFile(file) //Initializes database
 	app, err := firebase.NewApp(Ctx, nil, sa)
 	if err != nil {
 		log.Println("error occured when initializing database" + err.Error())
