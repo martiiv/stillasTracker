@@ -8,10 +8,16 @@
 import Foundation
 import Combine
 
+/**
+    ModelData responsible for loading/decoding the user information from the data/json object
+    To update views when data changes, you make your data model classes observable objects.
+ */
 final class ModelData: ObservableObject {
     @Published var users: [User] = load("userData.json")
 }
 
+/// load<T: Decodable>() - function for decoding the data into json object
+/// Uses guard and do/catch methods to make sure to catch potential errors while retreiving or decoding the data
 func load<T: Decodable>(_ filename: String) -> T {
     let data: Data
 
