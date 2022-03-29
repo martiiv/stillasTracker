@@ -1,17 +1,14 @@
 package tests
 
 import (
-	"cloud.google.com/go/firestore"
 	"context"
 	firebase "firebase.google.com/go"
 	"fmt"
 	"google.golang.org/api/option"
 	"log"
 	"path/filepath"
+	"stillasTracker/api/Database"
 )
-
-var Ctx context.Context
-var _ *firestore.Client
 
 /*
 Function for establishing connection to the test database
@@ -25,15 +22,15 @@ func dataBaseTestConnection() {
 	}
 
 	// Creates instance of firebase
-	Ctx = context.Background()
+	Database.Ctx = context.Background()
 	sa := option.WithCredentialsFile(file) //Initializes database
-	app, err := firebase.NewApp(Ctx, nil, sa)
+	app, err := firebase.NewApp(Database.Ctx, nil, sa)
 	if err != nil {
 		log.Println("error occured when initializing database" + err.Error())
 		_ = fmt.Errorf("error initializing app: %v", err)
 	}
 
-	_, err = app.Firestore(Ctx) //Connects to the database
+	Database.Client, err = app.Firestore(Database.Ctx) //Connects to the database
 	if err != nil {
 		log.Fatalln(err)
 	}

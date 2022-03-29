@@ -118,6 +118,7 @@ function adds a list of scaffolding parts to the database
 responds to a POST request with a body containing new scaffolding parts
 */
 func createPart(w http.ResponseWriter, r *http.Request) {
+
 	var scaffoldList _struct.AddScaffolding //Defines the structure of the body
 
 	w.Header().Set("Content-Type", "application/json")
@@ -128,13 +129,15 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Prints the amount of scaffolding parts added to the system
-	err = json.NewEncoder(w).Encode(strconv.Itoa(len(scaffoldList)) + " new scaffolding units added to the system \n the following units were added: \n")
+	err = json.NewEncoder(w).Encode(strconv.Itoa(len(scaffoldList)) + " new scaffolding units added to the system the following units were added:")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	for i := range scaffoldList { //For loop iterates through the list of new scaffolding parts
+
 		newPartPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(scaffoldList[i].Type).Doc(strconv.Itoa(scaffoldList[i].ID))
+
 		var firebasePart map[string]interface{} //Defines the database structure for the new part
 
 		part, err := json.Marshal(scaffoldList[i]) //Marshalls te body of the request into the right data format (byte)
@@ -150,10 +153,11 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
-		err = json.NewEncoder(w).Encode(scaffoldList[i].Type + "\n")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+	}
+
+	err = json.NewEncoder(w).Encode(scaffoldList)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 }
 
