@@ -4,11 +4,9 @@ import (
 	"cloud.google.com/go/firestore"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"google.golang.org/api/iterator"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"regexp"
 	"stillasTracker/api/Database"
@@ -32,24 +30,6 @@ Last modified Aleksander Aaboen
 */
 var projectCollection *firestore.DocumentRef
 
-func getLastUrlElement(r *http.Request) string {
-	url := r.URL.Path
-	trimmedURL := strings.TrimRight(url, "/")
-	splittedURL := strings.Split(trimmedURL, "/")
-	lastElement := splittedURL[len(splittedURL)-1]
-	return lastElement
-}
-
-func getLastUrlElement2(r *http.Request) (string, error) {
-	url := strings.Split(r.RequestURI, "/")
-	lastUrlSegment := url[len(url)-1]
-	matched, _ := regexp.MatchString(`\d`, lastUrlSegment)
-	if matched {
-		return lastUrlSegment, nil
-	}
-	return "", errors.New("not a valid ID")
-}
-
 /**
 Main function to switch between the different request types.
 */
@@ -62,15 +42,33 @@ func projectRequest(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		createProject(w, r)
 	case "PUT":
-		batchedWrites(w, r)
+		putRequest(w, r)
 	case "DELETE":
 		deleteProject(w, r)
 
 	}
 }
 
-func putRequest(w http.ResponseWriter, r *http.Request) {
+/*
+getLastUrlElement will split the url and return the last element.
+*/
+func getLastUrlElement(r *http.Request) string {
+	url := r.URL.Path
+	trimmedURL := strings.TrimRight(url, "/")
+	splittedURL := strings.Split(trimmedURL, "/")
+	lastElement := splittedURL[len(splittedURL)-1]
+	return lastElement
+}
 
+//todo mulig slette?
+func getLastUrlElement2(r *http.Request) (string, error) {
+	url := strings.Split(r.RequestURI, "/")
+	lastUrlSegment := url[len(url)-1]
+	matched, _ := regexp.MatchString(`\d`, lastUrlSegment)
+	if matched {
+		return lastUrlSegment, nil
+	}
+	return "", errors.New("not a valid ID")
 }
 
 //storageRequest will return all the scaffolding parts in the selected storage location.
@@ -104,12 +102,9 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//
-func invalidRequest(w http.ResponseWriter, r *http.Request) {
-	tool.HandleError(tool.INVALIDREQUEST, w)
-	return
-}
-
+/*
+getProjectCollection will fetch every projects in the database.
+*/
 func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 	var projects []_struct.NewProject
 	collectionIterator := projectCollection.Collections(Database.Ctx)
@@ -153,6 +148,9 @@ func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+/*
+getProjectWithID will fetch a project based on the id
+*/
 func getProjectWithID(w http.ResponseWriter, r *http.Request) {
 	id := getLastUrlElement(r)
 	intID, err := strconv.Atoi(id)
@@ -186,6 +184,12 @@ func getProjectWithID(w http.ResponseWriter, r *http.Request) {
 		tool.HandleError(tool.NEWENCODERERROR, w)
 		return
 	}
+}
+
+//invalidRequest
+func invalidRequest(w http.ResponseWriter, r *http.Request) {
+	tool.HandleError(tool.INVALIDREQUEST, w)
+	return
 }
 
 //deleteProject deletes selected projects from the database.
@@ -263,6 +267,29 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+/*putRequest will guide to the requested function.
+The user will be redirected to either updateState or transfereProject.
+If the user made an invalid request, the user will be redirected to invalidRequest.
+*/
+func putRequest(w http.ResponseWriter, r *http.Request) {
+	lastElement := getLastUrlElement(r)
+	_, err := strconv.Atoi(lastElement)
+	isInt := true
+	if err != nil {
+		isInt = false
+	}
+	urlPath := getLastUrlElement(r)
+	switch true {
+	case "scaffolding" == urlPath:
+		transfereProject(w, r)
+	case isInt:
+		updateState(w, r)
+	default:
+		invalidRequest(w, r)
+	}
+
+}
+
 /*updateState will change the state of the project. In an atomic operation the project will change state,
 be moved into the state collection and deleted form the old state collection.*/
 func updateState(w http.ResponseWriter, r *http.Request) {
@@ -319,63 +346,28 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaffolding, _struct.InputScaffoldingWithID) {
-
-	data, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		tool.HandleError(tool.READALLERROR, w)
-		return nil, _struct.InputScaffoldingWithID{}
-	}
-	ok := checkTransaction(data)
-	if !ok {
-		http.Error(w, "body invalid", http.StatusBadRequest)
-		return nil, _struct.InputScaffoldingWithID{}
-	}
-
-	var inputScaffolding _struct.InputScaffoldingWithID
-	err = json.Unmarshal(data, &inputScaffolding)
-	if err != nil {
-		tool.HandleError(tool.UNMARSHALLERROR, w)
-		return nil, _struct.InputScaffoldingWithID{}
-	}
-	var scaffolds []_struct.Scaffolding
-	for i := range inputScaffolding.InputScaffolding {
-
-		quantity := _struct.Quantity{
-			Expected:   inputScaffolding.InputScaffolding[i].Quantity,
-			Registered: 0,
-		}
-
-		scaffolding := _struct.Scaffolding{
-			Category: inputScaffolding.InputScaffolding[i].Type,
-			Quantity: quantity,
-		}
-
-		scaffolds = append(scaffolds, scaffolding)
-	}
-	return scaffolds, inputScaffolding
-}
-
-func batchedWrites(w http.ResponseWriter, r *http.Request) {
+/*
+transfereProject will move a project from one collection of a given state to another (active, inactive, upcoming).
+This function will use batched writes to ensure integrity.
+*/
+func transfereProject(w http.ResponseWriter, r *http.Request) {
 	batch := Database.Client.Batch()
-
 	scaffolds, inputScaffolding := getScaffoldingInput(w, r)
 
 	var fromPath *firestore.DocumentRef
 	var fromPaths []*firestore.DocumentRef
 
 	switch inputScaffolding.FromProjectID {
-	case 0:
+	case 0: //Storage
 		for _, s := range inputScaffolding.InputScaffolding {
 			fromPath = Database.Client.Doc("Location/Storage/Inventory/" + s.Type)
 			fromPaths = append(fromPaths, fromPath)
 		}
 
-	default:
+	default: //Project
 		fromPath, _ = iterateProjects(inputScaffolding.FromProjectID)
 	}
 
-	//var newPaths []*firestore.DocumentRef
 	newPath, _ := iterateProjects(inputScaffolding.ToProjectID)
 
 	var sub = map[string]interface{}{}
@@ -383,11 +375,7 @@ func batchedWrites(w http.ResponseWriter, r *http.Request) {
 
 	path := newPath.Path
 	pathArr := strings.Split(path, "/")[5:]
-	var finalPath string
-	for _, s := range pathArr {
-		finalPath += s + "/"
-	}
-	finalPath = strings.TrimRight(finalPath, "/")
+	finalPath := createPath(pathArr)
 
 	for i := range inputScaffolding.InputScaffolding {
 
@@ -395,31 +383,32 @@ func batchedWrites(w http.ResponseWriter, r *http.Request) {
 
 		inputPath := Database.Client.Doc(pathN)
 
-		/*document1 := Database.Client.Doc("Location/Project/Active/1/StillasType/Flooring")
-		document2 := Database.Client.Doc("Location/Project/Active/1/StillasType/Spire")
-		newPaths = append(newPaths, document1, document2)
-		*/
 		doc, err := fromPaths[i].Get(Database.Ctx)
 		if err != nil {
+			tool.HandleError(tool.NODOCUMENTWITHID, w)
 			return
 		}
 
 		to, err := inputPath.Get(Database.Ctx)
 		if err != nil {
+			tool.HandleError(tool.NODOCUMENTWITHID, w)
 			return
 		}
 
 		scaffoldingFrom, err := doc.DataAt("Quantity.expected")
 		if err != nil {
+			tool.HandleError(tool.COULDNOTFINDDATA, w)
 			return
 		}
 
 		scaffoldingTo, err := to.DataAt("Quantity.expected")
 		if err != nil {
+			tool.HandleError(tool.COULDNOTFINDDATA, w)
 			return
 		}
 
 		if scaffolds[0].Quantity.Expected > 100000 {
+			tool.HandleError(tool.CANNOTTRANSFERESCAFFOLDS, w)
 			return
 		}
 
@@ -435,252 +424,8 @@ func batchedWrites(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err := batch.Commit(Database.Ctx)
 	if err != nil {
-		// Handle any errors in an appropriate way, such as returning them.
-		log.Printf("An error has occurred: %s", err)
+		tool.HandleError(tool.CHANGESWERENOTMADE, w)
+		return
 	}
 
-}
-
-//iterateProjects will iterate through every project in active, inactive and upcoming projects.
-func iterateProjects(id int) (*firestore.DocumentRef, tool.ErrorStruct) {
-	var documentReference *firestore.DocumentRef
-	collection := projectCollection.Collections(Database.Ctx)
-	for {
-		collRef, err := collection.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			break
-		}
-		document := projectCollection.Collection(collRef.ID).Documents(Database.Ctx)
-		for {
-			documentRef, err := document.Next()
-			if err == iterator.Done {
-				break
-			}
-
-			if documentRef.Ref.ID == strconv.Itoa(id) {
-				documentReference = documentRef.Ref
-				break
-			}
-		}
-	}
-
-	if documentReference != nil {
-		return documentReference, tool.ErrorStruct{}
-	}
-	return nil, tool.NODOCUMENTWITHID
-}
-
-//checkStateBody will check if the body is of correct format, and if the values are correct datatypes.
-func checkStateBody(body []byte) bool {
-	var dat map[string]interface{}
-	err := json.Unmarshal(body, &dat)
-	if err != nil {
-		return false
-	}
-	_, stateBool := dat["state"]
-	_, idBool := dat["id"]
-	_, isFloat := dat["id"].(float64)
-
-	var correctValues bool
-	if stateBool && idBool && isFloat {
-		correctValues = checkState(dat["state"].(string))
-	}
-	return correctValues
-}
-
-//checkProjectBody function that will verify the correct format of project struct
-func checkProjectBody(body []byte) bool {
-	var project map[string]interface{}
-	err := json.Unmarshal(body, &project)
-	if err != nil {
-		return false
-	}
-
-	period := project["period"]
-	correctPeriod := checkPeriod(period)
-	costumer := project["customer"]
-	correctCustomer := checkCustomer(costumer)
-	geoFence := project["geofence"]
-	correctGeofence := checkGeofence(geoFence)
-	_, longitudeFloat := project["longitude"].(float64)
-	_, latitudeFloat := project["latitude"].(float64)
-	_, sizeFloat := project["size"].(float64)
-	_, projectID := project["projectID"].(float64)
-	_, projectName := project["projectName"].(string)
-
-	validState := checkState(project["state"].(string))
-	correctFormat := validState && longitudeFloat && latitudeFloat && sizeFloat &&
-		projectID && correctGeofence && correctCustomer && correctPeriod && projectName
-
-	return correctFormat
-
-}
-
-//checkPeriod function that will verify the correct format of period struct
-func checkPeriod(period interface{}) bool {
-	periodByte, err := json.Marshal(period)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	var periods map[string]interface{}
-	err = json.Unmarshal(periodByte, &periods)
-	if err != nil {
-		return false
-	}
-
-	nestedPeriod := []string{"startDate", "endDate"}
-	for _, period := range nestedPeriod {
-		_, ok := periods[period]
-		if !ok {
-			return false
-		}
-	}
-
-	return true
-}
-
-//checkCustomer function that will verify the correct format of customer struct
-func checkCustomer(customer interface{}) bool {
-	periodByte, err := json.Marshal(customer)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	var customerMap map[string]interface{}
-	err = json.Unmarshal(periodByte, &customerMap)
-	if err != nil {
-		return false
-	}
-	nestedPeriod := []string{"name", "email", "number"}
-	for _, period := range nestedPeriod {
-		_, ok := customerMap[period]
-		if !ok {
-			return false
-		}
-	}
-
-	_, numberFloat := customerMap["number"].(float64)
-	if !numberFloat {
-		return false
-	}
-
-	return true
-}
-
-//checkGeofence function that will verify the correct format of geofence struct
-func checkGeofence(fence interface{}) bool {
-	periodByte, err := json.Marshal(fence)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	var geofenceMap map[string]interface{}
-	err = json.Unmarshal(periodByte, &geofenceMap)
-	if err != nil {
-		return false
-	}
-
-	nestedPeriod := []string{"w-position", "x-position", "y-position", "z-position"}
-	for _, period := range nestedPeriod {
-		_, ok := geofenceMap[period]
-		if !ok {
-			return false
-		} else {
-			correctCoordinate := checkGeofenceCoordinates(geofenceMap[period])
-			if !correctCoordinate {
-				return false
-			}
-		}
-	}
-
-	return true
-}
-
-//checkGeofenceCoordinates function that will verify the correct format of geofence position struct
-func checkGeofenceCoordinates(location interface{}) bool {
-	periodByte, err := json.Marshal(location)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	var locationMap map[string]interface{}
-	err = json.Unmarshal(periodByte, &locationMap)
-	if err != nil {
-		return false
-	}
-
-	coordinates := []string{"longitude", "latitude"}
-	for _, period := range coordinates {
-		_, ok := locationMap[period]
-		if !ok {
-			return false
-		}
-	}
-
-	_, longitudeFloat := locationMap["longitude"].(float64)
-	_, latitudeFloat := locationMap["latitude"].(float64)
-
-	if !latitudeFloat || !longitudeFloat {
-		return false
-	}
-
-	return true
-}
-
-//checkState will check the value of the body, to ensure that the user has selected the correct state.
-func checkState(input string) bool {
-	state := []string{"Active", "Inactive", "Upcoming"}
-
-	var correctValues bool
-	for _, states := range state {
-		if input == states {
-			correctValues = true
-			break
-		}
-	}
-	return correctValues
-}
-
-func checkTransaction(body []byte) bool {
-
-	var inputScaffolding map[string]interface{}
-	err := json.Unmarshal(body, &inputScaffolding)
-	if err != nil {
-		return false
-	}
-
-	_, toProject := inputScaffolding["toProjectID"].(float64)
-	_, fromProject := inputScaffolding["fromProjectID"].(float64)
-	_, scaffold := inputScaffolding["scaffold"]
-	scaffoldingInput := checkScaffoldingBody(inputScaffolding["scaffold"])
-
-	return (toProject && fromProject && scaffold && scaffoldingInput)
-
-}
-
-func checkScaffoldingBody(scaffold interface{}) bool {
-
-	periodByte, err := json.Marshal(scaffold)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	var scaffoldMap []map[string]interface{}
-	err = json.Unmarshal(periodByte, &scaffoldMap)
-	if err != nil {
-		return false
-	}
-
-	for i, m := range scaffoldMap {
-		fmt.Println(i, m)
-		_, scaffoldingOk := scaffoldMap[i]["quantity"]
-		if !scaffoldingOk {
-			return false
-		}
-		_, typeOk := scaffoldMap[i]["type"]
-		if !typeOk {
-			return false
-		}
-	}
-
-	return true
 }
