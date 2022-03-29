@@ -11,7 +11,7 @@ import (
 )
 
 /**
-Class scaffolding
+Class scaffoldingRequest
 This class will contain all functions used for the handling of scaffolding units
 The class contains the following functions:
 	- addScaffolding:    Function lets a user add a scaffolding part to the system
@@ -23,6 +23,8 @@ The class contains the following functions:
 Version 0.1
 Last modified Martin Iversen
 */
+
+//ScaffoldingRequest Function redirects the user to different parts of the scaffolding class
 func ScaffoldingRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -55,18 +57,12 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 	switch len(splitUrl) {
 	case 8: //Case 5 means that only an id is passed in the URL, we return one spesific scaffolding part with the id
 
-		print("du er inni casen")
-		print(splitUrl[5])
-		print(splitUrl[6])
-
 		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[5]).Doc(splitUrl[6])
-		print("du er forbi DB pathen")
 
 		part, err := Database.GetDocumentData(objectPath)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-		print("du har henta ut delen fra DB")
 
 		err = json.NewEncoder(w).Encode(part)
 		if err != nil {

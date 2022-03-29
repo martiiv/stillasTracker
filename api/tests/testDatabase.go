@@ -11,7 +11,7 @@ import (
 )
 
 var Ctx context.Context
-var Client *firestore.Client
+var _ *firestore.Client
 
 /*
 Function for establishing connection to the test database
@@ -33,7 +33,7 @@ func dataBaseTestConnection() {
 		_ = fmt.Errorf("error initializing app: %v", err)
 	}
 
-	Client, err = app.Firestore(Ctx) //Connects to the database
+	_, err = app.Firestore(Ctx) //Connects to the database
 	if err != nil {
 		log.Fatalln(err)
 	}
