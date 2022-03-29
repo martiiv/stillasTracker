@@ -53,7 +53,7 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 	splitUrl := strings.Split(url, "/")
 
 	switch len(splitUrl) {
-	case 8: //Case 5 means that only an id is passed in the URL, we return one spesific scaffolding part with the id
+	case 8: //Case 8 means that only an id is passed in the URL, we return one spesific scaffolding part with the id
 
 		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[5]).Doc(splitUrl[6])
 
@@ -68,7 +68,7 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 		}
 
 	case 7: //Case 4 means that a type of scaffolding is wanted however, not a specific one since no ID is passed in
-		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[4]).Documents(Database.Ctx)
+		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[5]).Documents(Database.Ctx)
 		partList := Database.GetCollectionData(objectPath)
 
 		err := json.NewEncoder(w).Encode(partList)
@@ -76,7 +76,7 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
 
-	case 6: //Case 3 means that the user wants all the scaffolding parts int the database
+	case 6: //Case 3 means that the user wants all the scaffolding parts in the database
 		partPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collections(Database.Ctx)
 		for {
 			scaffoldingType, err := partPath.Next()
@@ -173,4 +173,14 @@ func deletePart(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
 	}
+
+	err = json.NewEncoder(w).Encode("All parts deleted successfully, number of parts deleted:")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	err = json.NewEncoder(w).Encode(len(deleteList))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
 }
