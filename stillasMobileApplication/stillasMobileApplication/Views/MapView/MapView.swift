@@ -23,7 +23,6 @@ struct MapView: View {
             GeometryReader { proxy in
                 /// MapViewMap responsible for the map view
                 MapViewMap()
-                
             }
         }
     }
