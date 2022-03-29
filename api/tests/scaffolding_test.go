@@ -16,6 +16,7 @@ func Test_ScaffoldingAPITEST(t *testing.T) {
 	dataBaseTestConnection()
 	handler := http.HandlerFunc(endpoints.ScaffoldingRequest)
 
+	//Add list of Scaffoldingparts which sends a post request and creates 12 scaffolding parts
 	t.Run("Add list of Scaffoldingparts", func(t *testing.T) {
 		apitest.New().
 			HandlerFunc(handler).
@@ -26,8 +27,15 @@ func Test_ScaffoldingAPITEST(t *testing.T) {
 			End()
 	})
 
+	//Gets all Scaffolding parts
 	t.Run("Get all Scaffolding parts", func(t *testing.T) {
-
+		apitest.New().
+			HandlerFunc(handler).
+			Get("/stillastracking/v1/api/unit/").
+			Expect(t).
+			Body("{\"batteryLevel\":100,\"id\":7,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Beam1\"}\n{\"batteryLevel\":100,\"id\":8,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Beam2\"}\n{\"batteryLevel\":100,\"id\":5,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Bottom-Screw\"}\n{\"batteryLevel\":100,\"id\":6,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Diagonals\"}\n{\"batteryLevel\":100,\"id\":10,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Flooring\"}\n{\"batteryLevel\":100,\"id\":2,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Flooring\"}\n{\"batteryLevel\":100,\"id\":9,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Flooring\"}\n{\"batteryLevel\":100,\"id\":12,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Railing\"}\n{\"batteryLevel\":100,\"id\":3,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Short-Flooring\"}\n{\"batteryLevel\":100,\"id\":1,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Spire\"}\n{\"batteryLevel\":100,\"id\":11,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Spire\"}\n{\"batteryLevel\":100,\"id\":4,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Staircase\"}\n").
+			Status(http.StatusOK).
+			End()
 	})
 
 	t.Run("Get Scaffolding by type", func(t *testing.T) {
