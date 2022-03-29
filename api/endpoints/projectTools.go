@@ -7,10 +7,10 @@ import (
 	"google.golang.org/api/iterator"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"stillasTracker/api/Database"
 	tool "stillasTracker/api/apiTools"
 	_struct "stillasTracker/api/struct"
-	"strconv"
 	"strings"
 )
 
@@ -21,6 +21,19 @@ func createPath(segments []string) string {
 	}
 	finalPath = strings.TrimRight(finalPath, "/")
 	return finalPath
+}
+
+func getQuery(r *http.Request) url.Values {
+	query := r.URL.Query()
+	if len(query) != 1 {
+		return nil
+	}
+	switch true {
+	case query.Has("name"),
+		query.Has("id"):
+		return query
+	}
+	return nil
 }
 
 func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaffolding, _struct.InputScaffoldingWithID) {
@@ -61,7 +74,7 @@ func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaf
 }
 
 //iterateProjects will iterate through every project in active, inactive and upcoming projects.
-func iterateProjects(id int) (*firestore.DocumentRef, tool.ErrorStruct) {
+func iterateProjects(id int, name string) (*firestore.DocumentRef, tool.ErrorStruct) {
 	var documentReference *firestore.DocumentRef
 	collection := projectCollection.Collections(Database.Ctx)
 	for {
@@ -72,17 +85,19 @@ func iterateProjects(id int) (*firestore.DocumentRef, tool.ErrorStruct) {
 		if err != nil {
 			break
 		}
-		document := projectCollection.Collection(collRef.ID).Documents(Database.Ctx)
+		var document *firestore.DocumentIterator
+		if name != "" {
+			document = projectCollection.Collection(collRef.ID).Where("projectName", "==", name).Documents(Database.Ctx)
+		} else {
+			document = projectCollection.Collection(collRef.ID).Where("projectID", "==", id).Documents(Database.Ctx)
+		}
 		for {
 			documentRef, err := document.Next()
 			if err == iterator.Done {
 				break
 			}
 
-			if documentRef.Ref.ID == strconv.Itoa(id) {
-				documentReference = documentRef.Ref
-				break
-			}
+			documentReference = documentRef.Ref
 		}
 	}
 

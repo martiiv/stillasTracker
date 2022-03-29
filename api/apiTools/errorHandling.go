@@ -80,7 +80,7 @@ var COULDNOTFINDDATA = ErrorStruct{
 }
 
 var CANNOTTRANSFERESCAFFOLDS = ErrorStruct{
-	message: "cannot transfere the amount of scaffolding",
+	message: "cannot transfer the amount of scaffolding",
 	code:    http.StatusInternalServerError,
 }
 

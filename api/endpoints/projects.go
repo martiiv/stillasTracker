@@ -4,6 +4,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"google.golang.org/api/iterator"
 	"io"
 	"io/ioutil"
@@ -84,16 +85,13 @@ If the user made an invalid request, the user will be redirected to invalidReque
 func getProject(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	lastElement := getLastUrlElement(r)
-	_, err := strconv.Atoi(lastElement)
-	isInt := true
-	if err != nil {
-		isInt = false
-	}
+	query := getQuery(r)
+
 	switch true {
-	case "project" == lastElement:
+	case "project" == lastElement && len(query) == 0:
 		getProjectCollection(w, r)
 		break
-	case isInt:
+	case len(query) > 0:
 		getProjectWithID(w, r)
 		break
 	default:
@@ -152,14 +150,27 @@ func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 getProjectWithID will fetch a project based on the id
 */
 func getProjectWithID(w http.ResponseWriter, r *http.Request) {
-	id := getLastUrlElement(r)
-	intID, err := strconv.Atoi(id)
-	documentReference, errorStruct := iterateProjects(intID)
-	if err != nil {
-		tool.HandleError(errorStruct, w)
-		return
+	queryMap := getQuery(r)
+	var documentReference *firestore.DocumentRef
+	var errorStruct tool.ErrorStruct
+	if queryMap.Has("id") {
+		intID, err := strconv.Atoi(queryMap.Get("id"))
+		if err != nil {
+			tool.HandleError(tool.INVALIDBODY, w)
+			return
+		}
+		documentReference, errorStruct = iterateProjects(intID, "")
+	} else if queryMap.Has("name") {
+		documentReference, errorStruct = iterateProjects(0, queryMap.Get("name"))
 	}
 
+	//documentReference, errorStruct = iterateProjects(intID, "")
+	/*if errorStruct. == tool.ErrorStruct{} {
+		tool.HandleError(errorStruct, w)
+		return
+	}*/
+
+	fmt.Println(errorStruct)
 	data, err := Database.GetDocumentData(documentReference)
 	if err != nil {
 		tool.HandleError(tool.NODOCUMENTSINDATABASE, w)
@@ -172,7 +183,7 @@ func getProjectWithID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var project _struct.Project
+	var project _struct.NewProject
 	err = json.Unmarshal(jsonStr, &project)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
@@ -208,7 +219,7 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, num := range deleteID {
-		correctID, errStruct := iterateProjects(num.ID)
+		correctID, errStruct := iterateProjects(num.ID, "")
 		if correctID == nil {
 			tool.HandleError(errStruct, w)
 			return
@@ -313,7 +324,7 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	documentReference, errorStruct := iterateProjects(stateStruct.ID)
+	documentReference, errorStruct := iterateProjects(stateStruct.ID, "")
 	if documentReference == nil {
 		tool.HandleError(errorStruct, w)
 		return
@@ -365,10 +376,10 @@ func transfereProject(w http.ResponseWriter, r *http.Request) {
 		}
 
 	default: //Project
-		fromPath, _ = iterateProjects(inputScaffolding.FromProjectID)
+		fromPath, _ = iterateProjects(inputScaffolding.FromProjectID, "")
 	}
 
-	newPath, _ := iterateProjects(inputScaffolding.ToProjectID)
+	newPath, _ := iterateProjects(inputScaffolding.ToProjectID, "")
 
 	var sub = map[string]interface{}{}
 	var add = map[string]interface{}{}
