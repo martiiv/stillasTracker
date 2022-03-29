@@ -135,7 +135,7 @@ func createProfile(w http.ResponseWriter, r *http.Request) {
 //getProfile will fetch the profile based on employeeID or role.
 func getProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	id, _ := CheckIDFromURL(r)
+	id := getLastUrlElement(r)
 	var documentPath *firestore.DocumentIterator
 	var employees []_struct.Employee
 
