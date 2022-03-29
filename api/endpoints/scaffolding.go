@@ -52,8 +52,6 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.Path //Defining the url and splitting it on /
 	splitUrl := strings.Split(url, "/")
 
-	print(len(splitUrl))
-
 	switch len(splitUrl) {
 	case 8: //Case 5 means that only an id is passed in the URL, we return one spesific scaffolding part with the id
 
@@ -68,7 +66,6 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
-		print("Du har gjort alt hva faen skjer")
 
 	case 7: //Case 4 means that a type of scaffolding is wanted however, not a specific one since no ID is passed in
 		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[4]).Documents(Database.Ctx)
