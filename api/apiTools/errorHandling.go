@@ -19,6 +19,21 @@ type ErrorStruct struct {
 	code    int
 }
 
+var DATABASEREADERROR = ErrorStruct{
+	message: "Could not get database documents",
+	code:    http.StatusNotFound,
+}
+
+var DATABASEADDERROR = ErrorStruct{
+	message: "Could not add object to the database",
+	code:    http.StatusCreated,
+}
+
+var ENCODINGERROR = ErrorStruct{
+	message: "could not encode object",
+	code:    http.StatusBadRequest,
+}
+
 var MARSHALLERROR = ErrorStruct{
 	message: "could not json marshall",
 	code:    http.StatusInternalServerError,
