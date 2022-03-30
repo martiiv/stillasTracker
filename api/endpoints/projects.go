@@ -38,13 +38,13 @@ func ProjectRequest(w http.ResponseWriter, r *http.Request) {
 	projectCollection = database.Client.Doc(constants.P_LocationCollection + "/" + constants.P_ProjectDocument)
 	requestType := r.Method
 	switch requestType {
-	case "GET":
+	case http.MethodGet:
 		getProject(w, r)
-	case "POST":
+	case http.MethodPost:
 		createProject(w, r)
-	case "PUT":
+	case http.MethodPut:
 		putRequest(w, r)
-	case "DELETE":
+	case http.MethodDelete:
 		deleteProject(w, r)
 
 	}

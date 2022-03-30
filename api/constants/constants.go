@@ -96,6 +96,11 @@ const (
 	//Third level user
 	U_Storage   = "Storage"
 	U_Installer = "Installer"
+	U_Admin     = "Admin"
+
+	//Name User fields
+	U_FirstName = "firstName"
+	U_LastName  = "lastName"
 
 	//User fields
 	U_admin       = "admin"
@@ -105,4 +110,8 @@ const (
 	U_name        = "name"
 	U_phone       = "phone"
 	U_Role        = "role"
+
+	//User url
+	U_idURL   = "id"
+	U_nameURL = "name"
 )
