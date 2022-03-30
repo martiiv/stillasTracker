@@ -34,7 +34,7 @@ var projectCollection *firestore.DocumentRef
 /**
 Main function to switch between the different request types.
 */
-func projectRequest(w http.ResponseWriter, r *http.Request) {
+func ProjectRequest(w http.ResponseWriter, r *http.Request) {
 	projectCollection = Database.Client.Doc("Location/Project")
 	requestType := r.Method
 	switch requestType {
