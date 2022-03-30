@@ -9,8 +9,7 @@ import (
 
 /**
 Test_getScaffolding
-Function for testing the get scaffolding endpoint
-Creates a server and router before sending the request and getting the desired statuscode and output
+Function for testing the scaffolding endpoint
 */
 func Test_ScaffoldingAPITEST(t *testing.T) {
 	dataBaseTestConnection()
@@ -23,6 +22,7 @@ func Test_ScaffoldingAPITEST(t *testing.T) {
 			Post("/stillastracking/v1/api/unit/").
 			Body(`[ { "id": 1, "type": "Spire", "batteryLevel": 100, "location": { "longitude": null, "latitude": null, "address":null } }, { "id": 2, "type": "Flooring", "batteryLevel": 100, "location": { "longitude": null, "latitude": null, "address": null } }, { "id": 3, "type": "Short-Flooring", "batteryLevel": 100, "location": { "longitude": null, "latitude": null, "address": null } }, { "id": 4, "type": "Staircase", "batteryLevel": 100, "location": { "longitude": null, "latitude": null, "address": null } }, { "id": 5, "type": "Bottom-Screw", "batteryLevel": 100, "location": { "longitude": null, "latitude": null, "address": null } }, { "id": 6, "type": "Diagonals", "batteryLevel": 100, "location": { "longitude": null, "latitude": null, "address": null } }, { "id": 7, "type": "Beam1", "batteryLevel": 100, "location": { "longitude": null, "latitude": null, "address": null } }, { "id": 8, "type": "Beam2", "batteryLevel": 100, "location": { "longitude": null, "latitude": null, "address": null } }, { "id": 9, "type": "Flooring", "batteryLevel": 100, "location": { "longitude": null, "latitude": null, "address": null } }, { "id": 10, "type": "Flooring", "batteryLevel": 100, "location": { "longitude": null, "latitude": null, "address": null } }, { "id": 11, "type": "Spire", "batteryLevel": 100, "location": { "longitude": null, "latitude": null, "address": null } }, { "id": 12, "type": "Railing", "batteryLevel": 100, "location": { "longitude": null, "latitude": null, "address": null } } ]`).
 			Expect(t).
+			Body("\"12 new scaffolding units added to the system the following units were added:\"\n[{\"id\":1,\"type\":\"Spire\",\"batteryLevel\":100,\"location\":{\"longitude\":null,\"latitude\":null,\"address\":null}},{\"id\":2,\"type\":\"Flooring\",\"batteryLevel\":100,\"location\":{\"longitude\":null,\"latitude\":null,\"address\":null}},{\"id\":3,\"type\":\"Short-Flooring\",\"batteryLevel\":100,\"location\":{\"longitude\":null,\"latitude\":null,\"address\":null}},{\"id\":4,\"type\":\"Staircase\",\"batteryLevel\":100,\"location\":{\"longitude\":null,\"latitude\":null,\"address\":null}},{\"id\":5,\"type\":\"Bottom-Screw\",\"batteryLevel\":100,\"location\":{\"longitude\":null,\"latitude\":null,\"address\":null}},{\"id\":6,\"type\":\"Diagonals\",\"batteryLevel\":100,\"location\":{\"longitude\":null,\"latitude\":null,\"address\":null}},{\"id\":7,\"type\":\"Beam1\",\"batteryLevel\":100,\"location\":{\"longitude\":null,\"latitude\":null,\"address\":null}},{\"id\":8,\"type\":\"Beam2\",\"batteryLevel\":100,\"location\":{\"longitude\":null,\"latitude\":null,\"address\":null}},{\"id\":9,\"type\":\"Flooring\",\"batteryLevel\":100,\"location\":{\"longitude\":null,\"latitude\":null,\"address\":null}},{\"id\":10,\"type\":\"Flooring\",\"batteryLevel\":100,\"location\":{\"longitude\":null,\"latitude\":null,\"address\":null}},{\"id\":11,\"type\":\"Spire\",\"batteryLevel\":100,\"location\":{\"longitude\":null,\"latitude\":null,\"address\":null}},{\"id\":12,\"type\":\"Railing\",\"batteryLevel\":100,\"location\":{\"longitude\":null,\"latitude\":null,\"address\":null}}]\n").
 			Status(http.StatusOK).
 			End()
 	})
