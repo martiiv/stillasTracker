@@ -53,6 +53,6 @@ struct NavigationBarBottom: View {
 struct NavigationBarBottom_Previews: PreviewProvider {
     static var previews: some View {
         NavigationBarBottom()
-            //.environmentObject(ModelData())
+            .environmentObject(ModelData())
     }
 }

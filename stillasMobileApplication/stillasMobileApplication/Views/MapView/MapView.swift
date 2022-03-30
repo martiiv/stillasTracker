@@ -11,42 +11,42 @@ import MapKit
 
 /**
     A MapView responsible for displaying the Apple Maps in the application.
- 
-    Inspiration taken from this youtube video:
-    https://www.youtube.com/watch?v=CyMtjSspJZA
  */
 struct MapView: View {
+    @StateObject private var viewModel = MapViewModel()
     @State private var searchText = ""
     
     var body: some View {
-        ZStack {
+        VStack {
             GeometryReader { proxy in
-                /// MapViewMap responsible for the map view
-                MapViewMap()
+                /// MapDisplay responsible for the map view
+                MapDisplay()
+                    .ignoresSafeArea()
+                    .onAppear {
+                        /// Check if locationservices are enabled when you open the map
+                        viewModel.checkIfLocationServicesIsEnabled()
+                    }
+                ///Inspired from:
+                ///https://www.hackingwithswift.com/forums/swiftui/getting-error-when-trying-to-change-location-authorisation/9216
+                    .alert(isPresented: $viewModel.locationPermissionDenied, content: {
+                                Alert(title: Text("Location Services Disabled"),
+                                      message: Text("Please Enable Location Services For The App In App Settings For The Best Experience."),
+                                      primaryButton: .default(Text("Go To Settings"),
+                                                              action: {
+                                                                UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+                                      }),
+                                      secondaryButton: .cancel(Text("Dismiss"), action: { setLocationPermissionFalse()
+                                }))
+                            })
             }
         }
     }
+    
     /**
-        MapViewMap creates a view containing the map
+        Makes the app
      */
-    struct MapViewMap: View {
-        /// Sets the starting location to be Gjøvik (latitude: 60.79574, longitude: 10.69155)
-        @State var region = MKCoordinateRegion (
-            center: CLLocationCoordinate2D(
-                latitude: 60.79574,
-                longitude: 10.69155
-            ),
-            /// The zoom level of the application when opened
-            /// Closer to 0 means greater zoom level
-            span: MKCoordinateSpan(
-                latitudeDelta: 0.03,
-                longitudeDelta: 0.03
-            )
-        )
-        var body: some View {
-            Map(coordinateRegion: $region)
-                .ignoresSafeArea()
-        }
+    func setLocationPermissionFalse() {
+        viewModel.locationPermissionDenied = false
     }
 
     struct MapView_Previews: PreviewProvider {
