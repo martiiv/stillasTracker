@@ -19,7 +19,8 @@ The class contains the following functions:
 	- moveScaffold:      Function lets a user move scaffolding parts to a new project
 	- getScaffoldingUnit Function returns information about a scaffolding part
 	- getUnitHistory     Function returns the history of a scaffolding part
-
+TODO Error handle properly
+TODO update file head comment
 Version 0.1
 Last modified Martin Iversen
 */
@@ -49,11 +50,11 @@ a user can search based on projects, id or type
 */
 func getPart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	url := r.URL.Path //Defining the url and splitting it on /
+	url := r.URL.Path //Defining the url and splitting it on the symbol: /
 	splitUrl := strings.Split(url, "/")
 
 	switch len(splitUrl) {
-	case 8: //Case 8 means that only an id is passed in the URL, we return one spesific scaffolding part with the id
+	case 8: //Case 8 means that the URL is on the following format: /stillastracking/v1/api/unit/?type=""/?id=""/ TODO Formater URL riktig
 
 		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[5]).Doc(splitUrl[6])
 
