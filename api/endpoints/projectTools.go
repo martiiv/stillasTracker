@@ -3,14 +3,40 @@ package endpoints
 import (
 	"cloud.google.com/go/firestore"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"google.golang.org/api/iterator"
 	"io/ioutil"
 	"net/http"
-	"stillasTracker/api/Database"
+	"net/url"
 	tool "stillasTracker/api/apiTools"
+	"stillasTracker/api/constants"
+	"stillasTracker/api/database"
 	_struct "stillasTracker/api/struct"
+	"strings"
 )
+
+func createPath(segments []string) string {
+	var finalPath string
+	for _, s := range segments {
+		finalPath += s + "/"
+	}
+	finalPath = strings.TrimRight(finalPath, "/")
+	return finalPath
+}
+
+func getQuery(r *http.Request) url.Values {
+	query := r.URL.Query()
+	if len(query) != 1 {
+		return nil
+	}
+	switch true {
+	case query.Has(constants.P_nameURL),
+		query.Has(constants.P_idURL):
+		return query
+	}
+	return nil
+}
 
 func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaffolding, _struct.InputScaffoldingWithID) {
 
@@ -21,7 +47,7 @@ func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaf
 	}
 	ok := checkTransaction(data)
 	if !ok {
-		http.Error(w, "body invalid", http.StatusBadRequest)
+		tool.HandleError(tool.INVALIDBODY, w)
 		return nil, _struct.InputScaffoldingWithID{}
 	}
 
@@ -50,9 +76,9 @@ func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaf
 }
 
 //iterateProjects will iterate through every project in active, inactive and upcoming projects.
-func iterateProjects(id int, name string) (*firestore.DocumentRef, tool.ErrorStruct) {
+func iterateProjects(id int, name string) (*firestore.DocumentRef, error) {
 	var documentReference *firestore.DocumentRef
-	collection := projectCollection.Collections(Database.Ctx)
+	collection := projectCollection.Collections(database.Ctx)
 	for {
 		collRef, err := collection.Next()
 		if err == iterator.Done {
@@ -63,9 +89,9 @@ func iterateProjects(id int, name string) (*firestore.DocumentRef, tool.ErrorStr
 		}
 		var document *firestore.DocumentIterator
 		if name != "" {
-			document = projectCollection.Collection(collRef.ID).Where("projectName", "==", name).Documents(Database.Ctx)
+			document = projectCollection.Collection(collRef.ID).Where(constants.P_ProjectName, "==", name).Documents(database.Ctx)
 		} else {
-			document = projectCollection.Collection(collRef.ID).Where("projectID", "==", id).Documents(Database.Ctx)
+			document = projectCollection.Collection(collRef.ID).Where(constants.P_ProjectId, "==", id).Documents(database.Ctx)
 		}
 		for {
 			documentRef, err := document.Next()
@@ -78,9 +104,9 @@ func iterateProjects(id int, name string) (*firestore.DocumentRef, tool.ErrorStr
 	}
 
 	if documentReference != nil {
-		return documentReference, tool.ErrorStruct{}
+		return documentReference, nil
 	}
-	return nil, tool.NODOCUMENTWITHID
+	return nil, errors.New("no document found")
 }
 
 //checkStateBody will check if the body is of correct format, and if the values are correct datatypes.
@@ -90,13 +116,13 @@ func checkStateBody(body []byte) bool {
 	if err != nil {
 		return false
 	}
-	_, stateBool := dat["state"]
-	_, idBool := dat["id"]
-	_, isFloat := dat["id"].(float64)
+	_, stateBool := dat[constants.P_State]
+	_, idBool := dat[constants.P_idBody]
+	_, isFloat := dat[constants.P_idBody].(float64)
 
 	var correctValues bool
 	if stateBool && idBool && isFloat {
-		correctValues = checkState(dat["state"].(string))
+		correctValues = checkState(dat[constants.P_State].(string))
 	}
 	return correctValues
 }
@@ -109,25 +135,28 @@ func checkProjectBody(body []byte) bool {
 		return false
 	}
 
-	period := project["period"]
+	period := project[constants.P_Period]
 	correctPeriod := checkPeriod(period)
-	costumer := project["customer"]
+	costumer := project[constants.P_Customer]
 	correctCustomer := checkCustomer(costumer)
-	geoFence := project["geofence"]
+	geoFence := project[constants.P_Geofence]
 	correctGeofence := checkGeofence(geoFence)
-	_, longitudeFloat := project["longitude"].(float64)
-	_, latitudeFloat := project["latitude"].(float64)
-	_, sizeFloat := project["size"].(float64)
-	_, projectID := project["projectID"].(float64)
-	_, projectName := project["projectName"].(string)
-	_, state := project["state"].(string)
+	address := project[constants.P_Address]
+
+	correctAddress := checkAddressBody(address)
+	_, longitudeFloat := project[constants.P_Longitude].(float64)
+	_, latitudeFloat := project[constants.P_Latitude].(float64)
+	_, sizeFloat := project[constants.P_Size].(float64)
+	_, projectID := project[constants.P_ProjectId].(float64)
+	_, projectName := project[constants.P_ProjectName].(string)
+	_, state := project[constants.P_State].(string)
 
 	if !state {
 		return false
 	}
-	validState := checkState(project["state"].(string))
+	validState := checkState(project[constants.P_State].(string))
 	correctFormat := validState && longitudeFloat && latitudeFloat && sizeFloat &&
-		projectID && correctGeofence && correctCustomer && correctPeriod && projectName
+		projectID && correctGeofence && correctCustomer && correctPeriod && projectName && correctAddress
 
 	return correctFormat
 
@@ -145,7 +174,7 @@ func checkPeriod(period interface{}) bool {
 		return false
 	}
 
-	nestedPeriod := []string{"startDate", "endDate"}
+	nestedPeriod := []string{constants.P_PeriodstartDate, constants.P_PeriodendDate}
 	for _, period := range nestedPeriod {
 		_, ok := periods[period]
 		if !ok {
@@ -167,7 +196,7 @@ func checkCustomer(customer interface{}) bool {
 	if err != nil {
 		return false
 	}
-	nestedPeriod := []string{"name", "email", "number"}
+	nestedPeriod := []string{constants.P_CustomerName, constants.P_CustomerEmail, constants.P_CustomerNumber}
 	for _, period := range nestedPeriod {
 		_, ok := customerMap[period]
 		if !ok {
@@ -175,7 +204,7 @@ func checkCustomer(customer interface{}) bool {
 		}
 	}
 
-	_, numberFloat := customerMap["number"].(float64)
+	_, numberFloat := customerMap[constants.P_CustomerNumber].(float64)
 	if !numberFloat {
 		return false
 	}
@@ -195,7 +224,7 @@ func checkGeofence(fence interface{}) bool {
 		return false
 	}
 
-	nestedPeriod := []string{"w-position", "x-position", "y-position", "z-position"}
+	nestedPeriod := []string{constants.P_GeoW, constants.P_GeoX, constants.P_GeoY, constants.P_GeoZ}
 	for _, period := range nestedPeriod {
 		_, ok := geofenceMap[period]
 		if !ok {
@@ -243,7 +272,7 @@ func checkGeofenceCoordinates(location interface{}) bool {
 
 //checkState will check the value of the body, to ensure that the user has selected the correct state.
 func checkState(input string) bool {
-	state := []string{"Active", "Inactive", "Upcoming"}
+	state := []string{constants.P_Active, constants.P_Inactive, constants.P_Upcoming}
 
 	var correctValues bool
 	for _, states := range state {
@@ -263,12 +292,12 @@ func checkTransaction(body []byte) bool {
 		return false
 	}
 
-	_, toProject := inputScaffolding["toProjectID"].(float64)
-	_, fromProject := inputScaffolding["fromProjectID"].(float64)
-	_, scaffold := inputScaffolding["scaffold"]
-	scaffoldingInput := checkScaffoldingBody(inputScaffolding["scaffold"])
+	_, toProject := inputScaffolding[constants.P_ToProjectID].(float64)
+	_, fromProject := inputScaffolding[constants.P_fromProjectID].(float64)
+	_, scaffold := inputScaffolding[constants.P_scaffold]
+	scaffoldingInput := checkScaffoldingBody(inputScaffolding[constants.P_scaffold])
 
-	return (toProject && fromProject && scaffold && scaffoldingInput)
+	return toProject && fromProject && scaffold && scaffoldingInput
 
 }
 
@@ -287,14 +316,50 @@ func checkScaffoldingBody(scaffold interface{}) bool {
 
 	for i, m := range scaffoldMap {
 		fmt.Println(i, m)
-		_, scaffoldingOk := scaffoldMap[i]["quantity"]
+		_, scaffoldingOk := scaffoldMap[i][constants.P_QuantityField]
 		if !scaffoldingOk {
 			return false
 		}
-		_, typeOk := scaffoldMap[i]["type"]
+		_, typeOk := scaffoldMap[i][constants.P_typeField]
 		if !typeOk {
 			return false
 		}
+	}
+
+	return true
+}
+
+//checkScaffoldingBody will check the body, to ensure the required fields are filled
+func checkAddressBody(address interface{}) bool {
+
+	periodByte, err := json.Marshal(address)
+	if err != nil {
+		return false
+	}
+	var addressMap map[string]interface{}
+	err = json.Unmarshal(periodByte, &addressMap)
+	if err != nil {
+		return false
+	}
+
+	_, streetOk := addressMap[constants.P_AddressStreet]
+	if !streetOk {
+		return false
+	}
+
+	_, zipcodeOk := addressMap[constants.P_AddressZipCode]
+	if !zipcodeOk {
+		return false
+	}
+
+	_, municipalityOk := addressMap[constants.P_AddressMunicipality]
+	if !municipalityOk {
+		return false
+	}
+
+	_, countyOk := addressMap[constants.P_AddressCounty]
+	if !countyOk {
+		return false
 	}
 
 	return true

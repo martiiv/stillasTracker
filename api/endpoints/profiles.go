@@ -10,10 +10,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"stillasTracker/api/Database"
 	tool "stillasTracker/api/apiTools"
+	"stillasTracker/api/constants"
+	"stillasTracker/api/database"
 	_struct "stillasTracker/api/struct"
 	"strconv"
+	"strings"
 )
 
 /**
@@ -32,12 +34,12 @@ Last modified Aleksander Aaboen
 var baseCollection *firestore.DocumentRef
 
 func profileRequest(w http.ResponseWriter, r *http.Request) {
-	baseCollection = Database.Client.Doc("Users/Employee")
+	baseCollection = database.Client.Doc(constants.U_UsersCollection + "/" + constants.U_Employee)
 
 	requestType := r.Method
 	switch requestType {
 	case http.MethodGet:
-		getIndividualUser(w, r)
+		getProfile(w, r)
 	case http.MethodPost:
 		createProfile(w, r)
 	case http.MethodPut:
@@ -67,7 +69,7 @@ func deleteProfile(w http.ResponseWriter, r *http.Request) {
 			tool.HandleError(tool.COULDNOTFINDDATA, w)
 			return
 		}
-		_, err = document.Delete(Database.Ctx)
+		_, err = document.Delete(database.Ctx)
 		if err != nil {
 			tool.HandleError(tool.DELETE, w)
 			return
@@ -81,7 +83,7 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 		tool.HandleError(tool.READALLERROR, w)
 		return
 	}
-	batch := Database.Client.Batch()
+	batch := database.Client.Batch()
 
 	var employeeStruct map[string]interface{}
 	err = json.Unmarshal(data, &employeeStruct)
@@ -95,7 +97,7 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	employee := employeeStruct["employeeID"].(float64)
+	employee := employeeStruct[constants.U_employeeID].(float64)
 
 	documentReference, err := iterateProfiles(int(employee), "")
 	if err != nil {
@@ -114,7 +116,7 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	batch.Update(documentReference, updates)
-	_, err = batch.Commit(Database.Ctx)
+	_, err = batch.Commit(database.Ctx)
 	if err != nil {
 		tool.HandleError(tool.COULDNOTADDDOCUMENT, w)
 		return
@@ -130,7 +132,6 @@ func createProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var employee _struct.Employee
-
 	err = json.Unmarshal(bytes, &employee)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
@@ -149,7 +150,7 @@ func createProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Todo sjekk om id ikke er tatt
-	err = Database.AddDocument(documentPath, firebaseInput)
+	err = database.AddDocument(documentPath, firebaseInput)
 	if err != nil {
 		tool.HandleError(tool.COULDNOTADDDOCUMENT, w)
 		return
@@ -163,9 +164,9 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 	var documentPath *firestore.DocumentIterator
 	var employees []_struct.Employee
 
-	if r.URL.Query().Has("role") {
+	if r.URL.Query().Has(constants.U_Role) {
 		queryValue := getQueryCustomer(w, r)
-		documentPath = baseCollection.Collection(queryValue).Documents(Database.Ctx)
+		documentPath = baseCollection.Collection(queryValue).Documents(database.Ctx)
 		for {
 			documentRef, err := documentPath.Next()
 			if err == iterator.Done {
@@ -173,25 +174,26 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 			}
 
 			var employee _struct.Employee
-			doc, _ := Database.GetDocumentData(documentRef.Ref)
+			doc, _ := database.GetDocumentData(documentRef.Ref)
 			projectByte, err := json.Marshal(doc)
 			err = json.Unmarshal(projectByte, &employee)
 			if err != nil {
-				fmt.Println(err.Error())
+				tool.HandleError(tool.UNMARSHALLERROR, w)
+				return
 			}
 
 			employees = append(employees, employee)
 		}
 		err := json.NewEncoder(w).Encode(employees)
 		if err != nil {
-			http.Error(w, "error when decoding", http.StatusInternalServerError)
+			tool.HandleError(tool.NEWENCODERERROR, w)
 			return
 		}
 	} else if id != "" {
 		getIndividualUser(w, r)
 	} else {
 
-		collection := baseCollection.Collections(Database.Ctx)
+		collection := baseCollection.Collections(database.Ctx)
 		for {
 			collRef, err := collection.Next()
 			if err == iterator.Done {
@@ -200,7 +202,7 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				break
 			}
-			document := baseCollection.Collection(collRef.ID).Documents(Database.Ctx)
+			document := baseCollection.Collection(collRef.ID).Documents(database.Ctx)
 			for {
 				documentRef, err := document.Next()
 				if err == iterator.Done {
@@ -208,11 +210,12 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 				}
 
 				var employee _struct.Employee
-				doc, _ := Database.GetDocumentData(documentRef.Ref)
+				doc, _ := database.GetDocumentData(documentRef.Ref)
 				projectByte, err := json.Marshal(doc)
 				err = json.Unmarshal(projectByte, &employee)
 				if err != nil {
-					fmt.Println(err.Error())
+					tool.HandleError(tool.UNMARSHALLERROR, w)
+					return
 				}
 
 				employees = append(employees, employee)
@@ -233,8 +236,8 @@ func getIndividualUser(w http.ResponseWriter, r *http.Request) {
 	var err error
 	queryMap := getQuery(r)
 
-	if queryMap.Has("id") {
-		intID, err := strconv.Atoi(queryMap.Get("id"))
+	if queryMap.Has(constants.U_idURL) {
+		intID, err := strconv.Atoi(queryMap.Get(constants.U_idURL))
 		if err != nil {
 			tool.HandleError(tool.INVALIDREQUEST, w)
 			return
@@ -244,8 +247,8 @@ func getIndividualUser(w http.ResponseWriter, r *http.Request) {
 			tool.HandleError(tool.COULDNOTFINDDATA, w)
 			return
 		}
-	} else if queryMap.Has("name") {
-		documentReference, err = iterateProfiles(0, queryMap.Get("name"))
+	} else if queryMap.Has(constants.U_nameURL) {
+		documentReference, err = iterateProfiles(0, queryMap.Get(constants.U_nameURL))
 		if err != nil {
 			tool.HandleError(tool.COULDNOTFINDDATA, w)
 			return
@@ -255,17 +258,19 @@ func getIndividualUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, _ := Database.GetDocumentData(documentReference)
+	data, _ := database.GetDocumentData(documentReference)
 
 	jsonStr, err := json.Marshal(data)
 	if err != nil {
-		fmt.Println(err)
+		tool.HandleError(tool.MARSHALLERROR, w)
+		return
 	}
 
 	var employee _struct.Employee
 	err = json.Unmarshal(jsonStr, &employee)
 	if err != nil {
-		fmt.Println(err.Error())
+		tool.HandleError(tool.UNMARSHALLERROR, w)
+		return
 	}
 
 	err = json.NewEncoder(w).Encode(employee)
@@ -276,12 +281,12 @@ func getIndividualUser(w http.ResponseWriter, r *http.Request) {
 
 func getQueryCustomer(w http.ResponseWriter, r *http.Request) string {
 	m, _ := url.ParseQuery(r.URL.RawQuery)
-	_, ok := m["role"]
+	_, ok := m[constants.U_Role]
 	if ok {
-		validRoles := []string{"Admin", "Storage", "installer"}
+		validRoles := []string{constants.U_Admin, constants.U_Storage, constants.U_Installer}
 		for _, role := range validRoles {
-			if m["role"][0] == role {
-				return m["role"][0]
+			if m[constants.U_Role][0] == strings.ToLower(role) {
+				return m[constants.U_Role][0]
 			}
 		}
 	}
@@ -293,7 +298,7 @@ func getQueryCustomer(w http.ResponseWriter, r *http.Request) string {
 //iterateProjects will iterate through every project in active, inactive and upcoming projects.
 func iterateProfiles(id int, name string) (*firestore.DocumentRef, error) {
 	var documentReference *firestore.DocumentRef
-	collection := baseCollection.Collections(Database.Ctx)
+	collection := baseCollection.Collections(database.Ctx)
 	for {
 		collRef, err := collection.Next()
 		if err == iterator.Done {
@@ -304,9 +309,9 @@ func iterateProfiles(id int, name string) (*firestore.DocumentRef, error) {
 		}
 		var document *firestore.DocumentIterator
 		if name != "" {
-			document = baseCollection.Collection(collRef.ID).Where("name.lastName", "==", name).Documents(Database.Ctx)
+			document = baseCollection.Collection(collRef.ID).Where(constants.U_name+"."+constants.U_LastName, "==", name).Documents(database.Ctx)
 		} else {
-			document = baseCollection.Collection(collRef.ID).Where("employeeID", "==", id).Documents(Database.Ctx)
+			document = baseCollection.Collection(collRef.ID).Where(constants.U_employeeID, "==", id).Documents(database.Ctx)
 		}
 
 		for {
@@ -331,18 +336,19 @@ func iterateProfiles(id int, name string) (*firestore.DocumentRef, error) {
 func checkUpdate(update map[string]interface{}) bool {
 	fmt.Println(update)
 	var counter int
-	_, employeeID := update["employeeID"]
-	_, name := update["name"]
+	_, employeeID := update[constants.U_employeeID]
+	_, name := update[constants.U_name]
 
 	if name {
 		var ok bool
-		ok = checkName(update["name"])
+		ok = checkName(update[constants.U_name])
 		if !ok {
 			return false
 		}
 	}
 
-	fields := []string{"name", "role", "phone", "email", "admin", "employeeID"}
+	fields := []string{constants.U_name, constants.U_Role, constants.U_Role,
+		constants.U_email, constants.U_admin, constants.U_employeeID}
 	if employeeID {
 		for _, field := range fields {
 			for f := range update {
@@ -401,21 +407,21 @@ func checkStruct(body []byte) bool {
 		return false
 	}
 
-	_, idFormat := userMap["employeeID"].(float64)
-	_, phoneFormat := userMap["phone"].(float64)
-	roles := []string{"admin", "installer", "storage"}
+	_, idFormat := userMap[constants.U_employeeID].(float64)
+	_, phoneFormat := userMap[constants.U_phone].(float64)
+	roles := []string{constants.U_Admin, constants.U_Installer, constants.U_Storage}
 	var roleFormat bool
 	for _, role := range roles {
-		if userMap["role"] == role {
+		if userMap[constants.U_Role] == strings.ToLower(role) {
 			roleFormat = true
 			break
 		}
 	}
-	_, emailFormat := userMap["email"].(string)
-	_, adminFormat := userMap["admin"].(bool)
+	_, emailFormat := userMap[constants.U_email].(string)
+	_, adminFormat := userMap[constants.U_admin].(bool)
 	//Todo sjekk om dato er skrevet på riktig format
-	_, dateFormat := userMap["dateOfBirth"].(string)
-	name := checkNameFormat(userMap["name"])
+	_, dateFormat := userMap[constants.U_dateOfBirth].(string)
+	name := checkNameFormat(userMap[constants.U_name])
 
 	validFormat := idFormat && phoneFormat && roleFormat && emailFormat && adminFormat && name && dateFormat
 
@@ -438,8 +444,8 @@ func checkNameFormat(name interface{}) bool {
 		return false
 	}
 
-	_, firstName := nameMap["firstName"].(string)
-	_, lastName := nameMap["lastName"].(string)
+	_, firstName := nameMap[constants.U_FirstName].(string)
+	_, lastName := nameMap[constants.U_LastName].(string)
 
 	if !firstName || !lastName {
 		return false

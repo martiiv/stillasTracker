@@ -7,7 +7,7 @@ import (
 	"google.golang.org/api/option"
 	"log"
 	"path/filepath"
-	"stillasTracker/api/Database"
+	"stillasTracker/api/database"
 )
 
 /*
@@ -22,15 +22,15 @@ func dataBaseTestConnection() {
 	}
 
 	// Creates instance of firebase
-	Database.Ctx = context.Background()
+	database.Ctx = context.Background()
 	sa := option.WithCredentialsFile(file) //Initializes database
-	app, err := firebase.NewApp(Database.Ctx, nil, sa)
+	app, err := firebase.NewApp(database.Ctx, nil, sa)
 	if err != nil {
 		log.Println("error occured when initializing database" + err.Error())
 		_ = fmt.Errorf("error initializing app: %v", err)
 	}
 
-	Database.Client, err = app.Firestore(Database.Ctx) //Connects to the database
+	database.Client, err = app.Firestore(database.Ctx) //Connects to the database
 	if err != nil {
 		log.Fatalln(err)
 	}
