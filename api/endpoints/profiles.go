@@ -135,12 +135,12 @@ func createProfile(w http.ResponseWriter, r *http.Request) {
 //getProfile will fetch the profile based on employeeID or role.
 func getProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	id, _ := CheckIDFromURL(r)
+	id := getLastUrlElement(r)
 	var documentPath *firestore.DocumentIterator
 	var employees []_struct.Employee
 
 	if r.URL.Query().Has("role") {
-		queryValue := getQuery(w, r)
+		queryValue := getQueryCustomer(w, r)
 		documentPath = baseCollection.Collection(queryValue).Documents(Database.Ctx)
 		for {
 			documentRef, err := documentPath.Next()
@@ -226,7 +226,7 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func getQuery(w http.ResponseWriter, r *http.Request) string {
+func getQueryCustomer(w http.ResponseWriter, r *http.Request) string {
 	m, _ := url.ParseQuery(r.URL.RawQuery)
 	_, ok := m["role"]
 	if ok {

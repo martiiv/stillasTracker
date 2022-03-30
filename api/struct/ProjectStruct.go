@@ -68,7 +68,8 @@ type Project struct {
 
 // IDStruct to insert id of each project.
 type IDStruct []struct {
-	ID int `json:"id"`
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 // StateStruct to change the state of a project.
@@ -90,11 +91,10 @@ type NewProject struct {
 	State       string  `json:"state"`
 	Latitude    float64 `json:"latitude"`
 	Longitude   float64 `json:"longitude"`
-	Period
-	Address
-	Customer
-	Geofence
-	Scaffolding
+	Period      `json:"period"`
+	Address     `json:"address"`
+	Customer    `json:"customer"`
+	Geofence    `json:"geofence"`
 }
 
 type InputScaffolding []struct {
