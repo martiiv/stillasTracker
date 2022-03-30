@@ -289,7 +289,7 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 }
 
 /*putRequest will guide to the requested function.
-The user will be redirected to either updateState or transfereProject.
+The user will be redirected to either updateState or transferProject.
 If the user made an invalid request, the user will be redirected to invalidRequest.
 */
 func putRequest(w http.ResponseWriter, r *http.Request) {
@@ -301,7 +301,7 @@ func putRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	switch true {
 	case "scaffolding" == lastElement:
-		transfereProject2(w, r)
+		transferProject(w, r)
 	case isInt:
 		updateState(w, r)
 	default:
@@ -367,10 +367,10 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 }
 
 /*
-transfereProject will move a project from one collection of a given state to another (active, inactive, upcoming).
+transferProject will move a project from one collection of a given state to another (active, inactive, upcoming).
 This function will use batched writes to ensure integrity.
-*/
-func transfereProject(w http.ResponseWriter, r *http.Request) {
+
+func transferProject(w http.ResponseWriter, r *http.Request) {
 	batch := Database.Client.Batch()
 	scaffolds, inputScaffolding := getScaffoldingInput(w, r)
 
@@ -468,74 +468,138 @@ func transfereProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-}
+}*/
 
-func transfereProject2(w http.ResponseWriter, r *http.Request) {
-	//batch := Database.Client.Batch()
+/**
+transferProject will move a project from one collection of a given state to another (active, inactive, upcoming).
+This function will use batched writes to ensure integrity.
+*/
+func transferProject(w http.ResponseWriter, r *http.Request) {
+	batch := Database.Client.Batch()
 	_, inputScaffolding := getScaffoldingInput(w, r)
 
-	storageScaffolding := getScaffoldingFromStorage(inputScaffolding)
-	if storageScaffolding == nil {
+	var fromLocation []interface{}
+	var newLocation []interface{}
+	var newPath []*firestore.DocumentRef
+	var fromPaths []*firestore.DocumentRef
+
+	switch inputScaffolding.FromProjectID {
+	case 0:
+		fromLocation, fromPaths = getScaffoldingFromStorage(inputScaffolding.FromProjectID, inputScaffolding.InputScaffolding)
+	default:
+		fromLocation, fromPaths = getScaffoldingFromProject(inputScaffolding.FromProjectID, inputScaffolding.InputScaffolding)
+	}
+	if fromLocation == nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
 	}
 
-	getScaffoldingFromProject(inputScaffolding)
+	switch inputScaffolding.ToProjectID {
+	case 0:
+		newLocation, newPath = getScaffoldingFromStorage(inputScaffolding.ToProjectID, inputScaffolding.InputScaffolding)
+	default:
+		newLocation, newPath = getScaffoldingFromProject(inputScaffolding.ToProjectID, inputScaffolding.InputScaffolding)
+	}
+	if newLocation == nil {
+		tool.HandleError(tool.COULDNOTFINDDATA, w)
+		return
+	}
 
+	if len(fromLocation) != len(newLocation) {
+		tool.HandleError(tool.COULDNOTFINDDATA, w)
+		return
+	}
+
+	var sub = map[string]interface{}{}
+	var add = map[string]interface{}{}
+
+	for i := range fromLocation {
+		quantity := inputScaffolding.InputScaffolding[i].Quantity
+		fromQuantity := fromLocation[i]
+
+		b, err := json.Marshal(fromQuantity)
+		if err != nil {
+			panic(err)
+		}
+		var intVar int
+		err = json.Unmarshal(b, &intVar)
+		if err != nil {
+			fmt.Println("error:", err)
+		}
+
+		if quantity > intVar {
+			tool.HandleError(tool.CANNOTTRANSFERESCAFFOLDS, w)
+			return
+		}
+
+		sub["Quantity"] = map[string]interface{}{}
+		sub["Quantity"].(map[string]interface{})["expected"] = fromLocation[i].(int64) - int64(inputScaffolding.InputScaffolding[i].Quantity)
+
+		add["Quantity"] = map[string]interface{}{}
+		add["Quantity"].(map[string]interface{})["expected"] = newLocation[i].(int64) + int64(inputScaffolding.InputScaffolding[i].Quantity)
+
+		batch.Set(newPath[i], add, firestore.MergeAll)
+		batch.Set(fromPaths[i], sub, firestore.MergeAll)
+	}
+
+	_, err := batch.Commit(Database.Ctx)
+	if err != nil {
+		tool.HandleError(tool.CHANGESWERENOTMADE, w)
+		return
+	}
 }
 
-func getScaffoldingFromProject(input _struct.InputScaffoldingWithID) []interface{} {
+/**
+getScaffoldingFromProject will get the selected scaffolding from a project, and return the number of scaffolding parts
+and the documentref where the scaffolding are placed.
+*/
+func getScaffoldingFromProject(input int, scaffold _struct.InputScaffolding) ([]interface{}, []*firestore.DocumentRef) {
 
-	//var fromPath *firestore.DocumentRef
-	//var fromPaths []*firestore.DocumentRef
+	var fromPath *firestore.DocumentRef
+	var fromPaths []*firestore.DocumentRef
 	var scaffoldingArray []interface{}
 
-	newPath, _ := iterateProjects(input.FromProjectID, "")
+	newPath, _ := iterateProjects(input, "")
 
 	documentPath := createPath(strings.Split(newPath.Path, "/")[5:])
 
-	for _, s := range input.InputScaffolding {
-		iter := Database.Client.Doc(documentPath).Collection("StillasType").Where("type", "==", s.Type).Documents(Database.Ctx)
+	for _, s := range scaffold {
+		iter := Database.Client.Doc(documentPath).Collection("StillasType").Where("type", "==", strings.ToLower(s.Type)).Documents(Database.Ctx)
 		for {
 			doc, err := iter.Next()
 			if err == iterator.Done {
 				break
 			}
 			if err != nil {
-				return nil
+				return nil, nil
 			}
-			scaffoldingArray = append(scaffoldingArray, doc.Data())
+
+			scaffoldingFrom, err := doc.DataAt("Quantity.expected")
+			if err != nil {
+				return nil, nil
+			}
+			fromPath = doc.Ref
+			fromPaths = append(fromPaths, fromPath)
+			scaffoldingArray = append(scaffoldingArray, scaffoldingFrom)
 		}
 	}
 
-	/*path, _ := newPath.(Database.Ctx).GetAll()
-
-	fmt.Println(newPath, path)
-	*/
-	doc, err := newPath.Get(Database.Ctx)
-	if err != nil {
-
-		return nil
-	}
-
-	scaffoldingFrom, err := doc.DataAt("Quantity.expected")
-	if err != nil {
-		return nil
-	}
-
-	scaffoldingArray = append(scaffoldingArray, scaffoldingFrom)
-
-	return scaffoldingArray
+	return scaffoldingArray, fromPaths
 
 }
 
-func getScaffoldingFromStorage(input _struct.InputScaffoldingWithID) []interface{} {
+/**
+getScaffoldingFromStorage will get the selected scaffolding from a project, and return the number of scaffolding parts
+and the documentref where the scaffolding are placed.
+This function is used in
+*/
+func getScaffoldingFromStorage(input int, scaffold _struct.InputScaffolding) ([]interface{}, []*firestore.DocumentRef) {
 
 	var fromPath *firestore.DocumentRef
 	var fromPaths []*firestore.DocumentRef
 	var scaffoldingArray []interface{}
 
-	for _, s := range input.InputScaffolding {
+	for _, s := range scaffold {
 		fromPath = Database.Client.Doc("Location/Storage/Inventory/" + s.Type)
 		fromPaths = append(fromPaths, fromPath)
 	}
@@ -544,18 +608,17 @@ func getScaffoldingFromStorage(input _struct.InputScaffoldingWithID) []interface
 		doc, err := path.Get(Database.Ctx)
 		if err != nil {
 
-			return nil
+			return nil, nil
 		}
 
 		scaffoldingFrom, err := doc.DataAt("Quantity.expected")
 		if err != nil {
-			return nil
+			return nil, nil
 		}
 
 		scaffoldingArray = append(scaffoldingArray, scaffoldingFrom)
 
-		//Todo fetch data from storage and put it in an array
 	}
-	return scaffoldingArray
+	return scaffoldingArray, fromPaths
 
 }

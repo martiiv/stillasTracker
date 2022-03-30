@@ -16,7 +16,7 @@ func Handle() {
 	//Scaffolding endpoints
 	http.HandleFunc(baseURL+"/unit/", ScaffoldingRequest) //GET POST PUT DELETE
 	//Project endpoint
-	http.HandleFunc(baseURL+"/project/", ProjectRequest) //DELETE, POST, GET
+	http.HandleFunc(baseURL+"/project/", projectRequest) //DELETE, POST, GET
 
 	http.HandleFunc(baseURL+"/storage", storageRequest)
 	//Profile endpoint
