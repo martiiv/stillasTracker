@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"google.golang.org/api/iterator"
 	"net/http"
+	"net/url"
 	"stillasTracker/api/Database"
 	tool "stillasTracker/api/apiTools"
 	"stillasTracker/api/constants"
 	"stillasTracker/api/struct"
 	"strconv"
-	"strings"
 )
 
 /**
@@ -21,7 +21,6 @@ The class contains the following functions:
 	- moveScaffold:      Function lets a user move scaffolding parts to a new project
 	- getScaffoldingUnit Function returns information about a scaffolding part
 	- getUnitHistory     Function returns the history of a scaffolding part
-TODO Error handle properly
 TODO update file head comment
 Version 0.1
 Last modified Martin Iversen
@@ -52,17 +51,17 @@ a user can search based on projects, id or type
 */
 func getPart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	url := r.URL.Path //Defining the url and splitting it on the symbol: /
-	splitUrl := strings.Split(url, "/")
+	lastElement := getLastUrlElement(r)
+	query := tool.GetQuery(r)
 
-	switch len(splitUrl) {
-	case 8: //Case 8 means that the URL is on the following format: /stillastracking/v1/api/unit/?type=""/?id=""/ TODO Formater URL riktig
-		getIndividualScaffoldingPart(w, r, splitUrl)
+	switch true {
+	case "unit" == lastElement && len(query) > 1: //Case 8 means that the URL is on the following format: /stillastracking/v1/api/unit/?type=""/?id=""/ TODO Formater URL riktig
+		getIndividualScaffoldingPart(w, r, query)
 
-	case 7: //Case 4 means that a type of scaffolding is wanted however, not a specific one since no ID is passed in
-		getScaffoldingByType(w, r, splitUrl)
+	case "unit" == lastElement && len(query) == 1: //Case 8 means that the URL is on the following format: /stillastracking/v1/api/unit/?type=""/?id=""/ TODO Formater URL riktig
+		getScaffoldingByType(w, r, query)
 
-	case 6: //Case 3 means that the user wants all the scaffolding parts in the database
+	case "unit" == lastElement && len(query) == 0: //Case 8 means that the URL is on the following format: /stillastracking/v1/api/unit/?type=""/?id=""/ TODO Formater URL riktig
 		getAllScaffoldingParts(w, r)
 	}
 }
@@ -156,10 +155,10 @@ func deletePart(w http.ResponseWriter, r *http.Request) {
 /**
 getIndividualScaffoldingPart
 Function takes the url and uses the passed in type and id to fetch a specific part from the database
-URL Format: /stillastracking/v1/api/unit?type=""&?id="" TODO Format url correctly
+URL Format: /stillastracking/v1/api/unit?type=""&?id=""
 */
-func getIndividualScaffoldingPart(w http.ResponseWriter, r *http.Request, URL []string) {
-	objectPath := Database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(URL[5]).Doc(URL[6])
+func getIndividualScaffoldingPart(w http.ResponseWriter, r *http.Request, query url.Values) {
+	objectPath := Database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(query.Get("type")).Doc(query.Get("id"))
 
 	part, err := Database.GetDocumentData(objectPath)
 	if err != nil {
@@ -180,8 +179,8 @@ Function takes the request URL, connects to the database and gets all the scaffo
 in the database with the passed in type
 The url: /stillastracking/v1/api/unit/type= TODO Configure URL properly with variables
 */
-func getScaffoldingByType(w http.ResponseWriter, r *http.Request, URL []string) {
-	objectPath := Database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(URL[5]).Documents(Database.Ctx)
+func getScaffoldingByType(w http.ResponseWriter, r *http.Request, query url.Values) {
+	objectPath := Database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(query.Get("Type")).Documents(Database.Ctx)
 	partList := Database.GetCollectionData(objectPath)
 
 	err := json.NewEncoder(w).Encode(partList)
