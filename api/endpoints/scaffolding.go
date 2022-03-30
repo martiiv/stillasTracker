@@ -55,58 +55,13 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 
 	switch len(splitUrl) {
 	case 8: //Case 8 means that the URL is on the following format: /stillastracking/v1/api/unit/?type=""/?id=""/ TODO Formater URL riktig
-
-		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[5]).Doc(splitUrl[6])
-
-		part, err := Database.GetDocumentData(objectPath)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		err = json.NewEncoder(w).Encode(part)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
+		getIndividualScaffoldingPart(w, r, splitUrl)
 
 	case 7: //Case 4 means that a type of scaffolding is wanted however, not a specific one since no ID is passed in
-		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[5]).Documents(Database.Ctx)
-		partList := Database.GetCollectionData(objectPath)
-
-		err := json.NewEncoder(w).Encode(partList)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
+		getScaffoldingByType(w, r, splitUrl)
 
 	case 6: //Case 3 means that the user wants all the scaffolding parts in the database
-		partPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collections(Database.Ctx)
-		for {
-			scaffoldingType, err := partPath.Next()
-			if err == iterator.Done {
-				break
-			}
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusNoContent)
-				break
-			}
-			document := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(scaffoldingType.ID).Documents(Database.Ctx)
-			for {
-				partRef, err := document.Next()
-				if err == iterator.Done {
-					break
-				}
-
-				part, err := Database.GetDocumentData(partRef.Ref)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusNoContent)
-				}
-
-				err = json.NewEncoder(w).Encode(part)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusBadRequest)
-				}
-			}
-		}
-
+		getAllScaffoldingParts(w, r)
 	}
 }
 
@@ -184,4 +139,77 @@ func deletePart(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
+}
+
+/**
+getIndividualScaffoldingPart
+Function takes the url and uses the passed in type and id to fetch a specific part from the database
+URL Format: /stillastracking/v1/api/unit?type=""?id="" TODO Format url correctly
+*/
+func getIndividualScaffoldingPart(w http.ResponseWriter, r *http.Request, URL []string) {
+	objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(URL[5]).Doc(URL[6])
+
+	part, err := Database.GetDocumentData(objectPath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	err = json.NewEncoder(w).Encode(part)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+}
+
+/**
+getScaffoldingByType
+Function takes the request URL, connects to the database and gets all the scaffolding parts
+in the database with the passed in type
+The url: /stillastracking/v1/api/unit/type= TODO Configure URL properly with variables
+*/
+func getScaffoldingByType(w http.ResponseWriter, r *http.Request, URL []string) {
+	objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(URL[5]).Documents(Database.Ctx)
+	partList := Database.GetCollectionData(objectPath)
+
+	err := json.NewEncoder(w).Encode(partList)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+}
+
+/**
+getAllScaffoldingParts
+Function connects to the database and fetches all the parts in the database
+URL format: /stillastracking/v1/api/unit/
+*/
+func getAllScaffoldingParts(w http.ResponseWriter, r *http.Request) {
+	partPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collections(Database.Ctx)
+	for {
+		scaffoldingType, err := partPath.Next()
+		if err == iterator.Done {
+			break
+		}
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNoContent)
+			break
+		}
+
+		document := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(scaffoldingType.ID).Documents(Database.Ctx)
+		for {
+			partRef, err := document.Next()
+			if err == iterator.Done {
+				break
+			}
+
+			part, err := Database.GetDocumentData(partRef.Ref)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusNoContent)
+			}
+
+			err = json.NewEncoder(w).Encode(part)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+			}
+		}
+	}
 }
