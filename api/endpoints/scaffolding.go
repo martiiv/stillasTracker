@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"google.golang.org/api/iterator"
 	"net/http"
-	"stillasTracker/api/Database"
+	"stillasTracker/api/database"
 	"stillasTracker/api/struct"
 	"strconv"
 	"strings"
@@ -89,7 +89,7 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 
 	for i := range scaffoldList { //For loop iterates through the list of new scaffolding parts
 
-		newPartPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(scaffoldList[i].Type).Doc(strconv.Itoa(scaffoldList[i].ID))
+		newPartPath := database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(scaffoldList[i].Type).Doc(strconv.Itoa(scaffoldList[i].ID))
 
 		var firebasePart map[string]interface{} //Defines the database structure for the new part
 
@@ -102,7 +102,7 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
 
-		err = Database.AddDocument(newPartPath, firebasePart) //Adds the part to the database
+		err = database.AddDocument(newPartPath, firebasePart) //Adds the part to the database
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
@@ -123,8 +123,8 @@ func deletePart(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for i := range deleteList {
-		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(deleteList[i].Type).Doc(strconv.Itoa(deleteList[i].Id))
-		err := Database.DeleteDocument(objectPath)
+		objectPath := database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(deleteList[i].Type).Doc(strconv.Itoa(deleteList[i].Id))
+		err := database.DeleteDocument(objectPath)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
@@ -147,9 +147,9 @@ Function takes the url and uses the passed in type and id to fetch a specific pa
 URL Format: /stillastracking/v1/api/unit?type=""?id="" TODO Format url correctly
 */
 func getIndividualScaffoldingPart(w http.ResponseWriter, r *http.Request, URL []string) {
-	objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(URL[5]).Doc(URL[6])
+	objectPath := database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(URL[5]).Doc(URL[6])
 
-	part, err := Database.GetDocumentData(objectPath)
+	part, err := database.GetDocumentData(objectPath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -167,8 +167,8 @@ in the database with the passed in type
 The url: /stillastracking/v1/api/unit/type= TODO Configure URL properly with variables
 */
 func getScaffoldingByType(w http.ResponseWriter, r *http.Request, URL []string) {
-	objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(URL[5]).Documents(Database.Ctx)
-	partList := Database.GetCollectionData(objectPath)
+	objectPath := database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(URL[5]).Documents(database.Ctx)
+	partList := database.GetCollectionData(objectPath)
 
 	err := json.NewEncoder(w).Encode(partList)
 	if err != nil {
@@ -182,7 +182,7 @@ Function connects to the database and fetches all the parts in the database
 URL format: /stillastracking/v1/api/unit/
 */
 func getAllScaffoldingParts(w http.ResponseWriter, r *http.Request) {
-	partPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collections(Database.Ctx)
+	partPath := database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collections(database.Ctx)
 	for {
 		scaffoldingType, err := partPath.Next()
 		if err == iterator.Done {
@@ -194,14 +194,14 @@ func getAllScaffoldingParts(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		document := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(scaffoldingType.ID).Documents(Database.Ctx)
+		document := database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(scaffoldingType.ID).Documents(database.Ctx)
 		for {
 			partRef, err := document.Next()
 			if err == iterator.Done {
 				break
 			}
 
-			part, err := Database.GetDocumentData(partRef.Ref)
+			part, err := database.GetDocumentData(partRef.Ref)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusNoContent)
 			}
