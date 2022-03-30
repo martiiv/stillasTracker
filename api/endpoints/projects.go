@@ -212,6 +212,7 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var deleteID _struct.IDStruct
+	//TODO creat a check for deleteID struct
 	err = json.Unmarshal(bytes, &deleteID)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
@@ -219,7 +220,15 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, num := range deleteID {
-		correctID, errStruct := iterateProjects(num.ID, "")
+		var correctID *firestore.DocumentRef
+		var errStruct tool.ErrorStruct
+
+		if num.ID != 0 {
+			correctID, errStruct = iterateProjects(num.ID, "")
+		} else if num.Name != "" {
+			correctID, errStruct = iterateProjects(0, num.Name)
+		}
+
 		if correctID == nil {
 			tool.HandleError(errStruct, w)
 			return
@@ -248,6 +257,7 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var project _struct.NewProject
+	//err = json.NewDecoder(r.Body).Decode(&project)
 	err = json.Unmarshal(bytes, &project)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
@@ -289,10 +299,9 @@ func putRequest(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		isInt = false
 	}
-	urlPath := getLastUrlElement(r)
 	switch true {
-	case "scaffolding" == urlPath:
-		transfereProject(w, r)
+	case "scaffolding" == lastElement:
+		transfereProject2(w, r)
 	case isInt:
 		updateState(w, r)
 	default:
@@ -377,20 +386,40 @@ func transfereProject(w http.ResponseWriter, r *http.Request) {
 
 	default: //Project
 		fromPath, _ = iterateProjects(inputScaffolding.FromProjectID, "")
+		//fromPathString := fromPath.Path + "/" + s.Type
+		fromPaths = append(fromPaths, fromPath)
+
 	}
 
-	newPath, _ := iterateProjects(inputScaffolding.ToProjectID, "")
+	var newPath *firestore.DocumentRef
+	var path string
+	switch inputScaffolding.ToProjectID {
+	case 0: //Storage
+		newPathCollection := Database.Client.Collection("Location/Storage/Inventory")
+		path = newPathCollection.Path
+	default: //Project
+		newPath, _ = iterateProjects(inputScaffolding.FromProjectID, "")
+		path = newPath.Path
+
+	}
+
+	//newPath, _ = iterateProjects(inputScaffolding.ToProjectID, "")
 
 	var sub = map[string]interface{}{}
 	var add = map[string]interface{}{}
 
-	path := newPath.Path
 	pathArr := strings.Split(path, "/")[5:]
 	finalPath := createPath(pathArr)
 
 	for i := range inputScaffolding.InputScaffolding {
 
-		pathN := finalPath + "/StillasType/" + inputScaffolding.InputScaffolding[i].Type
+		var pathN string
+		if inputScaffolding.ToProjectID != 0 {
+			pathN = finalPath + "/StillasType/" + inputScaffolding.InputScaffolding[i].Type
+		} else {
+			pathN = finalPath + "/" + inputScaffolding.InputScaffolding[i].Type
+
+		}
 
 		inputPath := Database.Client.Doc(pathN)
 
@@ -438,5 +467,48 @@ func transfereProject(w http.ResponseWriter, r *http.Request) {
 		tool.HandleError(tool.CHANGESWERENOTMADE, w)
 		return
 	}
+
+}
+
+func transfereProject2(w http.ResponseWriter, r *http.Request) {
+	//batch := Database.Client.Batch()
+	_, inputScaffolding := getScaffoldingInput(w, r)
+
+	storageScaffolding := getScaffoldingFromStorage(inputScaffolding)
+	if storageScaffolding == nil {
+		tool.HandleError(tool.COULDNOTFINDDATA, w)
+		return
+	}
+
+}
+
+func getScaffoldingFromStorage(input _struct.InputScaffoldingWithID) []interface{} {
+
+	var fromPath *firestore.DocumentRef
+	var fromPaths []*firestore.DocumentRef
+	var scaffoldingArray []interface{}
+
+	for _, s := range input.InputScaffolding {
+		fromPath = Database.Client.Doc("Location/Storage/Inventory/" + s.Type)
+		fromPaths = append(fromPaths, fromPath)
+	}
+
+	for _, path := range fromPaths {
+		doc, err := path.Get(Database.Ctx)
+		if err != nil {
+
+			return nil
+		}
+
+		scaffoldingFrom, err := doc.DataAt("Quantity.expected")
+		if err != nil {
+			return nil
+		}
+
+		scaffoldingArray = append(scaffoldingArray, scaffoldingFrom)
+
+		//Todo fetch data from storage and put it in an array
+	}
+	return scaffoldingArray
 
 }

@@ -144,7 +144,11 @@ func checkProjectBody(body []byte) bool {
 	_, sizeFloat := project["size"].(float64)
 	_, projectID := project["projectID"].(float64)
 	_, projectName := project["projectName"].(string)
+	_, state := project["state"].(string)
 
+	if !state {
+		return false
+	}
 	validState := checkState(project["state"].(string))
 	correctFormat := validState && longitudeFloat && latitudeFloat && sizeFloat &&
 		projectID && correctGeofence && correctCustomer && correctPeriod && projectName

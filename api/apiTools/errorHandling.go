@@ -31,7 +31,7 @@ var NODOCUMENTSINDATABASE = ErrorStruct{
 
 var NODOCUMENTWITHID = ErrorStruct{
 	message: "no document with selected ID",
-	code:    http.StatusNoContent,
+	code:    http.StatusBadRequest,
 }
 
 var INVALIDREQUEST = ErrorStruct{
