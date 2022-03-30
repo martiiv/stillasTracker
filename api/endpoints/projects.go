@@ -44,7 +44,7 @@ func CheckIDFromURL(r *http.Request) (string, error) {
 /**
 Main function to switch between the different request types.
 */
-func ProjectRequest(w http.ResponseWriter, r *http.Request) {
+func projectRequest(w http.ResponseWriter, r *http.Request) {
 
 	projectCollection = Database.Client.Doc("Location/Project")
 

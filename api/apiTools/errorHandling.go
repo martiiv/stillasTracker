@@ -1,9 +1,6 @@
 package apiTools
 
-import (
-	"log"
-	"net/http"
-)
+import "net/http"
 
 /**
 Class error handling, this class will contain all code concerning
@@ -17,50 +14,77 @@ version 0.1
 Last edited 08.03.2022 by Martin Iversen
 */
 
-// Error Handled error. Object with both the error interface
-//and the http status code
-type Error interface {
-	error
-	Status() int
+type ErrorStruct struct {
+	message string
+	code    int
 }
 
-//StatusError represents error with HTTP code
-type StatusError struct {
-	Code int
-	Err  error
+var MARSHALLERROR = ErrorStruct{
+	message: "could not json marshall",
+	code:    http.StatusInternalServerError,
 }
 
-/**
-Function which lets an statuserror interface act as an error interface
-Essentially only formatting
-*/
-func (se StatusError) Error() string {
-	return se.Err.Error()
+var NODOCUMENTSINDATABASE = ErrorStruct{
+	message: "unable to find document",
+	code:    http.StatusInternalServerError,
 }
 
-// Status
-/**
-Function returns StatusError status code
-*/
-func (se StatusError) Status() int {
-	return se.Code
+var NODOCUMENTWITHID = ErrorStruct{
+	message: "no document with selected ID",
+	code:    http.StatusBadRequest,
 }
 
-//getErrorMessage
-/**
-Function will return an appropriate error message when possible
-Takes in the http Responsewriter (In order to give a response to the one doing the request)
-And the potential error message
-The method returns nothing however, appropriate error message will be printed in console and returned to the user
-*/
-func getErrorMessage(w http.ResponseWriter, err error) {
-	if err != nil {
-		switch e := err.(type) {
-		case Error:
-			log.Printf("HTTP %d - %s", e.Status(), e)
-			http.Error(w, e.Error(), e.Status())
-		default:
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		}
-	}
+var INVALIDREQUEST = ErrorStruct{
+	message: "invalid request",
+	code:    http.StatusInternalServerError,
+}
+
+var UNMARSHALLERROR = ErrorStruct{
+	message: "could not jsonunmarshall",
+	code:    http.StatusInternalServerError,
+}
+
+var NEWENCODERERROR = ErrorStruct{
+	message: "could not encode data",
+	code:    http.StatusInternalServerError,
+}
+
+var COLLECTIONITERATORERROR = ErrorStruct{
+	message: "could not go through collection",
+	code:    http.StatusInternalServerError,
+}
+
+var READALLERROR = ErrorStruct{
+	message: "could not read input",
+	code:    http.StatusBadRequest,
+}
+
+var INVALIDBODY = ErrorStruct{
+	message: "invalid body",
+	code:    http.StatusBadRequest,
+}
+
+var COULDNOTADDDOCUMENT = ErrorStruct{
+	message: "could not add document",
+	code:    http.StatusInternalServerError,
+}
+
+var CHANGESWERENOTMADE = ErrorStruct{
+	message: "changes were not made",
+	code:    http.StatusInternalServerError,
+}
+
+var COULDNOTFINDDATA = ErrorStruct{
+	message: "could not find data in database",
+	code:    http.StatusInternalServerError,
+}
+
+var CANNOTTRANSFERESCAFFOLDS = ErrorStruct{
+	message: "cannot transfer the amount of scaffolding",
+	code:    http.StatusInternalServerError,
+}
+
+func HandleError(err ErrorStruct, w http.ResponseWriter) {
+	http.Error(w, err.message, err.code)
+
 }
