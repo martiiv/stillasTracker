@@ -26,7 +26,7 @@ Class contains the following functions:
 	- deleteProject:      The function deletes a project from the system
 	- getStorageFacility: The function returns the state of the storage facility (amount of scaffolding equipment)
 
-Version 0.1
+Version 0.2
 Last modified Aleksander Aaboen
 */
 var projectCollection *firestore.DocumentRef
