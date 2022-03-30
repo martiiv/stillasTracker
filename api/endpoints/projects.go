@@ -32,6 +32,7 @@ Last modified Aleksander Aaboen
 var projectCollection *firestore.DocumentRef
 
 /**
+ProjectRequest
 Main function to switch between the different request types.
 */
 func ProjectRequest(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +47,6 @@ func ProjectRequest(w http.ResponseWriter, r *http.Request) {
 		putRequest(w, r)
 	case "DELETE":
 		deleteProject(w, r)
-
 	}
 }
 
