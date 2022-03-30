@@ -181,7 +181,7 @@ in the database with the passed in type
 The url: /stillastracking/v1/api/unit/type= TODO Configure URL properly with variables
 */
 func getScaffoldingByType(w http.ResponseWriter, r *http.Request, query url.Values) {
-	objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(query.Get("Type")).Documents(Database.Ctx)
+	objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(query.Get("Type")).Documents(database.Ctx)
 	partList := database.GetCollectionData(objectPath)
 
 	err := json.NewEncoder(w).Encode(partList)
@@ -196,7 +196,7 @@ Function connects to the database and fetches all the parts in the database
 URL format: /stillastracking/v1/api/unit/
 */
 func getAllScaffoldingParts(w http.ResponseWriter, r *http.Request) {
-	partPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collections(Database.Ctx)
+	partPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collections(database.Ctx)
 	for {
 		scaffoldingType, err := partPath.Next()
 		if err == iterator.Done {
@@ -208,7 +208,7 @@ func getAllScaffoldingParts(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		document := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldingType.ID).Documents(Database.Ctx)
+		document := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldingType.ID).Documents(database.Ctx)
 		for {
 			partRef, err := document.Next()
 			if err == iterator.Done {
