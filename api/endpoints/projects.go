@@ -480,6 +480,53 @@ func transfereProject2(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	getScaffoldingFromProject(inputScaffolding)
+
+}
+
+func getScaffoldingFromProject(input _struct.InputScaffoldingWithID) []interface{} {
+
+	//var fromPath *firestore.DocumentRef
+	//var fromPaths []*firestore.DocumentRef
+	var scaffoldingArray []interface{}
+
+	newPath, _ := iterateProjects(input.FromProjectID, "")
+
+	documentPath := createPath(strings.Split(newPath.Path, "/")[5:])
+
+	for _, s := range input.InputScaffolding {
+		iter := Database.Client.Doc(documentPath).Collection("StillasType").Where("type", "==", s.Type).Documents(Database.Ctx)
+		for {
+			doc, err := iter.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				return nil
+			}
+			scaffoldingArray = append(scaffoldingArray, doc.Data())
+		}
+	}
+
+	/*path, _ := newPath.(Database.Ctx).GetAll()
+
+	fmt.Println(newPath, path)
+	*/
+	doc, err := newPath.Get(Database.Ctx)
+	if err != nil {
+
+		return nil
+	}
+
+	scaffoldingFrom, err := doc.DataAt("Quantity.expected")
+	if err != nil {
+		return nil
+	}
+
+	scaffoldingArray = append(scaffoldingArray, scaffoldingFrom)
+
+	return scaffoldingArray
+
 }
 
 func getScaffoldingFromStorage(input _struct.InputScaffoldingWithID) []interface{} {
