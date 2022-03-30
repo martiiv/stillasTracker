@@ -13,8 +13,10 @@ import MapKit
     A MapView responsible for displaying the Apple Maps in the application.
  */
 struct MapView: View {
+    /// A property wrapper type that instantiates an observable object of type MapViewModel()
     @StateObject private var viewModel = MapViewModel()
     @State private var searchText = ""
+    @State private var dismissedAlready = false
     
     var body: some View {
         VStack {
@@ -23,12 +25,12 @@ struct MapView: View {
                 MapDisplay()
                     .ignoresSafeArea()
                     .onAppear {
-                        /// Check if locationservices are enabled when you open the map
                         viewModel.checkIfLocationServicesIsEnabled()
                     }
-                ///Inspired from:
-                ///https://www.hackingwithswift.com/forums/swiftui/getting-error-when-trying-to-change-location-authorisation/9216
-                    .alert(isPresented: $viewModel.locationPermissionDenied, content: {
+                /// Displays an alert to the user if the location services are disabled, recommending the user to enable them and suggesting a redirect to the location service settings for the application.
+                /// This alert is inspired from: https://www.hackingwithswift.com/forums/swiftui/getting-error-when-trying-to-change-location-authorisation/9216
+                    .alert(isPresented: $viewModel.locationPermissionDenied,
+                           content: {
                                 Alert(title: Text("Location Services Disabled"),
                                       message: Text("Please Enable Location Services For The App In App Settings For The Best Experience."),
                                       primaryButton: .default(Text("Go To Settings"),
@@ -43,7 +45,7 @@ struct MapView: View {
     }
     
     /**
-        Makes the app
+        Dismisses the alert
      */
     func setLocationPermissionFalse() {
         viewModel.locationPermissionDenied = false
