@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"google.golang.org/api/iterator"
 	"net/http"
+	"net/url"
+	tool "stillasTracker/api/apiTools"
+	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
 	"stillasTracker/api/struct"
 	"strconv"
-	"strings"
 )
 
 /**
@@ -19,7 +21,6 @@ The class contains the following functions:
 	- moveScaffold:      Function lets a user move scaffolding parts to a new project
 	- getScaffoldingUnit Function returns information about a scaffolding part
 	- getUnitHistory     Function returns the history of a scaffolding part
-TODO Error handle properly
 TODO update file head comment
 Version 0.1
 Last modified Martin Iversen
@@ -50,17 +51,17 @@ a user can search based on projects, id or type
 */
 func getPart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	url := r.URL.Path //Defining the url and splitting it on the symbol: /
-	splitUrl := strings.Split(url, "/")
+	lastElement := getLastUrlElement(r)
+	query := tool.GetQuery(r)
 
-	switch len(splitUrl) {
-	case 8: //Case 8 means that the URL is on the following format: /stillastracking/v1/api/unit/?type=""/?id=""/ TODO Formater URL riktig
-		getIndividualScaffoldingPart(w, r, splitUrl)
+	switch true {
+	case "unit" == lastElement && len(query) > 1: //Case 8 means that the URL is on the following format: /stillastracking/v1/api/unit/?type=""/?id=""/ TODO Formater URL riktig
+		getIndividualScaffoldingPart(w, r, query)
 
-	case 7: //Case 4 means that a type of scaffolding is wanted however, not a specific one since no ID is passed in
-		getScaffoldingByType(w, r, splitUrl)
+	case "unit" == lastElement && len(query) == 1: //Case 8 means that the URL is on the following format: /stillastracking/v1/api/unit/?type=""/?id=""/ TODO Formater URL riktig
+		getScaffoldingByType(w, r, query)
 
-	case 6: //Case 3 means that the user wants all the scaffolding parts in the database
+	case "unit" == lastElement && len(query) == 0: //Case 8 means that the URL is on the following format: /stillastracking/v1/api/unit/?type=""/?id=""/ TODO Formater URL riktig
 		getAllScaffoldingParts(w, r)
 	}
 }
@@ -78,39 +79,45 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&scaffoldList) //Decodes the requests body into the structure defined above
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		tool.HandleError(tool.READALLERROR, w)
+		return
 	}
 
 	//Prints the amount of scaffolding parts added to the system
 	err = json.NewEncoder(w).Encode(strconv.Itoa(len(scaffoldList)) + " new scaffolding units added to the system the following units were added:")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		tool.HandleError(tool.ENCODINGERROR, w)
+		return
 	}
 
 	for i := range scaffoldList { //For loop iterates through the list of new scaffolding parts
 
-		newPartPath := database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(scaffoldList[i].Type).Doc(strconv.Itoa(scaffoldList[i].ID))
+		newPartPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldList[i].Type).Doc(strconv.Itoa(scaffoldList[i].ID))
 
 		var firebasePart map[string]interface{} //Defines the database structure for the new part
 
 		part, err := json.Marshal(scaffoldList[i]) //Marshalls te body of the request into the right data format (byte)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			tool.HandleError(tool.MARSHALLERROR, w)
+			return
 		}
+
 		err = json.Unmarshal(part, &firebasePart) //Unmarshals the part object into the firebase part structure
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			tool.HandleError(tool.UNMARSHALLERROR, w)
+			return
 		}
 
 		err = database.AddDocument(newPartPath, firebasePart) //Adds the part to the database
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			tool.HandleError(tool.DATABASEADDERROR, w)
+			return
 		}
 	}
 
 	err = json.NewEncoder(w).Encode(scaffoldList)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		tool.HandleError(tool.ENCODINGERROR, w)
 	}
 }
 
@@ -119,24 +126,28 @@ func deletePart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&deleteList)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		tool.HandleError(tool.READALLERROR, w)
 	}
 
 	for i := range deleteList {
-		objectPath := database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(deleteList[i].Type).Doc(strconv.Itoa(deleteList[i].Id))
+		objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(deleteList[i].Type).Doc(strconv.Itoa(deleteList[i].Id))
 		err := database.DeleteDocument(objectPath)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			tool.HandleError(tool.COULDNOTFINDDATA, w)
+			return
 		}
 	}
 
 	err = json.NewEncoder(w).Encode("All parts deleted successfully, number of parts deleted:")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		tool.HandleError(tool.ENCODINGERROR, w)
+		return
 	}
+
 	err = json.NewEncoder(w).Encode(len(deleteList))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		tool.HandleError(tool.ENCODINGERROR, w)
+		return
 	}
 
 }
@@ -144,19 +155,22 @@ func deletePart(w http.ResponseWriter, r *http.Request) {
 /**
 getIndividualScaffoldingPart
 Function takes the url and uses the passed in type and id to fetch a specific part from the database
-URL Format: /stillastracking/v1/api/unit?type=""?id="" TODO Format url correctly
+URL Format: /stillastracking/v1/api/unit?type=""&?id=""
 */
-func getIndividualScaffoldingPart(w http.ResponseWriter, r *http.Request, URL []string) {
-	objectPath := database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(URL[5]).Doc(URL[6])
+
+func getIndividualScaffoldingPart(w http.ResponseWriter, r *http.Request, query url.Values) {
+	objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(query.Get("type")).Doc(query.Get("id"))
 
 	part, err := database.GetDocumentData(objectPath)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		tool.HandleError(tool.DATABASEREADERROR, w)
+		return
 	}
 
 	err = json.NewEncoder(w).Encode(part)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		tool.HandleError(tool.ENCODINGERROR, w)
+		return
 	}
 }
 
@@ -166,13 +180,13 @@ Function takes the request URL, connects to the database and gets all the scaffo
 in the database with the passed in type
 The url: /stillastracking/v1/api/unit/type= TODO Configure URL properly with variables
 */
-func getScaffoldingByType(w http.ResponseWriter, r *http.Request, URL []string) {
-	objectPath := database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(URL[5]).Documents(database.Ctx)
+func getScaffoldingByType(w http.ResponseWriter, r *http.Request, query url.Values) {
+	objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(query.Get("Type")).Documents(Database.Ctx)
 	partList := database.GetCollectionData(objectPath)
 
 	err := json.NewEncoder(w).Encode(partList)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		tool.HandleError(tool.ENCODINGERROR, w)
 	}
 }
 
@@ -182,7 +196,7 @@ Function connects to the database and fetches all the parts in the database
 URL format: /stillastracking/v1/api/unit/
 */
 func getAllScaffoldingParts(w http.ResponseWriter, r *http.Request) {
-	partPath := database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collections(database.Ctx)
+	partPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collections(Database.Ctx)
 	for {
 		scaffoldingType, err := partPath.Next()
 		if err == iterator.Done {
@@ -190,11 +204,11 @@ func getAllScaffoldingParts(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusNoContent)
-			break
+			tool.HandleError(tool.COLLECTIONITERATORERROR, w)
+			return
 		}
 
-		document := database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(scaffoldingType.ID).Documents(database.Ctx)
+		document := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldingType.ID).Documents(Database.Ctx)
 		for {
 			partRef, err := document.Next()
 			if err == iterator.Done {
@@ -203,12 +217,14 @@ func getAllScaffoldingParts(w http.ResponseWriter, r *http.Request) {
 
 			part, err := database.GetDocumentData(partRef.Ref)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusNoContent)
+				tool.HandleError(tool.DATABASEREADERROR, w)
+				return
 			}
 
 			err = json.NewEncoder(w).Encode(part)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				tool.HandleError(tool.ENCODINGERROR, w)
+				return
 			}
 		}
 	}

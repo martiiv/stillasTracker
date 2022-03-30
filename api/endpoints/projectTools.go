@@ -98,6 +98,7 @@ func iterateProjects(id int, name string) (*firestore.DocumentRef, error) {
 			if err == iterator.Done {
 				break
 			}
+
 			documentReference = documentRef.Ref
 		}
 	}

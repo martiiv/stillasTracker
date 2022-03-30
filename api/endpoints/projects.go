@@ -32,6 +32,7 @@ Last modified Aleksander Aaboen
 var projectCollection *firestore.DocumentRef
 
 /**
+ProjectRequest
 Main function to switch between the different request types.
 */
 func ProjectRequest(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +47,6 @@ func ProjectRequest(w http.ResponseWriter, r *http.Request) {
 		putRequest(w, r)
 	case http.MethodDelete:
 		deleteProject(w, r)
-
 	}
 }
 
@@ -85,7 +85,7 @@ If the user made an invalid request, the user will be redirected to invalidReque
 func getProject(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	lastElement := getLastUrlElement(r)
-	query := getQuery(r)
+	query := tool.GetQuery(r)
 
 	switch true {
 	case constants.P_projectURL == lastElement && len(query) == 0:
@@ -150,7 +150,7 @@ func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 getProjectWithID will fetch a project based on the id
 */
 func getProjectWithID(w http.ResponseWriter, r *http.Request) {
-	queryMap := getQuery(r)
+	queryMap := tool.GetQuery(r)
 	var documentReference *firestore.DocumentRef
 	var err error
 	if queryMap.Has(constants.P_idURL) {
@@ -455,7 +455,7 @@ func getScaffoldingFromProject(input int, scaffold _struct.InputScaffolding) ([]
 
 	newPath, _ := iterateProjects(input, "")
 
-	documentPath := createPath(strings.Split(newPath.Path, "/")[5:])
+	documentPath := tool.CreatePath(strings.Split(newPath.Path, "/")[5:])
 
 	for _, s := range scaffold {
 		iter := database.Client.Doc(documentPath).Collection(constants.P_StillasType).Where(constants.P_Type, "==", strings.ToLower(s.Type)).Documents(database.Ctx)
