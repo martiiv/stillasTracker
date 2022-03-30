@@ -11,7 +11,7 @@ import (
 )
 
 /**
-Class scaffolding
+Class scaffoldingRequest
 This class will contain all functions used for the handling of scaffolding units
 The class contains the following functions:
 	- addScaffolding:    Function lets a user add a scaffolding part to the system
@@ -19,10 +19,13 @@ The class contains the following functions:
 	- moveScaffold:      Function lets a user move scaffolding parts to a new project
 	- getScaffoldingUnit Function returns information about a scaffolding part
 	- getUnitHistory     Function returns the history of a scaffolding part
-
+TODO Error handle properly
+TODO update file head comment
 Version 0.1
 Last modified Martin Iversen
 */
+
+//ScaffoldingRequest Function redirects the user to different parts of the scaffolding class
 func ScaffoldingRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -47,16 +50,13 @@ a user can search based on projects, id or type
 */
 func getPart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	url := r.URL.Path //Defining the url and splitting it on /
+	url := r.URL.Path //Defining the url and splitting it on the symbol: /
 	splitUrl := strings.Split(url, "/")
 
-	print(len(splitUrl))
-
 	switch len(splitUrl) {
-	case 8: //Case 5 means that only an id is passed in the URL, we return one spesific scaffolding part with the id
-		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[5]).Doc(splitUrl[6])
+	case 8: //Case 8 means that the URL is on the following format: /stillastracking/v1/api/unit/?type=""/?id=""/ TODO Formater URL riktig
 
-		json.NewEncoder(w).Encode(objectPath)
+		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[5]).Doc(splitUrl[6])
 
 		part, err := Database.GetDocumentData(objectPath)
 		if err != nil {
@@ -69,7 +69,7 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 		}
 
 	case 7: //Case 4 means that a type of scaffolding is wanted however, not a specific one since no ID is passed in
-		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[4]).Documents(Database.Ctx)
+		objectPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(splitUrl[5]).Documents(Database.Ctx)
 		partList := Database.GetCollectionData(objectPath)
 
 		err := json.NewEncoder(w).Encode(partList)
@@ -77,7 +77,7 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
 
-	case 6: //Case 3 means that the user wants all the scaffolding parts int the database
+	case 6: //Case 3 means that the user wants all the scaffolding parts in the database
 		partPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collections(Database.Ctx)
 		for {
 			scaffoldingType, err := partPath.Next()
@@ -116,6 +116,7 @@ function adds a list of scaffolding parts to the database
 responds to a POST request with a body containing new scaffolding parts
 */
 func createPart(w http.ResponseWriter, r *http.Request) {
+
 	var scaffoldList _struct.AddScaffolding //Defines the structure of the body
 
 	w.Header().Set("Content-Type", "application/json")
@@ -126,13 +127,15 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Prints the amount of scaffolding parts added to the system
-	err = json.NewEncoder(w).Encode(strconv.Itoa(len(scaffoldList)) + " new scaffolding units added to the system \n the following units were added: \n")
+	err = json.NewEncoder(w).Encode(strconv.Itoa(len(scaffoldList)) + " new scaffolding units added to the system the following units were added:")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	for i := range scaffoldList { //For loop iterates through the list of new scaffolding parts
+
 		newPartPath := Database.Client.Collection("TrackingUnit").Doc("ScaffoldingParts").Collection(scaffoldList[i].Type).Doc(strconv.Itoa(scaffoldList[i].ID))
+
 		var firebasePart map[string]interface{} //Defines the database structure for the new part
 
 		part, err := json.Marshal(scaffoldList[i]) //Marshalls te body of the request into the right data format (byte)
@@ -148,10 +151,11 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
-		err = json.NewEncoder(w).Encode(scaffoldList[i].Type + "\n")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+	}
+
+	err = json.NewEncoder(w).Encode(scaffoldList)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 }
 
@@ -170,4 +174,14 @@ func deletePart(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
 	}
+
+	err = json.NewEncoder(w).Encode("All parts deleted successfully, number of parts deleted:")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	err = json.NewEncoder(w).Encode(len(deleteList))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
 }
