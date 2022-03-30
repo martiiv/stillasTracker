@@ -7,34 +7,10 @@ import (
 	"google.golang.org/api/iterator"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"stillasTracker/api/Database"
 	tool "stillasTracker/api/apiTools"
 	_struct "stillasTracker/api/struct"
-	"strings"
 )
-
-func createPath(segments []string) string {
-	var finalPath string
-	for _, s := range segments {
-		finalPath += s + "/"
-	}
-	finalPath = strings.TrimRight(finalPath, "/")
-	return finalPath
-}
-
-func getQuery(r *http.Request) url.Values {
-	query := r.URL.Query()
-	if len(query) != 1 {
-		return nil
-	}
-	switch true {
-	case query.Has("name"),
-		query.Has("id"):
-		return query
-	}
-	return nil
-}
 
 func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaffolding, _struct.InputScaffoldingWithID) {
 

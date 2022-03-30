@@ -85,7 +85,7 @@ If the user made an invalid request, the user will be redirected to invalidReque
 func getProject(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	lastElement := getLastUrlElement(r)
-	query := getQuery(r)
+	query := tool.GetQuery(r)
 
 	switch true {
 	case "project" == lastElement && len(query) == 0:
@@ -150,7 +150,7 @@ func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 getProjectWithID will fetch a project based on the id
 */
 func getProjectWithID(w http.ResponseWriter, r *http.Request) {
-	queryMap := getQuery(r)
+	queryMap := tool.GetQuery(r)
 	var documentReference *firestore.DocumentRef
 	var errorStruct tool.ErrorStruct
 	if queryMap.Has("id") {
@@ -561,7 +561,7 @@ func getScaffoldingFromProject(input int, scaffold _struct.InputScaffolding) ([]
 
 	newPath, _ := iterateProjects(input, "")
 
-	documentPath := createPath(strings.Split(newPath.Path, "/")[5:])
+	documentPath := tool.CreatePath(strings.Split(newPath.Path, "/")[5:])
 
 	for _, s := range scaffold {
 		iter := Database.Client.Doc(documentPath).Collection("StillasType").Where("type", "==", strings.ToLower(s.Type)).Documents(Database.Ctx)
