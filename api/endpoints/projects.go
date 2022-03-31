@@ -3,13 +3,11 @@ package endpoints
 import (
 	"cloud.google.com/go/firestore"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"google.golang.org/api/iterator"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"regexp"
 	tool "stillasTracker/api/apiTools"
 	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
@@ -37,6 +35,7 @@ ProjectRequest
 Main function to switch between the different request types.
 */
 func ProjectRequest(w http.ResponseWriter, r *http.Request) {
+
 	projectCollection = database.Client.Doc(constants.P_LocationCollection + "/" + constants.P_ProjectDocument)
 	requestType := r.Method
 	switch requestType {
@@ -62,20 +61,51 @@ func getLastUrlElement(r *http.Request) string {
 	return lastElement
 }
 
-//todo mulig slette?
-func getLastUrlElement2(r *http.Request) (string, error) {
-	url := strings.Split(r.RequestURI, "/")
-	lastUrlSegment := url[len(url)-1]
-	matched, _ := regexp.MatchString(`\d`, lastUrlSegment)
-	if matched {
-		return lastUrlSegment, nil
-	}
-	return "", errors.New("not a valid ID")
-}
-
 //storageRequest will return all the scaffolding parts in the selected storage location.
 func storageRequest(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var storageArray []_struct.Scaffolding
+	var storageArr []*firestore.DocumentIterator
+	query := getQuery(r)
+	var storage *firestore.DocumentIterator
+	if query.Has(constants.S_type) {
+		storage = database.Client.Collection("Location/Storage/Inventory").Where(constants.S_type, "==", query.Get(constants.S_type)).Documents(database.Ctx)
+		storageArr = append(storageArr, storage)
+	} else {
+		storage = database.Client.Collection("Location/Storage/Inventory").Documents(database.Ctx)
 
+	}
+	for {
+		doc, err := storage.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			tool.HandleError(tool.COULDNOTFINDDATA, w)
+			return
+		}
+
+		var storageStruct _struct.Scaffolding
+		bytes, err := json.Marshal(doc.Data())
+		if err != nil {
+			tool.HandleError(tool.MARSHALLERROR, w)
+			return
+		}
+
+		err = json.Unmarshal(bytes, &storageStruct)
+		if err != nil {
+			tool.HandleError(tool.UNMARSHALLERROR, w)
+			return
+		}
+
+		storageArray = append(storageArray, storageStruct)
+	}
+
+	err := json.NewEncoder(w).Encode(storageArray)
+	if err != nil {
+		tool.HandleError(tool.ENCODINGERROR, w)
+		return
+	}
 }
 
 /**
@@ -230,8 +260,6 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 
 		if num.ID != 0 {
 			correctID, err = iterateProjects(num.ID, "")
-		} else if num.Name != "" {
-			correctID, err = iterateProjects(0, num.Name)
 		}
 
 		if correctID == nil {
@@ -600,11 +628,7 @@ func getScaffoldingFromStorage(input int, scaffold _struct.InputScaffolding) ([]
 func addScaffolding(w http.ResponseWriter, documentPath *firestore.DocumentRef, batch *firestore.WriteBatch) error {
 	scaffoldingCollection := documentPath.Collection(constants.P_StillasType)
 
-	scaffoldingTypes := []string{constants.S_Spir, constants.S_Lengdebjelke, constants.S_Enrorsbjelke, constants.S_Lengdebjelke,
-		constants.S_Rekkverksramme, constants.S_Plank, constants.S_StillasLem, constants.S_Trapp, constants.S_Gelender,
-		constants.S_Bunnskrue, constants.S_Diagonalstang}
-
-	for _, scaffoldingType := range scaffoldingTypes {
+	for _, scaffoldingType := range constants.ScaffoldingTypes {
 		scaffoldingTypeDocument := scaffoldingCollection.Doc(scaffoldingType)
 
 		scaffoldingStruct := _struct.Scaffolding{

@@ -18,7 +18,7 @@ func Handle() {
 	//Project endpoint
 	http.HandleFunc(baseURL+"/project/", ProjectRequest) //DELETE, POST, GET
 
-	http.HandleFunc(baseURL+"/storage", storageRequest)
+	http.HandleFunc(baseURL+"/storage/", storageRequest)
 	//Profile endpoint
 	http.HandleFunc(baseURL+"/user/", profileRequest)
 	log.Println(http.ListenAndServe(getPort(), nil))

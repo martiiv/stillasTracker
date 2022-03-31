@@ -128,3 +128,7 @@ const (
 	U_idURL   = "id"
 	U_nameURL = "name"
 )
+
+var ScaffoldingTypes = []string{S_Spir, S_Lengdebjelke, S_Enrorsbjelke, S_Lengdebjelke,
+	S_Rekkverksramme, S_Plank, S_StillasLem, S_Trapp, S_Gelender,
+	S_Bunnskrue, S_Diagonalstang}

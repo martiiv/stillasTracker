@@ -30,12 +30,8 @@ func getQuery(r *http.Request) url.Values {
 	if len(query) != 1 {
 		return nil
 	}
-	switch true {
-	case query.Has(constants.P_nameURL),
-		query.Has(constants.P_idURL):
-		return query
-	}
-	return nil
+
+	return query
 }
 
 func interfaceToInt(input interface{}) (int, error) {
