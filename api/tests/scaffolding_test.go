@@ -42,7 +42,8 @@ func Test_ScaffoldingAPITEST(t *testing.T) {
 	t.Run("Get Scaffolding by type", func(t *testing.T) {
 		apitest.New().
 			HandlerFunc(handler).
-			Get("/stillastracking/v1/api/unit/Flooring/").
+			Get("/stillastracking/v1/api/unit").
+			Query("type", "Flooring").
 			Expect(t).
 			Body("[{\"batteryLevel\":100,\"id\":10,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Flooring\"},{\"batteryLevel\":100,\"id\":2,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Flooring\"},{\"batteryLevel\":100,\"id\":9,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Flooring\"}]\n").
 			Status(http.StatusOK).
@@ -50,7 +51,8 @@ func Test_ScaffoldingAPITEST(t *testing.T) {
 
 		apitest.New().
 			HandlerFunc(handler).
-			Get("/stillastracking/v1/api/unit/Beam1/").
+			Get("/stillastracking/v1/api/unit").
+			Query("type", "Beam1").
 			Expect(t).
 			Body("[{\"batteryLevel\":100,\"id\":7,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Beam1\"}]\n").
 			Status(http.StatusOK).
@@ -58,15 +60,8 @@ func Test_ScaffoldingAPITEST(t *testing.T) {
 
 		apitest.New().
 			HandlerFunc(handler).
-			Get("/stillastracking/v1/api/unit/Beam1/").
-			Expect(t).
-			Body("[{\"batteryLevel\":100,\"id\":7,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Beam1\"}]\n").
-			Status(http.StatusOK).
-			End()
-
-		apitest.New().
-			HandlerFunc(handler).
-			Get("/stillastracking/v1/api/unit/Staircase/").
+			Get("/stillastracking/v1/api/unit").
+			Query("type", "Staircase").
 			Expect(t).
 			Body("[{\"batteryLevel\":100,\"id\":4,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Staircase\"}]\n").
 			Status(http.StatusOK).
@@ -77,7 +72,9 @@ func Test_ScaffoldingAPITEST(t *testing.T) {
 	t.Run("Get Individual Scaffolding part", func(t *testing.T) {
 		apitest.New().
 			HandlerFunc(handler).
-			Get("/stillastracking/v1/api/unit/Flooring/9/").
+			Get("/stillastracking/v1/api/unit").
+			Query("type", "Flooring").
+			Query("id", "9").
 			Expect(t).
 			Body("{\"batteryLevel\":100,\"id\":9,\"location\":{\"address\":null,\"latitude\":null,\"longitude\":null},\"type\":\"Flooring\"}\n").
 			Status(http.StatusOK).
@@ -87,7 +84,7 @@ func Test_ScaffoldingAPITEST(t *testing.T) {
 	t.Run("Delete all scaffolding parts", func(t *testing.T) {
 		apitest.New().
 			HandlerFunc(handler).
-			Delete("/stillastracking/v1/api/unit/Flooring/9/").
+			Delete("/stillastracking/v1/api/unit/").
 			Body("[ { \"id\": 7, \"type\": \"Beam1\" }, { \"id\": 8, \"type\": \"Beam2\" }, { \"id\": 5, \"type\": \"Bottom-Screw\" }, { \"id\": 6, \"type\": \"Diagonals\" }, { \"id\": 10, \"type\": \"Flooring\" }, { \"id\": 2, \"type\": \"Flooring\" }, { \"id\": 9, \"type\": \"Flooring\" }, { \"id\": 12, \"type\": \"Railing\" }, { \"id\": 3, \"type\": \"Short-Flooring\" }, { \"id\": 1, \"type\": \"Spire\" }, { \"id\": 11, \"type\": \"Spire\" }, { \"id\": 4, \"type\": \"Staircase\" } ]").
 			Expect(t).
 			Body("\"All parts deleted successfully, number of parts deleted:\"\n12\n").
