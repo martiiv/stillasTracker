@@ -30,7 +30,7 @@ func GetQuery(r *http.Request) url.Values {
 
 func GetQueryScaffolding(r *http.Request) url.Values {
 	query := r.URL.Query()
-	if len(query) != 2 {
+	if len(query) == 0 {
 		return nil
 	} else if len(query) == 1 {
 		switch true {

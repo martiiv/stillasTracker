@@ -52,16 +52,16 @@ a user can search based on projects, id or type
 func getPart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	lastElement := getLastUrlElement(r)
-	query := tool.GetQuery(r)
+	query := tool.GetQueryScaffolding(r)
 
 	switch true {
-	case "unit" == lastElement && len(query) > 1: //Case 8 means that the URL is on the following format: /stillastracking/v1/api/unit/?type=""/?id=""/ TODO Formater URL riktig
+	case "unit" == lastElement && len(query) > 1: //URL is on the following format: /stillastracking/v1/api/unit?type=""&id=""
 		getIndividualScaffoldingPart(w, r, query)
 
-	case "unit" == lastElement && len(query) == 1: //Case 8 means that the URL is on the following format: /stillastracking/v1/api/unit/?type=""/?id=""/ TODO Formater URL riktig
+	case "unit" == lastElement && len(query) == 1: //URL is on the following format: /stillastracking/v1/api/unit?type=""
 		getScaffoldingByType(w, r, query)
 
-	case "unit" == lastElement && len(query) == 0: //Case 8 means that the URL is on the following format: /stillastracking/v1/api/unit/?type=""/?id=""/ TODO Formater URL riktig
+	case "unit" == lastElement && len(query) == 0: //URL is on the following format: /stillastracking/v1/api/unit/
 		getAllScaffoldingParts(w, r)
 	}
 }
@@ -157,7 +157,6 @@ getIndividualScaffoldingPart
 Function takes the url and uses the passed in type and id to fetch a specific part from the database
 URL Format: /stillastracking/v1/api/unit?type=""&?id=""
 */
-
 func getIndividualScaffoldingPart(w http.ResponseWriter, r *http.Request, query url.Values) {
 	objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(query.Get("type")).Doc(query.Get("id"))
 
@@ -181,7 +180,7 @@ in the database with the passed in type
 The url: /stillastracking/v1/api/unit/type= TODO Configure URL properly with variables
 */
 func getScaffoldingByType(w http.ResponseWriter, r *http.Request, query url.Values) {
-	objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(query.Get("Type")).Documents(database.Ctx)
+	objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(query.Get("type")).Documents(database.Ctx)
 	partList := database.GetCollectionData(objectPath)
 
 	err := json.NewEncoder(w).Encode(partList)
