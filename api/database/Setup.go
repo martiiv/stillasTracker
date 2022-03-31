@@ -1,4 +1,4 @@
-package Database
+package database
 
 import (
 	"cloud.google.com/go/firestore"
@@ -19,7 +19,7 @@ var Client *firestore.Client
 
 //Code taken from https://firebase.google.com/docs/firestore/quickstart#go
 func DatabaseConnection() {
-	file, err := filepath.Abs("Database/stillas-16563-firebase-adminsdk-wd82v-a9fe8919b7.json")
+	file, err := filepath.Abs("database/stillas-16563-firebase-adminsdk-wd82v-a9fe8919b7.json")
 	if err != nil {
 		log.Fatal(err)
 	}

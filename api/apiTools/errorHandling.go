@@ -19,6 +19,21 @@ type ErrorStruct struct {
 	code    int
 }
 
+var DATABASEREADERROR = ErrorStruct{
+	message: "Could not get database documents",
+	code:    http.StatusNotFound,
+}
+
+var DATABASEADDERROR = ErrorStruct{
+	message: "Could not add object to the database",
+	code:    http.StatusCreated,
+}
+
+var ENCODINGERROR = ErrorStruct{
+	message: "could not encode object",
+	code:    http.StatusBadRequest,
+}
+
 var MARSHALLERROR = ErrorStruct{
 	message: "could not json marshall",
 	code:    http.StatusInternalServerError,
@@ -76,12 +91,17 @@ var CHANGESWERENOTMADE = ErrorStruct{
 
 var COULDNOTFINDDATA = ErrorStruct{
 	message: "could not find data in database",
-	code:    http.StatusInternalServerError,
+	code:    http.StatusNoContent,
 }
 
 var CANNOTTRANSFERESCAFFOLDS = ErrorStruct{
 	message: "cannot transfer the amount of scaffolding",
 	code:    http.StatusInternalServerError,
+}
+
+var DELETE = ErrorStruct{
+	message: "successfully deleted",
+	code:    http.StatusOK,
 }
 
 func HandleError(err ErrorStruct, w http.ResponseWriter) {
