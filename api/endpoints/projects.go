@@ -4,6 +4,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"google.golang.org/api/iterator"
 	"io"
 	"io/ioutil"
@@ -87,8 +88,13 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 	lastElement := getLastUrlElement(r)
 	query := tool.GetQuery(r)
 
+	validQuery := query.Has("name") || query.Has("id")
+	if !validQuery {
+		query = nil
+	}
+
 	switch true {
-	case constants.P_projectURL == lastElement && len(query) == 0:
+	case constants.P_projectURL == lastElement && validQuery:
 		getProjectCollection(w, r)
 		break
 	case len(query) > 0:
@@ -165,13 +171,13 @@ func getProjectWithID(w http.ResponseWriter, r *http.Request) {
 		documentReference, err = iterateProjects(0, queryMap.Get(constants.P_nameURL))
 	}
 	if err != nil {
-		tool.HandleError(tool.NODOCUMENTSINDATABASE, w)
+		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return
 	}
 
 	data, err := database.GetDocumentData(documentReference)
 	if err != nil {
-		tool.HandleError(tool.NODOCUMENTSINDATABASE, w)
+		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return
 	}
 
@@ -210,6 +216,8 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var deleteID _struct.IDStruct
+	batch := database.Client.Batch()
+
 	//TODO creat a check for deleteID struct
 	err = json.Unmarshal(bytes, &deleteID)
 	if err != nil {
@@ -230,7 +238,69 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 			tool.HandleError(tool.COULDNOTFINDDATA, w)
 			return
 		}
-		_, err := correctID.Delete(database.Ctx)
+
+		subCollection := database.GetCollectionData(correctID.Collection(constants.P_StillasType).Documents(database.Ctx))
+		if subCollection != nil {
+			iter := correctID.Collection(constants.P_StillasType).Documents(database.Ctx)
+
+			for {
+				doc, err := iter.Next()
+				if err == iterator.Done {
+					break
+				}
+				if err != nil {
+					tool.HandleError(tool.DATABASEREADERROR, w)
+					return
+				}
+
+				scaffoldingType, err := doc.DataAt(constants.S_type)
+
+				scaffoldingParts, err := doc.DataAt(constants.P_QuantityExpected)
+				byte, err := json.Marshal(scaffoldingParts)
+				if err != nil {
+					tool.HandleError(tool.MARSHALLERROR, w)
+					return
+				}
+
+				var restScaffold int
+				err = json.Unmarshal(byte, &restScaffold)
+				if err != nil {
+					tool.HandleError(tool.UNMARSHALLERROR, w)
+					return
+				}
+
+				if restScaffold != 0 {
+					typeScaffold := fmt.Sprint(scaffoldingType)
+
+					move := _struct.InputScaffoldingWithID{
+						ToProjectID:   0,
+						FromProjectID: num.ID,
+						InputScaffolding: _struct.InputScaffolding{
+							{
+								Type:     strings.Title(strings.ToLower(typeScaffold)),
+								Quantity: restScaffold,
+							},
+						},
+					}
+
+					moveByte, err := json.Marshal(move)
+					if err != nil {
+						tool.HandleError(tool.MARSHALLERROR, w)
+						return
+					}
+
+					read := strings.NewReader(string(moveByte))
+					req, _ := http.NewRequest(http.MethodPut, "/stillastracking/v1/api/project/scaffolding/", read)
+					transferProject(w, req)
+
+				}
+
+				batch.Delete(doc.Ref)
+			}
+		}
+
+		batch.Delete(correctID)
+		_, err := batch.Commit(database.Ctx)
 		if err != nil {
 			tool.HandleError(tool.NODOCUMENTWITHID, w)
 			return
@@ -246,13 +316,11 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 		tool.HandleError(tool.READALLERROR, w)
 		return
 	}
-
 	correctBody := checkProjectBody(bytes)
 	if !correctBody {
 		tool.HandleError(tool.INVALIDBODY, w)
 		return
 	}
-
 	var project _struct.NewProject
 	err = json.Unmarshal(bytes, &project)
 	if err != nil {
@@ -265,6 +333,7 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 	documentPath := projectCollection.Collection(state).Doc(id)
 
 	var firebaseInput map[string]interface{}
+
 	bytes, err = json.Marshal(project)
 	if err != nil {
 		tool.HandleError(tool.MARSHALLERROR, w)
@@ -277,10 +346,14 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = database.AddDocument(documentPath, firebaseInput)
+	batch := database.Client.Batch()
+	batch.Create(documentPath, firebaseInput)
+	err = addScaffolding(w, documentPath, batch)
 	if err != nil {
 		tool.HandleError(tool.COULDNOTADDDOCUMENT, w)
 		return
+	} else {
+		tool.HandleError(tool.ADDED, w)
 	}
 }
 
@@ -426,11 +499,19 @@ func transferProject(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		inputQuantity, err := interfaceToInt(inputScaffolding.InputScaffolding[i].Quantity)
+		fromLoc, err := interfaceToInt(fromLocation[i])
+		newLoc, err := interfaceToInt(newLocation[i])
+		if err != nil {
+			tool.HandleError(tool.READALLERROR, w)
+			return
+		}
+
 		sub[constants.P_Quantity] = map[string]interface{}{}
-		sub[constants.P_Quantity].(map[string]interface{})[constants.P_Expected] = fromLocation[i].(int64) - int64(inputScaffolding.InputScaffolding[i].Quantity)
+		sub[constants.P_Quantity].(map[string]interface{})[constants.P_Expected] = fromLoc - inputQuantity
 
 		add[constants.P_Quantity] = map[string]interface{}{}
-		add[constants.P_Quantity].(map[string]interface{})[constants.P_Expected] = newLocation[i].(int64) + int64(inputScaffolding.InputScaffolding[i].Quantity)
+		add[constants.P_Quantity].(map[string]interface{})[constants.P_Expected] = newLoc + inputQuantity
 
 		batch.Set(newPath[i], add, firestore.MergeAll)
 		batch.Set(fromPaths[i], sub, firestore.MergeAll)
@@ -514,4 +595,41 @@ func getScaffoldingFromStorage(input int, scaffold _struct.InputScaffolding) ([]
 	}
 	return scaffoldingArray, fromPaths
 
+}
+
+func addScaffolding(w http.ResponseWriter, documentPath *firestore.DocumentRef, batch *firestore.WriteBatch) error {
+	scaffoldingCollection := documentPath.Collection(constants.P_StillasType)
+
+	scaffoldingTypes := []string{constants.S_Spir, constants.S_Lengdebjelke, constants.S_Enrorsbjelke, constants.S_Lengdebjelke,
+		constants.S_Rekkverksramme, constants.S_Plank, constants.S_StillasLem, constants.S_Trapp, constants.S_Gelender,
+		constants.S_Bunnskrue, constants.S_Diagonalstang}
+
+	for _, scaffoldingType := range scaffoldingTypes {
+		scaffoldingTypeDocument := scaffoldingCollection.Doc(scaffoldingType)
+
+		scaffoldingStruct := _struct.Scaffolding{
+			Type: strings.ToLower(scaffoldingType),
+			Quantity: _struct.Quantity{
+				Expected:   0,
+				Registered: 0,
+			},
+		}
+
+		byte, err := json.Marshal(scaffoldingStruct)
+		if err != nil {
+			return err
+		}
+
+		var scaffoldingInput map[string]interface{}
+		err = json.Unmarshal(byte, &scaffoldingInput)
+		if err != nil {
+			return err
+		}
+
+		batch.Set(scaffoldingTypeDocument, scaffoldingInput)
+	}
+
+	_, err := batch.Commit(database.Ctx)
+
+	return err
 }

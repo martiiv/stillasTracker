@@ -26,6 +26,7 @@ const (
 	//StillasType document fields
 	P_Quantity         = "Quantity"
 	P_Expected         = "expected"
+	P_Registered       = "registered"
 	P_QuantityExpected = "Quantity.expected"
 	P_Type             = "type"
 
@@ -86,6 +87,18 @@ const (
 	S_id           = "id"
 	S_location     = "location"
 	S_type         = "type"
+
+	//Scaffolding parts
+	S_Spir           = "Spire"
+	S_Lengdebjelke   = "Lengdebjelke"
+	S_Enrorsbjelke   = "Enrørsbjelke"
+	S_Rekkverksramme = "Rekkverksramme"
+	S_Plank          = "Plank"
+	S_StillasLem     = "Stillaslem"
+	S_Trapp          = "Trapp"
+	S_Gelender       = "Gelender"
+	S_Bunnskrue      = "Bunnskrue"
+	S_Diagonalstang  = "Diagonalstang"
 
 	//Top level user
 	U_UsersCollection = "Users"

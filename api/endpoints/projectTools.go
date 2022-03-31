@@ -38,6 +38,21 @@ func getQuery(r *http.Request) url.Values {
 	return nil
 }
 
+func interfaceToInt(input interface{}) (int, error) {
+	bytes, err := json.Marshal(input)
+	if err != nil {
+		return 0, errors.New("cannot marshal")
+	}
+
+	var returnInt int
+	err = json.Unmarshal(bytes, &returnInt)
+	if err != err {
+		return 0, errors.New("cannot unmarshal")
+	}
+
+	return returnInt, nil
+}
+
 func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaffolding, _struct.InputScaffoldingWithID) {
 
 	data, err := ioutil.ReadAll(r.Body)
@@ -66,7 +81,7 @@ func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaf
 		}
 
 		scaffolding := _struct.Scaffolding{
-			Category: inputScaffolding.InputScaffolding[i].Type,
+			Type:     inputScaffolding.InputScaffolding[i].Type,
 			Quantity: quantity,
 		}
 

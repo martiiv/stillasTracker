@@ -45,13 +45,13 @@ var NODOCUMENTSINDATABASE = ErrorStruct{
 }
 
 var NODOCUMENTWITHID = ErrorStruct{
-	message: "no document with selected ID",
+	message: "document does not exist",
 	code:    http.StatusBadRequest,
 }
 
 var INVALIDREQUEST = ErrorStruct{
 	message: "invalid request",
-	code:    http.StatusInternalServerError,
+	code:    http.StatusBadRequest,
 }
 
 var UNMARSHALLERROR = ErrorStruct{
@@ -102,6 +102,11 @@ var CANNOTTRANSFERESCAFFOLDS = ErrorStruct{
 var DELETE = ErrorStruct{
 	message: "successfully deleted",
 	code:    http.StatusOK,
+}
+
+var ADDED = ErrorStruct{
+	message: "successfully added",
+	code:    http.StatusCreated,
 }
 
 func HandleError(err ErrorStruct, w http.ResponseWriter) {

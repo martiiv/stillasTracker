@@ -20,12 +20,8 @@ func GetQuery(r *http.Request) url.Values {
 	if len(query) != 1 {
 		return nil
 	}
-	switch true {
-	case query.Has("name"),
-		query.Has("id"):
-		return query
-	}
-	return nil
+
+	return query
 }
 
 func GetQueryScaffolding(r *http.Request) url.Values {
