@@ -119,18 +119,18 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 	lastElement := getLastUrlElement(r)
 	query := tool.GetQuery(r)
 
-	//Todomake user get invalid input when writing wrong uri
+	//Todo make user get invalid input when writing wrong uri
 
-	validQuery := query.Has(constants.P_nameURL) || query.Has(constants.U_idURL) || query.Has(constants.P_scaffolding)
+	validQuery := query.Has(constants.P_nameURL) || query.Has(constants.P_idURL) || query.Has(constants.P_scaffolding)
 	if !validQuery || len(query) > 3 {
 		query = nil
 	}
 
 	switch true {
-	case constants.P_projectURL == lastElement && !query.Has(constants.U_idURL):
+	case !query.Has(constants.P_idURL) && constants.P_projectURL == lastElement || (constants.P_projectURL == lastElement && query.Has(constants.P_scaffolding)):
 		getProjectCollection(w, r)
 		break
-	case query.Has(constants.U_idURL):
+	case (query.Has(constants.P_idURL) && len(query) == 1) || (query.Has(constants.P_idURL) && query.Has(constants.P_scaffolding) && len(query) == 2):
 		getProjectWithID(w, r)
 		break
 	default:

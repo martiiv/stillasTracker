@@ -11,6 +11,7 @@ const baseURL = "/stillastracking/v1/api"
 
 // Handle /**
 func Handle() {
+
 	fmt.Println("Listening on port" + getPort())
 
 	//Scaffolding endpoints
