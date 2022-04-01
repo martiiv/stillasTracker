@@ -123,7 +123,7 @@ func Test_PorjectAPITEST(t *testing.T) {
 	})
 
 	t.Run("Move scaffolding parts from storage to new project", func(t *testing.T) {
-		inputBodyMove1 := `{"toProjectID": 3,"fromProjectID": 0,"scaffold":[{"type": "Spire","quantity": 5644},{"type": "Bunnskrue","quantity": 322}]}`
+		inputBodyMove1 := `{"toProjectID": 0,"fromProjectID": 3,"scaffold":[{"type": "Spire","quantity": 5644},{"type": "Bunnskrue","quantity": 322}]}`
 		apitest.New().
 			HandlerFunc(handler).
 			Put("/stillastracking/v1/api/project/scaffolding/").

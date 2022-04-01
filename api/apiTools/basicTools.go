@@ -3,6 +3,7 @@ package apiTools
 import (
 	"net/http"
 	"net/url"
+	"stillasTracker/api/constants"
 	"strings"
 )
 
@@ -17,11 +18,17 @@ func CreatePath(segments []string) string {
 
 func GetQuery(r *http.Request) url.Values {
 	query := r.URL.Query()
-	if len(query) != 1 {
+
+	switch true {
+	case query.Has(constants.P_idURL) && len(query) == 1:
+		return query
+	case query.Has(constants.P_idURL) && query.Has(constants.P_scaffolding) && len(query) == 2:
+		return query
+	case query.Has(constants.P_scaffolding) && len(query) == 1:
+		return query
+	default:
 		return nil
 	}
-
-	return query
 }
 
 func GetQueryScaffolding(r *http.Request) url.Values {

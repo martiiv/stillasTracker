@@ -3,6 +3,7 @@ package endpoints
 import (
 	"cloud.google.com/go/firestore"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"google.golang.org/api/iterator"
 	"io"
@@ -69,10 +70,10 @@ func storageRequest(w http.ResponseWriter, r *http.Request) {
 	query := getQuery(r)
 	var storage *firestore.DocumentIterator
 	if query.Has(constants.S_type) {
-		storage = database.Client.Collection("Location/Storage/Inventory").Where(constants.S_type, "==", query.Get(constants.S_type)).Documents(database.Ctx)
+		storage = database.Client.Collection(constants.P_LocationCollection+"/"+constants.P_StorageDocument+"/"+constants.P_Inventory).Where(constants.S_type, "==", query.Get(constants.S_type)).Documents(database.Ctx)
 		storageArr = append(storageArr, storage)
 	} else {
-		storage = database.Client.Collection("Location/Storage/Inventory").Documents(database.Ctx)
+		storage = database.Client.Collection(constants.P_LocationCollection + "/" + constants.P_StorageDocument + "/" + constants.P_Inventory).Documents(database.Ctx)
 
 	}
 	for {
@@ -118,16 +119,18 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 	lastElement := getLastUrlElement(r)
 	query := tool.GetQuery(r)
 
-	validQuery := query.Has("name") || query.Has("id")
-	if !validQuery {
+	//Todomake user get invalid input when writing wrong uri
+
+	validQuery := query.Has(constants.P_nameURL) || query.Has(constants.U_idURL) || query.Has(constants.P_scaffolding)
+	if !validQuery || len(query) > 3 {
 		query = nil
 	}
 
 	switch true {
-	case constants.P_projectURL == lastElement && validQuery:
+	case constants.P_projectURL == lastElement && !query.Has(constants.U_idURL):
 		getProjectCollection(w, r)
 		break
-	case len(query) > 0:
+	case query.Has(constants.U_idURL):
 		getProjectWithID(w, r)
 		break
 	default:
@@ -140,7 +143,8 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 getProjectCollection will fetch every projects in the database.
 */
 func getProjectCollection(w http.ResponseWriter, r *http.Request) {
-	var projects []_struct.NewProject
+	var projects []_struct.GetProject
+	queryMap := getQuery(r)
 	collectionIterator := projectCollection.Collections(database.Ctx)
 	for {
 		collRef, err := collectionIterator.Next()
@@ -158,7 +162,7 @@ func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 
-			var project _struct.NewProject
+			var projectNew _struct.NewProject
 			doc, err := database.GetDocumentData(documentRef.Ref)
 			if err != nil {
 				tool.HandleError(tool.NODOCUMENTWITHID, w)
@@ -166,11 +170,24 @@ func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 			}
 
 			projectByte, err := json.Marshal(doc)
-			err = json.Unmarshal(projectByte, &project)
+			err = json.Unmarshal(projectByte, &projectNew)
 			if err != nil {
 				tool.HandleError(tool.UNMARSHALLERROR, w)
 				return
 			}
+
+			var project _struct.GetProject
+			project.NewProject = projectNew
+			if queryMap.Has(constants.P_scaffolding) && queryMap.Get(constants.P_scaffolding) == "true" {
+				scaffold, err := getScaffoldingStruct(documentRef.Ref)
+				if err != nil {
+					tool.HandleError(tool.COULDNOTFINDDATA, w)
+					return
+				}
+				project.ScaffoldingArray = scaffold
+
+			}
+
 			projects = append(projects, project)
 		}
 	}
@@ -217,11 +234,23 @@ func getProjectWithID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var project _struct.NewProject
-	err = json.Unmarshal(jsonStr, &project)
+	var projectNew _struct.NewProject
+	err = json.Unmarshal(jsonStr, &projectNew)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
+	}
+
+	var project _struct.GetProject
+	project.NewProject = projectNew
+	if queryMap.Has(constants.P_scaffolding) && queryMap.Get(constants.P_scaffolding) == "true" {
+		scaffold, err := getScaffoldingStruct(documentReference)
+		if err != nil {
+			tool.HandleError(tool.COULDNOTFINDDATA, w)
+			return
+		}
+		project.ScaffoldingArray = scaffold
+
 	}
 
 	err = json.NewEncoder(w).Encode(project)
@@ -656,4 +685,33 @@ func addScaffolding(w http.ResponseWriter, documentPath *firestore.DocumentRef, 
 	_, err := batch.Commit(database.Ctx)
 
 	return err
+}
+
+func getScaffoldingStruct(document *firestore.DocumentRef) (_struct.ScaffoldingArray, error) {
+
+	scaffolding := document.Collection(constants.P_StillasType).Documents(database.Ctx)
+	var scaffoldArr _struct.ScaffoldingArray
+
+	for {
+		documentRef, err := scaffolding.Next()
+		if err == iterator.Done {
+			break
+		}
+
+		var scaffold _struct.Scaffolding
+		doc, err := database.GetDocumentData(documentRef.Ref)
+		if err != nil {
+			return _struct.ScaffoldingArray{}, errors.New("no document")
+		}
+
+		projectByte, err := json.Marshal(doc)
+		err = json.Unmarshal(projectByte, &scaffold)
+		if err != nil {
+			return _struct.ScaffoldingArray{}, errors.New("no document")
+		}
+
+		scaffoldArr = append(scaffoldArr, scaffold)
+
+	}
+	return scaffoldArr, nil
 }
