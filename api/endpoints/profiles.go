@@ -16,6 +16,7 @@ import (
 	_struct "stillasTracker/api/struct"
 	"strconv"
 	"strings"
+	"time"
 )
 
 /**
@@ -139,6 +140,13 @@ func createProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := strconv.Itoa(employee.EmployeeID)
+
+	_, err = iterateProfiles(employee.EmployeeID, "")
+	if err == nil {
+		tool.HandleError(tool.CouldNotAddSameID, w)
+		return
+	}
+
 	state := employee.Role
 	documentPath := baseCollection.Collection(state).Doc(id)
 
@@ -149,7 +157,6 @@ func createProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Todo sjekk om id ikke er tatt
 	err = database.AddDocument(documentPath, firebaseInput)
 	if err != nil {
 		tool.HandleError(tool.COULDNOTADDDOCUMENT, w)
@@ -419,10 +426,14 @@ func checkStruct(body []byte) bool {
 	}
 	_, emailFormat := userMap[constants.U_email].(string)
 	_, adminFormat := userMap[constants.U_admin].(bool)
-	//Todo sjekk om dato er skrevet på riktig format
-	_, dateFormat := userMap[constants.U_dateOfBirth].(string)
-	name := checkNameFormat(userMap[constants.U_name])
 
+	date, dateFormat := userMap[constants.U_dateOfBirth].(string)
+	_, err = time.Parse("02-01-2006", date)
+	if err != nil {
+		return false
+	}
+
+	name := checkNameFormat(userMap[constants.U_name])
 	validFormat := idFormat && phoneFormat && roleFormat && emailFormat && adminFormat && name && dateFormat
 
 	if !validFormat {

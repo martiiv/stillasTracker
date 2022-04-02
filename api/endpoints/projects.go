@@ -8,6 +8,7 @@ import (
 	"google.golang.org/api/iterator"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	tool "stillasTracker/api/apiTools"
 	"stillasTracker/api/constants"
@@ -95,6 +96,7 @@ func storageRequest(w http.ResponseWriter, r *http.Request) {
 
 		err = json.Unmarshal(bytes, &storageStruct)
 		if err != nil {
+			log.Println("Her det fucker seg?")
 			tool.HandleError(tool.UNMARSHALLERROR, w)
 			return
 		}
@@ -116,21 +118,17 @@ If the user made an invalid request, the user will be redirected to invalidReque
 */
 func getProject(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	lastElement := getLastUrlElement(r)
-	query := tool.GetQuery(r)
-
-	//Todo make user get invalid input when writing wrong uri
-
-	validQuery := query.Has(constants.P_nameURL) || query.Has(constants.P_idURL) || query.Has(constants.P_scaffolding)
-	if !validQuery || len(query) > 3 {
-		query = nil
+	query, err := tool.GetQuery(r)
+	if !err {
+		tool.HandleError(tool.INVALIDREQUEST, w)
+		return
 	}
 
 	switch true {
-	case !query.Has(constants.P_idURL) && constants.P_projectURL == lastElement || (constants.P_projectURL == lastElement && query.Has(constants.P_scaffolding)):
+	case !query.Has(constants.P_idURL) && !query.Has(constants.P_nameURL):
 		getProjectCollection(w, r)
 		break
-	case (query.Has(constants.P_idURL) && len(query) == 1) || (query.Has(constants.P_idURL) && query.Has(constants.P_scaffolding) && len(query) == 2):
+	case query.Has(constants.P_idURL) || query.Has(constants.P_nameURL):
 		getProjectWithID(w, r)
 		break
 	default:
@@ -203,7 +201,7 @@ func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 getProjectWithID will fetch a project based on the id
 */
 func getProjectWithID(w http.ResponseWriter, r *http.Request) {
-	queryMap := tool.GetQuery(r)
+	queryMap, _ := tool.GetQuery(r)
 	var documentReference *firestore.DocumentRef
 	var err error
 	if queryMap.Has(constants.P_idURL) {
@@ -274,10 +272,26 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var dat []map[string]int
+	err = json.Unmarshal(bytes, &dat)
+	if err != nil {
+		tool.HandleError(tool.UNMARSHALLERROR, w)
+		return
+	}
+
+	var correctBody bool
+	for _, m := range dat {
+		_, correctBody = m[constants.P_idBody]
+	}
+
+	if !correctBody {
+		tool.HandleError(tool.INVALIDBODY, w)
+		return
+	}
+
 	var deleteID _struct.IDStruct
 	batch := database.Client.Batch()
 
-	//TODO creat a check for deleteID struct
 	err = json.Unmarshal(bytes, &deleteID)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
@@ -292,7 +306,7 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if correctID == nil {
-			tool.HandleError(tool.COULDNOTFINDDATA, w)
+			tool.HandleError(tool.CouldNotDelete, w)
 			return
 		}
 
@@ -386,6 +400,18 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := strconv.Itoa(project.ProjectID)
+
+	var correctID *firestore.DocumentRef
+
+	if project.ProjectID != 0 {
+		correctID, err = iterateProjects(project.ProjectID, "")
+	}
+
+	if correctID != nil {
+		tool.HandleError(tool.CouldNotAddSameID, w)
+		return
+	}
+
 	state := project.State
 	documentPath := projectCollection.Collection(state).Doc(id)
 

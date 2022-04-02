@@ -3,6 +3,7 @@ package apiTools
 import (
 	"net/http"
 	"net/url"
+	"stillasTracker/api/constants"
 	"strings"
 )
 
@@ -15,20 +16,25 @@ func CreatePath(segments []string) string {
 	return finalPath
 }
 
-func GetQuery(r *http.Request) url.Values {
+//https://stackoverflow.com/questions/59570978/is-there-a-way-to-check-for-invalid-query-parameters-in-an-http-request
+func GetQuery(r *http.Request) (url.Values, bool) {
 	query := r.URL.Query()
 
-	/*switch true {
-	case query.Has(constants.P_idURL) && len(query) == 1:
-		return query
-	case query.Has(constants.P_idURL) && query.Has(constants.P_scaffolding) && len(query) == 2:
-		return query
-	case query.Has(constants.P_scaffolding) && len(query) == 1:
-		return query
-	default:
-		return nil
-	}*/
-	return query
+	allowedQuery := map[string]bool{constants.P_idURL: true, constants.P_nameURL: true, constants.P_scaffolding: true}
+
+	for k := range query {
+		if _, ok := allowedQuery[k]; !ok {
+			return nil, false
+		}
+	}
+
+	if query.Has(constants.P_scaffolding) {
+		if !(query.Get(constants.P_scaffolding) == "true" || query.Get(constants.P_scaffolding) == "false") {
+			return nil, false
+		}
+	}
+
+	return query, true
 }
 
 func GetQueryScaffolding(r *http.Request) url.Values {

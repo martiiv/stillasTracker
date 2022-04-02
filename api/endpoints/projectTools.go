@@ -14,6 +14,7 @@ import (
 	"stillasTracker/api/database"
 	_struct "stillasTracker/api/struct"
 	"strings"
+	"time"
 )
 
 func createPath(segments []string) string {
@@ -27,9 +28,6 @@ func createPath(segments []string) string {
 
 func getQuery(r *http.Request) url.Values {
 	query := r.URL.Query()
-	if len(query) != 1 {
-		return nil
-	}
 
 	return query
 }
@@ -183,6 +181,13 @@ func checkPeriod(period interface{}) bool {
 	err = json.Unmarshal(periodByte, &periods)
 	if err != nil {
 		return false
+	}
+
+	for _, i := range periods {
+		_, err = time.Parse("02-01-2006", i.(string))
+		if err != nil {
+			return false
+		}
 	}
 
 	nestedPeriod := []string{constants.P_PeriodstartDate, constants.P_PeriodendDate}

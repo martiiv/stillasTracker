@@ -84,6 +84,11 @@ var COULDNOTADDDOCUMENT = ErrorStruct{
 	code:    http.StatusInternalServerError,
 }
 
+var CouldNotAddSameID = ErrorStruct{
+	message: "id is already in use",
+	code:    http.StatusBadRequest,
+}
+
 var CHANGESWERENOTMADE = ErrorStruct{
 	message: "changes were not made",
 	code:    http.StatusInternalServerError,
@@ -92,6 +97,11 @@ var CHANGESWERENOTMADE = ErrorStruct{
 var COULDNOTFINDDATA = ErrorStruct{
 	message: "could not find data in database",
 	code:    http.StatusNoContent,
+}
+
+var CouldNotDelete = ErrorStruct{
+	message: "invalid id, could not delete",
+	code:    http.StatusBadRequest,
 }
 
 var CANNOTTRANSFERESCAFFOLDS = ErrorStruct{
