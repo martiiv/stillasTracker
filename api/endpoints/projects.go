@@ -267,8 +267,6 @@ func invalidRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 //deleteProject deletes selected projects from the database.
-//todo when deleting with a valid and an invalid id, the valid is deleted.
-//todo check value if id stuct, will go through with a string
 func deleteProject(w http.ResponseWriter, r *http.Request) {
 	bytes, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -276,16 +274,19 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var dat []map[string]int
+	var dat []map[string]interface{}
 	err = json.Unmarshal(bytes, &dat)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
 	}
 
-	var correctBody bool
+	correctBody := true
 	for _, m := range dat {
-		_, correctBody = m[constants.P_idBody]
+		_, correct := m[constants.P_idBody].(float64)
+		if !correct {
+			correctBody = false
+		}
 	}
 
 	if !correctBody {
@@ -375,11 +376,12 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 		}
 
 		batch.Delete(correctID)
-		_, err := batch.Commit(database.Ctx)
-		if err != nil {
-			tool.HandleError(tool.NODOCUMENTWITHID, w)
-			return
-		}
+
+	}
+	_, err = batch.Commit(database.Ctx)
+	if err != nil {
+		tool.HandleError(tool.NODOCUMENTWITHID, w)
+		return
 	}
 
 }
