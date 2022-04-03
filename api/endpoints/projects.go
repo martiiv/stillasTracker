@@ -40,6 +40,7 @@ func ProjectRequest(w http.ResponseWriter, r *http.Request) {
 
 	projectCollection = database.Client.Doc(constants.P_LocationCollection + "/" + constants.P_ProjectDocument)
 	requestType := r.Method
+
 	switch requestType {
 	case http.MethodGet:
 		getProject(w, r)
@@ -118,7 +119,7 @@ If the user made an invalid request, the user will be redirected to invalidReque
 */
 func getProject(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	query, err := tool.GetQuery(r)
+	query, err := tool.GetQueryProject(r)
 	if !err {
 		tool.HandleError(tool.INVALIDREQUEST, w)
 		return
@@ -140,6 +141,7 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 /*
 getProjectCollection will fetch every projects in the database.
 */
+//Todo make so the user can request active, inactive and upcoming
 func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 	var projects []_struct.GetProject
 	queryMap := getQuery(r)
@@ -201,7 +203,7 @@ func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 getProjectWithID will fetch a project based on the id
 */
 func getProjectWithID(w http.ResponseWriter, r *http.Request) {
-	queryMap, _ := tool.GetQuery(r)
+	queryMap, _ := tool.GetQueryProject(r)
 	var documentReference *firestore.DocumentRef
 	var err error
 	if queryMap.Has(constants.P_idURL) {
@@ -265,6 +267,8 @@ func invalidRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 //deleteProject deletes selected projects from the database.
+//todo when deleting with a valid and an invalid id, the valid is deleted.
+//todo check value if id stuct, will go through with a string
 func deleteProject(w http.ResponseWriter, r *http.Request) {
 	bytes, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -446,15 +450,11 @@ If the user made an invalid request, the user will be redirected to invalidReque
 */
 func putRequest(w http.ResponseWriter, r *http.Request) {
 	lastElement := getLastUrlElement(r)
-	_, err := strconv.Atoi(lastElement)
-	isInt := true
-	if err != nil {
-		isInt = false
-	}
+
 	switch true {
 	case constants.P_scaffolding == lastElement:
 		transferProject(w, r)
-	case isInt:
+	case constants.P_projectURL == lastElement:
 		updateState(w, r)
 	default:
 		invalidRequest(w, r)
@@ -500,6 +500,20 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 	newPath := projectCollection.Collection(stateStruct.State).Doc(strconv.Itoa(stateStruct.ID))
 	batch.Create(newPath, project)
 
+	scaffolding, err := getScaffoldingStruct(documentReference)
+	if err != nil {
+		tool.HandleError(tool.COULDNOTFINDDATA, w)
+		return
+	}
+
+	scaffoldingMap, err := structToMap(scaffolding)
+
+	for _, s := range scaffoldingMap {
+		scaffoldingType := strings.Title((s[constants.P_typeField].(string)))
+		batch.Create(newPath.Collection(constants.P_StillasType).Doc(scaffoldingType), s)
+		batch.Delete(documentReference.Collection(constants.P_StillasType).Doc(scaffoldingType))
+	}
+
 	batch.Delete(documentReference)
 	update := firestore.Update{
 		Path:  constants.P_State,
@@ -518,10 +532,28 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func structToMap(input interface{}) ([]map[string]interface{}, error) {
+	output, err := json.Marshal(input)
+	if err != nil {
+		return nil, err
+	}
+
+	var outputMap []map[string]interface{}
+	err = json.Unmarshal(output, &outputMap)
+	if err != nil {
+		return nil, err
+	}
+
+	return outputMap, nil
+}
+
 /**
 transferProject will move a project from one collection of a given state to another (active, inactive, upcoming).
 This function will use batched writes to ensure integrity.
 */
+//todo check struct
+//todo bad request if scaffolding type is invalid
+//todo check if project exist
 func transferProject(w http.ResponseWriter, r *http.Request) {
 	batch := database.Client.Batch()
 	_, inputScaffolding := getScaffoldingInput(w, r)

@@ -106,7 +106,7 @@ var CouldNotDelete = ErrorStruct{
 
 var CANNOTTRANSFERESCAFFOLDS = ErrorStruct{
 	message: "cannot transfer the amount of scaffolding",
-	code:    http.StatusInternalServerError,
+	code:    http.StatusBadRequest,
 }
 
 var DELETE = ErrorStruct{

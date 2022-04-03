@@ -127,6 +127,7 @@ const (
 	//User url
 	U_idURL   = "id"
 	U_nameURL = "name"
+	U_User    = "user"
 )
 
 var ScaffoldingTypes = []string{S_Spir, S_Lengdebjelke, S_Enrorsbjelke, S_Lengdebjelke,

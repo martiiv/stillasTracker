@@ -21,7 +21,7 @@ func Handle() {
 
 	http.HandleFunc(baseURL+"/storage/", storageRequest)
 	//Profile endpoint
-	http.HandleFunc(baseURL+"/user/", profileRequest)
+	http.HandleFunc(baseURL+"/user/", ProfileRequest)
 	log.Println(http.ListenAndServe(getPort(), nil))
 
 }
