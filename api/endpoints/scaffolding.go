@@ -182,6 +182,7 @@ func getQuantity(w http.ResponseWriter, object map[string]interface{}) (int, int
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return 0, 0
 	}
+	//Splits the object into
 	quantityString := string(marshalled)
 	splitString := strings.Split(quantityString, ":")
 	oldQuantity := strings.Split(splitString[2], ",")
