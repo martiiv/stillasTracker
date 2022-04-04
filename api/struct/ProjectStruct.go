@@ -85,7 +85,7 @@ type StateStruct struct {
 }
 
 // MovingStruct for moving a scaffolding piece.
-type MovingStruct struct {
+type MovingStruct []struct {
 	Type     string `json:"type"`
 	Quantity int    `json:"quantity"`
 }
@@ -101,12 +101,6 @@ type NewProject struct {
 	Address     `json:"address"`
 	Customer    `json:"customer"`
 	Geofence    `json:"geofence"`
-	//Scaffolding `json:"scaffolding"`
-}
-
-type GetProject struct {
-	NewProject
-	ScaffoldingArray `json:"scaffolding"`
 }
 
 type InputScaffolding []struct {
