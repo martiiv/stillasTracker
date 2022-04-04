@@ -4,58 +4,53 @@ import (
 	"cloud.google.com/go/firestore"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"google.golang.org/api/iterator"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	tool "stillasTracker/api/apiTools"
 	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
 	_struct "stillasTracker/api/struct"
-	"strings"
+	"time"
 )
-
-func createPath(segments []string) string {
-	var finalPath string
-	for _, s := range segments {
-		finalPath += s + "/"
-	}
-	finalPath = strings.TrimRight(finalPath, "/")
-	return finalPath
-}
 
 func getQuery(r *http.Request) url.Values {
 	query := r.URL.Query()
-	if len(query) != 1 {
-		return nil
-	}
-	switch true {
-	case query.Has(constants.P_nameURL),
-		query.Has(constants.P_idURL):
-		return query
-	}
-	return nil
+
+	return query
 }
 
-func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaffolding, _struct.InputScaffoldingWithID) {
+func interfaceToInt(input interface{}) (int, error) {
+	bytes, err := json.Marshal(input)
+	if err != nil {
+		return 0, errors.New("cannot marshal")
+	}
+
+	var returnInt int
+	err = json.Unmarshal(bytes, &returnInt)
+	if err != err {
+		return 0, errors.New("cannot unmarshal")
+	}
+
+	return returnInt, nil
+}
+
+func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaffolding, _struct.InputScaffoldingWithID, error) {
 
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		tool.HandleError(tool.READALLERROR, w)
-		return nil, _struct.InputScaffoldingWithID{}
+		return nil, _struct.InputScaffoldingWithID{}, errors.New("could not read")
 	}
+
 	ok := checkTransaction(data)
 	if !ok {
-		tool.HandleError(tool.INVALIDBODY, w)
-		return nil, _struct.InputScaffoldingWithID{}
+		return nil, _struct.InputScaffoldingWithID{}, errors.New("invalid body")
 	}
 
 	var inputScaffolding _struct.InputScaffoldingWithID
 	err = json.Unmarshal(data, &inputScaffolding)
 	if err != nil {
-		tool.HandleError(tool.UNMARSHALLERROR, w)
-		return nil, _struct.InputScaffoldingWithID{}
+		return nil, _struct.InputScaffoldingWithID{}, errors.New("could not unmarshal")
 	}
 	var scaffolds []_struct.Scaffolding
 	for i := range inputScaffolding.InputScaffolding {
@@ -66,18 +61,19 @@ func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaf
 		}
 
 		scaffolding := _struct.Scaffolding{
-			Category: inputScaffolding.InputScaffolding[i].Type,
+			Type:     inputScaffolding.InputScaffolding[i].Type,
 			Quantity: quantity,
 		}
 
 		scaffolds = append(scaffolds, scaffolding)
 	}
-	return scaffolds, inputScaffolding
+	return scaffolds, inputScaffolding, nil
 }
 
 //iterateProjects will iterate through every project in active, inactive and upcoming projects.
-func iterateProjects(id int, name string) (*firestore.DocumentRef, error) {
-	var documentReference *firestore.DocumentRef
+func iterateProjects(id int, name string, state string) ([]*firestore.DocumentRef, error) {
+	var documentReferences []*firestore.DocumentRef
+
 	collection := projectCollection.Collections(database.Ctx)
 	for {
 		collRef, err := collection.Next()
@@ -90,8 +86,10 @@ func iterateProjects(id int, name string) (*firestore.DocumentRef, error) {
 		var document *firestore.DocumentIterator
 		if name != "" {
 			document = projectCollection.Collection(collRef.ID).Where(constants.P_ProjectName, "==", name).Documents(database.Ctx)
-		} else {
+		} else if id != 0 {
 			document = projectCollection.Collection(collRef.ID).Where(constants.P_ProjectId, "==", id).Documents(database.Ctx)
+		} else {
+			document = projectCollection.Collection(collRef.ID).Where(constants.P_State, "==", state).Documents(database.Ctx)
 		}
 		for {
 			documentRef, err := document.Next()
@@ -99,14 +97,16 @@ func iterateProjects(id int, name string) (*firestore.DocumentRef, error) {
 				break
 			}
 
-			documentReference = documentRef.Ref
+			documentReferences = append(documentReferences, documentRef.Ref)
 		}
 	}
 
-	if documentReference != nil {
-		return documentReference, nil
+	if documentReferences != nil {
+		return documentReferences, nil
+	} else {
+		return nil, errors.New("could not find document")
 	}
-	return nil, errors.New("no document found")
+
 }
 
 //checkStateBody will check if the body is of correct format, and if the values are correct datatypes.
@@ -166,12 +166,19 @@ func checkProjectBody(body []byte) bool {
 func checkPeriod(period interface{}) bool {
 	periodByte, err := json.Marshal(period)
 	if err != nil {
-		fmt.Println(err.Error())
+		return false
 	}
 	var periods map[string]interface{}
 	err = json.Unmarshal(periodByte, &periods)
 	if err != nil {
 		return false
+	}
+
+	for _, i := range periods {
+		_, err = time.Parse("02-01-2006", i.(string))
+		if err != nil {
+			return false
+		}
 	}
 
 	nestedPeriod := []string{constants.P_PeriodstartDate, constants.P_PeriodendDate}
@@ -189,7 +196,7 @@ func checkPeriod(period interface{}) bool {
 func checkCustomer(customer interface{}) bool {
 	periodByte, err := json.Marshal(customer)
 	if err != nil {
-		fmt.Println(err.Error())
+		return false
 	}
 	var customerMap map[string]interface{}
 	err = json.Unmarshal(periodByte, &customerMap)
@@ -216,7 +223,7 @@ func checkCustomer(customer interface{}) bool {
 func checkGeofence(fence interface{}) bool {
 	periodByte, err := json.Marshal(fence)
 	if err != nil {
-		fmt.Println(err.Error())
+		return false
 	}
 	var geofenceMap map[string]interface{}
 	err = json.Unmarshal(periodByte, &geofenceMap)
@@ -244,7 +251,7 @@ func checkGeofence(fence interface{}) bool {
 func checkGeofenceCoordinates(location interface{}) bool {
 	periodByte, err := json.Marshal(location)
 	if err != nil {
-		fmt.Println(err.Error())
+		return false
 	}
 	var locationMap map[string]interface{}
 	err = json.Unmarshal(periodByte, &locationMap)
@@ -252,7 +259,7 @@ func checkGeofenceCoordinates(location interface{}) bool {
 		return false
 	}
 
-	coordinates := []string{"longitude", "latitude"}
+	coordinates := []string{constants.P_Longitude, constants.P_Latitude}
 	for _, period := range coordinates {
 		_, ok := locationMap[period]
 		if !ok {
@@ -260,8 +267,8 @@ func checkGeofenceCoordinates(location interface{}) bool {
 		}
 	}
 
-	_, longitudeFloat := locationMap["longitude"].(float64)
-	_, latitudeFloat := locationMap["latitude"].(float64)
+	_, longitudeFloat := locationMap[constants.P_Longitude].(float64)
+	_, latitudeFloat := locationMap[constants.P_Latitude].(float64)
 
 	if !latitudeFloat || !longitudeFloat {
 		return false
@@ -274,14 +281,7 @@ func checkGeofenceCoordinates(location interface{}) bool {
 func checkState(input string) bool {
 	state := []string{constants.P_Active, constants.P_Inactive, constants.P_Upcoming}
 
-	var correctValues bool
-	for _, states := range state {
-		if input == states {
-			correctValues = true
-			break
-		}
-	}
-	return correctValues
+	return contains(state, input)
 }
 
 func checkTransaction(body []byte) bool {
@@ -314,19 +314,37 @@ func checkScaffoldingBody(scaffold interface{}) bool {
 		return false
 	}
 
-	for i, m := range scaffoldMap {
-		fmt.Println(i, m)
-		_, scaffoldingOk := scaffoldMap[i][constants.P_QuantityField]
+	for i := range scaffoldMap {
+		_, scaffoldingOk := scaffoldMap[i][constants.P_QuantityField].(float64)
 		if !scaffoldingOk {
 			return false
 		}
-		_, typeOk := scaffoldMap[i][constants.P_typeField]
+
+		_, typeOk := scaffoldMap[i][constants.P_typeField].(string)
 		if !typeOk {
 			return false
+		}
+
+		for _, m2 := range scaffoldMap {
+			isEqual := contains(constants.ScaffoldingTypes, m2[constants.P_typeField].(string))
+			if !isEqual {
+				return false
+			}
 		}
 	}
 
 	return true
+}
+
+//https://freshman.tech/snippets/go/check-if-slice-contains-element/
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
 }
 
 //checkScaffoldingBody will check the body, to ensure the required fields are filled

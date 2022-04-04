@@ -4,7 +4,6 @@ import (
 	"cloud.google.com/go/firestore"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"google.golang.org/api/iterator"
 	"io"
 	"io/ioutil"
@@ -16,6 +15,7 @@ import (
 	_struct "stillasTracker/api/struct"
 	"strconv"
 	"strings"
+	"time"
 )
 
 /**
@@ -33,8 +33,13 @@ Last modified Aleksander Aaboen
 
 var baseCollection *firestore.DocumentRef
 
-func profileRequest(w http.ResponseWriter, r *http.Request) {
+func ProfileRequest(w http.ResponseWriter, r *http.Request) {
 	baseCollection = database.Client.Doc(constants.U_UsersCollection + "/" + constants.U_Employee)
+	lastElement := getLastUrlElement(r)
+	if lastElement != constants.U_User {
+		tool.HandleError(tool.INVALIDREQUEST, w)
+		return
+	}
 
 	requestType := r.Method
 	switch requestType {
@@ -50,9 +55,17 @@ func profileRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteProfile(w http.ResponseWriter, r *http.Request) {
+	batch := database.Client.Batch()
+
 	bytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		tool.HandleError(tool.READALLERROR, w)
+		return
+	}
+
+	ok := checkDeleteBody(bytes)
+	if !ok {
+		tool.HandleError(tool.INVALIDBODY, w)
 		return
 	}
 
@@ -66,15 +79,34 @@ func deleteProfile(w http.ResponseWriter, r *http.Request) {
 	for _, num := range deleteID {
 		document, err := iterateProfiles(num.Id, "")
 		if err != nil {
-			tool.HandleError(tool.COULDNOTFINDDATA, w)
+			tool.HandleError(tool.CouldNotDelete, w)
 			return
 		}
-		_, err = document.Delete(database.Ctx)
-		if err != nil {
-			tool.HandleError(tool.DELETE, w)
-			return
+
+		batch.Delete(document[0])
+	}
+	_, err = batch.Commit(database.Ctx)
+	if err != nil {
+		tool.HandleError(tool.CouldNotDelete, w)
+	}
+}
+
+func checkDeleteBody(bytes []byte) bool {
+
+	var deleteID []map[string]interface{}
+	err := json.Unmarshal(bytes, &deleteID)
+	if err != nil {
+		return false
+	}
+
+	for _, m := range deleteID {
+		_, errDelete := m[constants.U_idURL].(float64)
+		if !errDelete {
+			return false
 		}
 	}
+
+	return true
 }
 
 func updateProfile(w http.ResponseWriter, r *http.Request) {
@@ -115,7 +147,9 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 		updates = append(updates, update)
 	}
 
-	batch.Update(documentReference, updates)
+	for _, ref := range documentReference {
+		batch.Update(ref, updates)
+	}
 	_, err = batch.Commit(database.Ctx)
 	if err != nil {
 		tool.HandleError(tool.COULDNOTADDDOCUMENT, w)
@@ -139,6 +173,13 @@ func createProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := strconv.Itoa(employee.EmployeeID)
+
+	_, err = iterateProfiles(employee.EmployeeID, "")
+	if err == nil {
+		tool.HandleError(tool.CouldNotAddSameID, w)
+		return
+	}
+
 	state := employee.Role
 	documentPath := baseCollection.Collection(state).Doc(id)
 
@@ -149,26 +190,49 @@ func createProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Todo sjekk om id ikke er tatt
 	err = database.AddDocument(documentPath, firebaseInput)
 	if err != nil {
 		tool.HandleError(tool.COULDNOTADDDOCUMENT, w)
 		return
+	} else {
+		tool.HandleError(tool.ADDED, w)
 	}
 }
 
 //getProfile will fetch the profile based on employeeID or role.
 func getProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	id := getLastUrlElement(r)
-	var documentPath *firestore.DocumentIterator
+	query, err := tool.GetQueryProfile(r)
+	if !err {
+		tool.HandleError(tool.INVALIDREQUEST, w)
+		return
+	}
+	switch true {
+	case query.Has(constants.U_Role):
+		getUsersByRole(w, r)
+	case query.Has(constants.U_idURL) || query.Has(constants.U_nameURL):
+		getIndividualUser(w, r)
+	default:
+		getAll(w, r)
+	}
+
+}
+
+func getAll(w http.ResponseWriter, r *http.Request) {
 	var employees []_struct.Employee
 
-	if r.URL.Query().Has(constants.U_Role) {
-		queryValue := getQueryCustomer(w, r)
-		documentPath = baseCollection.Collection(queryValue).Documents(database.Ctx)
+	collection := baseCollection.Collections(database.Ctx)
+	for {
+		collRef, err := collection.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			break
+		}
+		document := baseCollection.Collection(collRef.ID).Documents(database.Ctx)
 		for {
-			documentRef, err := documentPath.Next()
+			documentRef, err := document.Next()
 			if err == iterator.Done {
 				break
 			}
@@ -184,81 +248,126 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 
 			employees = append(employees, employee)
 		}
-		err := json.NewEncoder(w).Encode(employees)
+	}
+
+	err := json.NewEncoder(w).Encode(employees)
+	if err != nil {
+		return
+	}
+}
+
+func getUsersByRole(w http.ResponseWriter, r *http.Request) {
+	queryValue := getQueryCustomer(w, r)
+	documentPath := baseCollection.Collection(queryValue).Documents(database.Ctx)
+	var employees []_struct.Employee
+	for {
+		documentRef, err := documentPath.Next()
+		if err == iterator.Done {
+			break
+		}
+
+		var employee _struct.Employee
+		doc, _ := database.GetDocumentData(documentRef.Ref)
+		projectByte, err := json.Marshal(doc)
+		err = json.Unmarshal(projectByte, &employee)
 		if err != nil {
-			tool.HandleError(tool.NEWENCODERERROR, w)
+			tool.HandleError(tool.UNMARSHALLERROR, w)
 			return
 		}
-	} else if id != "" {
-		getIndividualUser(w, r)
-	} else {
 
-		collection := baseCollection.Collections(database.Ctx)
-		for {
-			collRef, err := collection.Next()
-			if err == iterator.Done {
-				break
-			}
-			if err != nil {
-				break
-			}
-			document := baseCollection.Collection(collRef.ID).Documents(database.Ctx)
-			for {
-				documentRef, err := document.Next()
-				if err == iterator.Done {
-					break
-				}
+		employees = append(employees, employee)
+	}
 
-				var employee _struct.Employee
-				doc, _ := database.GetDocumentData(documentRef.Ref)
-				projectByte, err := json.Marshal(doc)
-				err = json.Unmarshal(projectByte, &employee)
-				if err != nil {
-					tool.HandleError(tool.UNMARSHALLERROR, w)
-					return
-				}
+	if employees == nil {
+		tool.HandleError(tool.COULDNOTFINDDATA, w)
+		return
+	}
 
-				employees = append(employees, employee)
-			}
-		}
+	err := json.NewEncoder(w).Encode(employees)
+	if err != nil {
+		tool.HandleError(tool.NEWENCODERERROR, w)
+		return
+	}
+}
 
-		err := json.NewEncoder(w).Encode(employees)
+func getIndividualUser(w http.ResponseWriter, r *http.Request) {
+	query, err := tool.GetQueryProfile(r)
+	if !err {
+		tool.HandleError(tool.INVALIDREQUEST, w)
+		return
+	}
+	switch true {
+	case query.Has(constants.U_name):
+		getUserByName(w, r)
+	case query.Has(constants.U_idURL):
+		getIndividualUserByID(w, r)
+
+	}
+}
+
+func getUserByName(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var documentReference []*firestore.DocumentRef
+	var employees []_struct.Employee
+	var err error
+	queryMap := getQuery(r)
+
+	documentReference, err = iterateProfiles(0, queryMap.Get(constants.U_nameURL))
+	if err != nil {
+		tool.HandleError(tool.COULDNOTFINDDATA, w)
+		return
+	}
+
+	for _, ref := range documentReference {
+		data, _ := database.GetDocumentData(ref)
+
+		jsonStr, err := json.Marshal(data)
 		if err != nil {
+			tool.HandleError(tool.MARSHALLERROR, w)
 			return
 		}
+
+		var employee _struct.Employee
+		err = json.Unmarshal(jsonStr, &employee)
+		if err != nil {
+			tool.HandleError(tool.UNMARSHALLERROR, w)
+			return
+		}
+
+		employees = append(employees, employee)
+
+	}
+
+	if employees == nil {
+		tool.HandleError(tool.COULDNOTFINDDATA, w)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(employees)
+	if err != nil {
+		return
 	}
 
 }
 
-func getIndividualUser(w http.ResponseWriter, r *http.Request) {
+func getIndividualUserByID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var documentReference *firestore.DocumentRef
+	var documentReference []*firestore.DocumentRef
 	var err error
 	queryMap := getQuery(r)
 
-	if queryMap.Has(constants.U_idURL) {
-		intID, err := strconv.Atoi(queryMap.Get(constants.U_idURL))
-		if err != nil {
-			tool.HandleError(tool.INVALIDREQUEST, w)
-			return
-		}
-		documentReference, err = iterateProfiles(intID, "")
-		if err != nil {
-			tool.HandleError(tool.COULDNOTFINDDATA, w)
-			return
-		}
-	} else if queryMap.Has(constants.U_nameURL) {
-		documentReference, err = iterateProfiles(0, queryMap.Get(constants.U_nameURL))
-		if err != nil {
-			tool.HandleError(tool.COULDNOTFINDDATA, w)
-			return
-		}
-	} else {
+	intID, err := strconv.Atoi(queryMap.Get(constants.U_idURL))
+	if err != nil {
 		tool.HandleError(tool.INVALIDREQUEST, w)
 		return
 	}
+	documentReference, err = iterateProfiles(intID, "")
+	if err != nil {
+		tool.HandleError(tool.COULDNOTFINDDATA, w)
+		return
+	}
 
-	data, _ := database.GetDocumentData(documentReference)
+	data, _ := database.GetDocumentData(documentReference[0])
 
 	jsonStr, err := json.Marshal(data)
 	if err != nil {
@@ -270,6 +379,11 @@ func getIndividualUser(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(jsonStr, &employee)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
+		return
+	}
+
+	if employee.EmployeeID == 0 {
+		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
 	}
 
@@ -296,8 +410,9 @@ func getQueryCustomer(w http.ResponseWriter, r *http.Request) string {
 }
 
 //iterateProjects will iterate through every project in active, inactive and upcoming projects.
-func iterateProfiles(id int, name string) (*firestore.DocumentRef, error) {
-	var documentReference *firestore.DocumentRef
+func iterateProfiles(id int, name string) ([]*firestore.DocumentRef, error) {
+	var documentReferences []*firestore.DocumentRef
+
 	collection := baseCollection.Collections(database.Ctx)
 	for {
 		collRef, err := collection.Next()
@@ -320,13 +435,13 @@ func iterateProfiles(id int, name string) (*firestore.DocumentRef, error) {
 				break
 			}
 
-			documentReference = documentRef.Ref
+			documentReferences = append(documentReferences, documentRef.Ref)
 
 		}
 	}
 
-	if documentReference != nil {
-		return documentReference, nil
+	if documentReferences != nil {
+		return documentReferences, nil
 	} else {
 		return nil, errors.New("could not find document")
 	}
@@ -334,7 +449,6 @@ func iterateProfiles(id int, name string) (*firestore.DocumentRef, error) {
 }
 
 func checkUpdate(update map[string]interface{}) bool {
-	fmt.Println(update)
 	var counter int
 	_, employeeID := update[constants.U_employeeID]
 	_, name := update[constants.U_name]
@@ -347,8 +461,13 @@ func checkUpdate(update map[string]interface{}) bool {
 		}
 	}
 
-	fields := []string{constants.U_name, constants.U_Role, constants.U_Role,
-		constants.U_email, constants.U_admin, constants.U_employeeID}
+	_, admin := update[constants.U_admin].(bool)
+	if !admin {
+		return false
+	}
+
+	fields := []string{constants.U_name,
+		constants.U_email, constants.U_admin, constants.U_employeeID, constants.U_phone}
 	if employeeID {
 		for _, field := range fields {
 			for f := range update {
@@ -373,7 +492,6 @@ func checkName(name interface{}) bool {
 	var counter int
 	nameByte, err := json.Marshal(name)
 	if err != nil {
-		fmt.Println(err.Error())
 		return false
 	}
 
@@ -396,7 +514,6 @@ func checkName(name interface{}) bool {
 	if len(nameMap) > counter {
 		return false
 	}
-	fmt.Println(name)
 	return true
 }
 
@@ -419,11 +536,19 @@ func checkStruct(body []byte) bool {
 	}
 	_, emailFormat := userMap[constants.U_email].(string)
 	_, adminFormat := userMap[constants.U_admin].(bool)
-	//Todo sjekk om dato er skrevet på riktig format
-	_, dateFormat := userMap[constants.U_dateOfBirth].(string)
-	name := checkNameFormat(userMap[constants.U_name])
 
+	date, dateFormat := userMap[constants.U_dateOfBirth].(string)
+	_, err = time.Parse("02-01-2006", date)
+	if err != nil {
+		return false
+	}
+
+	name := checkNameFormat(userMap[constants.U_name])
 	validFormat := idFormat && phoneFormat && roleFormat && emailFormat && adminFormat && name && dateFormat
+
+	if len(userMap) != 7 {
+		return false
+	}
 
 	if !validFormat {
 		return false
@@ -435,7 +560,7 @@ func checkStruct(body []byte) bool {
 func checkNameFormat(name interface{}) bool {
 	periodByte, err := json.Marshal(name)
 	if err != nil {
-		fmt.Println(err.Error())
+		return false
 	}
 
 	var nameMap map[string]interface{}

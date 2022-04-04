@@ -26,6 +26,7 @@ const (
 	//StillasType document fields
 	P_Quantity         = "Quantity"
 	P_Expected         = "expected"
+	P_Registered       = "registered"
 	P_QuantityExpected = "Quantity.expected"
 	P_Type             = "type"
 
@@ -87,6 +88,18 @@ const (
 	S_location     = "location"
 	S_type         = "type"
 
+	//Scaffolding parts
+	S_Spir           = "Spire"
+	S_Lengdebjelke   = "Lengdebjelke"
+	S_Enrorsbjelke   = "Enrørsbjelke"
+	S_Rekkverksramme = "Rekkverksramme"
+	S_Plank          = "Plank"
+	S_StillasLem     = "Stillaslem"
+	S_Trapp          = "Trapp"
+	S_Gelender       = "Gelender"
+	S_Bunnskrue      = "Bunnskrue"
+	S_Diagonalstang  = "Diagonalstang"
+
 	//Top level user
 	U_UsersCollection = "Users"
 
@@ -114,4 +127,9 @@ const (
 	//User url
 	U_idURL   = "id"
 	U_nameURL = "name"
+	U_User    = "user"
 )
+
+var ScaffoldingTypes = []string{S_Spir, S_Lengdebjelke, S_Enrorsbjelke, S_Lengdebjelke,
+	S_Rekkverksramme, S_Plank, S_StillasLem, S_Trapp, S_Gelender,
+	S_Bunnskrue, S_Diagonalstang}

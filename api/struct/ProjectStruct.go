@@ -23,8 +23,14 @@ type Customer struct {
 
 // Scaffolding information at the project for expected and registered scaffolding units.
 type Scaffolding struct {
-	Category string `json:"Category"`
-	Quantity
+	Type     string `json:"type"`
+	Quantity `json:"Quantity"`
+}
+
+// Scaffolding information at the project for expected and registered scaffolding units.
+type ScaffoldingArray []struct {
+	Type     string `json:"type"`
+	Quantity `json:"Quantity"`
 }
 
 type Quantity struct {
@@ -79,7 +85,7 @@ type StateStruct struct {
 }
 
 // MovingStruct for moving a scaffolding piece.
-type MovingStruct []struct {
+type MovingStruct struct {
 	Type     string `json:"type"`
 	Quantity int    `json:"quantity"`
 }
@@ -95,6 +101,12 @@ type NewProject struct {
 	Address     `json:"address"`
 	Customer    `json:"customer"`
 	Geofence    `json:"geofence"`
+	//Scaffolding `json:"scaffolding"`
+}
+
+type GetProject struct {
+	NewProject
+	ScaffoldingArray `json:"scaffolding"`
 }
 
 type InputScaffolding []struct {

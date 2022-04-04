@@ -45,13 +45,13 @@ var NODOCUMENTSINDATABASE = ErrorStruct{
 }
 
 var NODOCUMENTWITHID = ErrorStruct{
-	message: "no document with selected ID",
+	message: "document does not exist",
 	code:    http.StatusBadRequest,
 }
 
 var INVALIDREQUEST = ErrorStruct{
 	message: "invalid request",
-	code:    http.StatusInternalServerError,
+	code:    http.StatusBadRequest,
 }
 
 var UNMARSHALLERROR = ErrorStruct{
@@ -84,6 +84,11 @@ var COULDNOTADDDOCUMENT = ErrorStruct{
 	code:    http.StatusInternalServerError,
 }
 
+var CouldNotAddSameID = ErrorStruct{
+	message: "id is already in use",
+	code:    http.StatusBadRequest,
+}
+
 var CHANGESWERENOTMADE = ErrorStruct{
 	message: "changes were not made",
 	code:    http.StatusInternalServerError,
@@ -94,14 +99,24 @@ var COULDNOTFINDDATA = ErrorStruct{
 	code:    http.StatusNoContent,
 }
 
+var CouldNotDelete = ErrorStruct{
+	message: "invalid id, could not delete",
+	code:    http.StatusBadRequest,
+}
+
 var CANNOTTRANSFERESCAFFOLDS = ErrorStruct{
 	message: "cannot transfer the amount of scaffolding",
-	code:    http.StatusInternalServerError,
+	code:    http.StatusBadRequest,
 }
 
 var DELETE = ErrorStruct{
 	message: "successfully deleted",
 	code:    http.StatusOK,
+}
+
+var ADDED = ErrorStruct{
+	message: "successfully added",
+	code:    http.StatusCreated,
 }
 
 func HandleError(err ErrorStruct, w http.ResponseWriter) {
