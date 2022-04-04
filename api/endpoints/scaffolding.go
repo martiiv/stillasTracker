@@ -13,14 +13,15 @@ import (
 )
 
 /**
-Class scaffoldingRequest
+Class scaffolding
 This class will contain all functions used for the handling of scaffolding units
 The class contains the following functions:
-	- addScaffolding:    Function lets a user add a scaffolding part to the system
-	- deleteScaffolding: Function removes a scaffolding unit from the system
-	- moveScaffold:      Function lets a user move scaffolding parts to a new project
-	- getScaffoldingUnit Function returns information about a scaffolding part
-	- getUnitHistory     Function returns the history of a scaffolding part
+
+	ScaffoldingRequest Function routes the request to the appropriate function
+	getPart Handles all the get requests
+	createPart Handles post requests
+	deletePart Handles delete requests
+
 TODO update file head comment
 Version 0.1
 Last modified Martin Iversen
@@ -56,10 +57,10 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 
 	switch true {
 	case "unit" == lastElement && len(query) > 1: //URL is on the following format: /stillastracking/v1/api/unit?type=""&id=""
-		getIndividualScaffoldingPart(w, r, query)
+		getIndividualScaffoldingPart(w, query)
 
 	case "unit" == lastElement && len(query) == 1: //URL is on the following format: /stillastracking/v1/api/unit?type=""
-		getScaffoldingByType(w, r, query)
+		getScaffoldingByType(w, query)
 
 	case "unit" == lastElement && len(query) == 0: //URL is on the following format: /stillastracking/v1/api/unit/
 		getAllScaffoldingParts(w, r)
@@ -93,6 +94,7 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 	for i := range scaffoldList { //For loop iterates through the list of new scaffolding parts
 
 		newPartPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldList[i].Type).Doc(strconv.Itoa(scaffoldList[i].ID))
+		storagePath := database.Client.Collection(constants.P_LocationCollection).Doc(constants.P_StorageDocument).Collection(constants.P_Inventory).Doc(scaffoldList[i].Type)
 
 		var firebasePart map[string]interface{} //Defines the database structure for the new part
 
@@ -113,6 +115,14 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 			tool.HandleError(tool.DATABASEADDERROR, w)
 			return
 		}
+
+		data, err := database.GetDocumentData(storagePath)
+		if err != nil {
+			tool.HandleError(tool.DATABASEREADERROR, w)
+			return
+		}
+		json.NewEncoder(w).Encode(data)
+
 	}
 
 	err = json.NewEncoder(w).Encode(scaffoldList)
@@ -157,7 +167,7 @@ getIndividualScaffoldingPart
 Function takes the url and uses the passed in type and id to fetch a specific part from the database
 URL Format: /stillastracking/v1/api/unit?type=""&?id=""
 */
-func getIndividualScaffoldingPart(w http.ResponseWriter, r *http.Request, query url.Values) {
+func getIndividualScaffoldingPart(w http.ResponseWriter, query url.Values) {
 	objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(query.Get("type")).Doc(query.Get("id"))
 
 	part, err := database.GetDocumentData(objectPath)
@@ -177,9 +187,9 @@ func getIndividualScaffoldingPart(w http.ResponseWriter, r *http.Request, query 
 getScaffoldingByType
 Function takes the request URL, connects to the database and gets all the scaffolding parts
 in the database with the passed in type
-The url: /stillastracking/v1/api/unit/type= TODO Configure URL properly with variables
+The url: /stillastracking/v1/api/unit/type=""
 */
-func getScaffoldingByType(w http.ResponseWriter, r *http.Request, query url.Values) {
+func getScaffoldingByType(w http.ResponseWriter, query url.Values) {
 	objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(query.Get("type")).Documents(database.Ctx)
 	partList := database.GetCollectionData(objectPath)
 
