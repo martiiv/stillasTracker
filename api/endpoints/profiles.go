@@ -4,7 +4,6 @@ import (
 	"cloud.google.com/go/firestore"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"google.golang.org/api/iterator"
 	"io"
 	"io/ioutil"
@@ -42,7 +41,6 @@ func ProfileRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Todo make stillastracking/v1/api/user not go to get if it is a put/post/delete
 	requestType := r.Method
 	switch requestType {
 	case http.MethodGet:
@@ -111,7 +109,6 @@ func checkDeleteBody(bytes []byte) bool {
 	return true
 }
 
-//Todo make so role cannot change?
 func updateProfile(w http.ResponseWriter, r *http.Request) {
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -452,7 +449,6 @@ func iterateProfiles(id int, name string) ([]*firestore.DocumentRef, error) {
 }
 
 func checkUpdate(update map[string]interface{}) bool {
-	fmt.Println(update)
 	var counter int
 	_, employeeID := update[constants.U_employeeID]
 	_, name := update[constants.U_name]
@@ -470,8 +466,8 @@ func checkUpdate(update map[string]interface{}) bool {
 		return false
 	}
 
-	fields := []string{constants.U_name, constants.U_Role, constants.U_Role,
-		constants.U_email, constants.U_admin, constants.U_employeeID}
+	fields := []string{constants.U_name,
+		constants.U_email, constants.U_admin, constants.U_employeeID, constants.U_phone}
 	if employeeID {
 		for _, field := range fields {
 			for f := range update {
@@ -496,7 +492,6 @@ func checkName(name interface{}) bool {
 	var counter int
 	nameByte, err := json.Marshal(name)
 	if err != nil {
-		fmt.Println(err.Error())
 		return false
 	}
 
@@ -519,7 +514,6 @@ func checkName(name interface{}) bool {
 	if len(nameMap) > counter {
 		return false
 	}
-	fmt.Println(name)
 	return true
 }
 
@@ -566,7 +560,7 @@ func checkStruct(body []byte) bool {
 func checkNameFormat(name interface{}) bool {
 	periodByte, err := json.Marshal(name)
 	if err != nil {
-		fmt.Println(err.Error())
+		return false
 	}
 
 	var nameMap map[string]interface{}

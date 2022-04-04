@@ -20,7 +20,7 @@ func CreatePath(segments []string) string {
 func GetQueryProject(r *http.Request) (url.Values, bool) {
 	query := r.URL.Query()
 
-	allowedQuery := map[string]bool{constants.P_idURL: true, constants.P_nameURL: true, constants.P_scaffolding: true}
+	allowedQuery := map[string]bool{constants.P_idURL: true, constants.P_nameURL: true, constants.P_scaffolding: true, constants.P_State: true}
 
 	for k := range query {
 		if _, ok := allowedQuery[k]; !ok {

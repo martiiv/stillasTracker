@@ -126,10 +126,10 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch true {
-	case !query.Has(constants.P_idURL) && !query.Has(constants.P_nameURL):
+	case !query.Has(constants.P_idURL) && !query.Has(constants.P_nameURL) && !query.Has(constants.P_State):
 		getProjectCollection(w, r)
 		break
-	case query.Has(constants.P_idURL) || query.Has(constants.P_nameURL):
+	case query.Has(constants.P_idURL) || query.Has(constants.P_nameURL) || query.Has(constants.P_State):
 		getProjectWithID(w, r)
 		break
 	default:
@@ -141,7 +141,6 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 /*
 getProjectCollection will fetch every projects in the database.
 */
-//Todo make so the user can request active, inactive and upcoming
 func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 	var projects []_struct.GetProject
 	queryMap := getQuery(r)
@@ -204,7 +203,8 @@ getProjectWithID will fetch a project based on the id
 */
 func getProjectWithID(w http.ResponseWriter, r *http.Request) {
 	queryMap, _ := tool.GetQueryProject(r)
-	var documentReference *firestore.DocumentRef
+	var documentReference []*firestore.DocumentRef
+	var projects []_struct.GetProject
 	var err error
 	if queryMap.Has(constants.P_idURL) {
 		intID, err := strconv.Atoi(queryMap.Get(constants.P_idURL))
@@ -212,48 +212,59 @@ func getProjectWithID(w http.ResponseWriter, r *http.Request) {
 			tool.HandleError(tool.INVALIDBODY, w)
 			return
 		}
-		documentReference, err = iterateProjects(intID, "")
+		documentReference, err = iterateProjects(intID, "", "")
 
 	} else if queryMap.Has(constants.P_nameURL) {
-		documentReference, err = iterateProjects(0, queryMap.Get(constants.P_nameURL))
+		documentReference, err = iterateProjects(0, queryMap.Get(constants.P_nameURL), "")
+	} else {
+		documentReference, err = iterateProjects(0, "", strings.Title(queryMap.Get(constants.P_State)))
 	}
 	if err != nil {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return
 	}
 
-	data, err := database.GetDocumentData(documentReference)
-	if err != nil {
+	if documentReference == nil {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return
 	}
 
-	jsonStr, err := json.Marshal(data)
-	if err != nil {
-		tool.HandleError(tool.MARSHALLERROR, w)
-		return
-	}
+	for _, ref := range documentReference {
 
-	var projectNew _struct.NewProject
-	err = json.Unmarshal(jsonStr, &projectNew)
-	if err != nil {
-		tool.HandleError(tool.UNMARSHALLERROR, w)
-		return
-	}
-
-	var project _struct.GetProject
-	project.NewProject = projectNew
-	if queryMap.Has(constants.P_scaffolding) && queryMap.Get(constants.P_scaffolding) == "true" {
-		scaffold, err := getScaffoldingStruct(documentReference)
+		data, err := database.GetDocumentData(ref)
 		if err != nil {
-			tool.HandleError(tool.COULDNOTFINDDATA, w)
+			tool.HandleError(tool.NODOCUMENTWITHID, w)
 			return
 		}
-		project.ScaffoldingArray = scaffold
 
+		jsonStr, err := json.Marshal(data)
+		if err != nil {
+			tool.HandleError(tool.MARSHALLERROR, w)
+			return
+		}
+
+		var projectNew _struct.NewProject
+		err = json.Unmarshal(jsonStr, &projectNew)
+		if err != nil {
+			tool.HandleError(tool.UNMARSHALLERROR, w)
+			return
+		}
+
+		var project _struct.GetProject
+		project.NewProject = projectNew
+		if queryMap.Has(constants.P_scaffolding) && queryMap.Get(constants.P_scaffolding) == "true" {
+			scaffold, err := getScaffoldingStruct(ref)
+			if err != nil {
+				tool.HandleError(tool.COULDNOTFINDDATA, w)
+				return
+			}
+			project.ScaffoldingArray = scaffold
+
+		}
+		projects = append(projects, project)
 	}
 
-	err = json.NewEncoder(w).Encode(project)
+	err = json.NewEncoder(w).Encode(projects)
 	if err != nil {
 		tool.HandleError(tool.NEWENCODERERROR, w)
 		return
@@ -304,10 +315,10 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, num := range deleteID {
-		var correctID *firestore.DocumentRef
+		var correctID []*firestore.DocumentRef
 
 		if num.ID != 0 {
-			correctID, err = iterateProjects(num.ID, "")
+			correctID, err = iterateProjects(num.ID, "", "")
 		}
 
 		if correctID == nil {
@@ -315,9 +326,9 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		subCollection := database.GetCollectionData(correctID.Collection(constants.P_StillasType).Documents(database.Ctx))
+		subCollection := database.GetCollectionData(correctID[0].Collection(constants.P_StillasType).Documents(database.Ctx))
 		if subCollection != nil {
-			iter := correctID.Collection(constants.P_StillasType).Documents(database.Ctx)
+			iter := correctID[0].Collection(constants.P_StillasType).Documents(database.Ctx)
 
 			for {
 				doc, err := iter.Next()
@@ -375,7 +386,7 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		batch.Delete(correctID)
+		batch.Delete(correctID[0])
 
 	}
 	_, err = batch.Commit(database.Ctx)
@@ -407,10 +418,10 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 
 	id := strconv.Itoa(project.ProjectID)
 
-	var correctID *firestore.DocumentRef
+	var correctID []*firestore.DocumentRef
 
 	if project.ProjectID != 0 {
-		correctID, err = iterateProjects(project.ProjectID, "")
+		correctID, err = iterateProjects(project.ProjectID, "", "")
 	}
 
 	if correctID != nil {
@@ -487,13 +498,13 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	documentReference, err := iterateProjects(stateStruct.ID, "")
+	documentReference, err := iterateProjects(stateStruct.ID, "", "")
 	if err != nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
 	}
 
-	project, err := database.GetDocumentData(documentReference)
+	project, err := database.GetDocumentData(documentReference[0])
 	if err != nil {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return
@@ -502,7 +513,7 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 	newPath := projectCollection.Collection(stateStruct.State).Doc(strconv.Itoa(stateStruct.ID))
 	batch.Create(newPath, project)
 
-	scaffolding, err := getScaffoldingStruct(documentReference)
+	scaffolding, err := getScaffoldingStruct(documentReference[0])
 	if err != nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
@@ -513,10 +524,10 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 	for _, s := range scaffoldingMap {
 		scaffoldingType := strings.Title((s[constants.P_typeField].(string)))
 		batch.Create(newPath.Collection(constants.P_StillasType).Doc(scaffoldingType), s)
-		batch.Delete(documentReference.Collection(constants.P_StillasType).Doc(scaffoldingType))
+		batch.Delete(documentReference[0].Collection(constants.P_StillasType).Doc(scaffoldingType))
 	}
 
-	batch.Delete(documentReference)
+	batch.Delete(documentReference[0])
 	update := firestore.Update{
 		Path:  constants.P_State,
 		Value: stateStruct.State,
@@ -553,12 +564,13 @@ func structToMap(input interface{}) ([]map[string]interface{}, error) {
 transferProject will move a project from one collection of a given state to another (active, inactive, upcoming).
 This function will use batched writes to ensure integrity.
 */
-//todo check struct
-//todo bad request if scaffolding type is invalid
-//todo check if project exist
 func transferProject(w http.ResponseWriter, r *http.Request) {
 	batch := database.Client.Batch()
-	_, inputScaffolding := getScaffoldingInput(w, r)
+	_, inputScaffolding, err := getScaffoldingInput(w, r)
+	if err != nil {
+		tool.HandleError(tool.INVALIDBODY, w)
+		return
+	}
 
 	var fromLocation []interface{}
 	var newLocation []interface{}
@@ -572,7 +584,7 @@ func transferProject(w http.ResponseWriter, r *http.Request) {
 		fromLocation, fromPaths = getScaffoldingFromProject(inputScaffolding.FromProjectID, inputScaffolding.InputScaffolding)
 	}
 	if fromLocation == nil {
-		tool.HandleError(tool.COULDNOTFINDDATA, w)
+		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return
 	}
 
@@ -583,7 +595,7 @@ func transferProject(w http.ResponseWriter, r *http.Request) {
 		newLocation, newPath = getScaffoldingFromProject(inputScaffolding.ToProjectID, inputScaffolding.InputScaffolding)
 	}
 	if newLocation == nil {
-		tool.HandleError(tool.COULDNOTFINDDATA, w)
+		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return
 	}
 
@@ -597,15 +609,8 @@ func transferProject(w http.ResponseWriter, r *http.Request) {
 
 	for i := range fromLocation {
 		quantity := inputScaffolding.InputScaffolding[i].Quantity
-		fromQuantity := fromLocation[i]
 
-		b, err := json.Marshal(fromQuantity)
-		if err != nil {
-			tool.HandleError(tool.MARSHALLERROR, w)
-			return
-		}
-		var intVar int
-		err = json.Unmarshal(b, &intVar)
+		intVar, err := interfaceToInt(fromLocation[i])
 		if err != nil {
 			tool.HandleError(tool.UNMARSHALLERROR, w)
 			return
@@ -634,7 +639,7 @@ func transferProject(w http.ResponseWriter, r *http.Request) {
 		batch.Set(fromPaths[i], sub, firestore.MergeAll)
 	}
 
-	_, err := batch.Commit(database.Ctx)
+	_, err = batch.Commit(database.Ctx)
 	if err != nil {
 		tool.HandleError(tool.CHANGESWERENOTMADE, w)
 		return
@@ -651,9 +656,12 @@ func getScaffoldingFromProject(input int, scaffold _struct.InputScaffolding) ([]
 	var fromPaths []*firestore.DocumentRef
 	var scaffoldingArray []interface{}
 
-	newPath, _ := iterateProjects(input, "")
+	newPath, _ := iterateProjects(input, "", "")
+	if newPath == nil {
+		return nil, nil
+	}
 
-	documentPath := tool.CreatePath(strings.Split(newPath.Path, "/")[5:])
+	documentPath := tool.CreatePath(strings.Split(newPath[0].Path, "/")[5:])
 
 	for _, s := range scaffold {
 		iter := database.Client.Doc(documentPath).Collection(constants.P_StillasType).Where(constants.P_Type, "==", strings.ToLower(s.Type)).Documents(database.Ctx)
