@@ -66,7 +66,7 @@ func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaf
 		}
 
 		scaffolding := _struct.Scaffolding{
-			Category: inputScaffolding.InputScaffolding[i].Type,
+			Type:     inputScaffolding.InputScaffolding[i].Type,
 			Quantity: quantity,
 		}
 

@@ -10,6 +10,7 @@ import (
 	"stillasTracker/api/database"
 	"stillasTracker/api/struct"
 	"strconv"
+	"strings"
 )
 
 /**
@@ -94,7 +95,6 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 	for i := range scaffoldList { //For loop iterates through the list of new scaffolding parts
 
 		newPartPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldList[i].Type).Doc(strconv.Itoa(scaffoldList[i].ID))
-		storagePath := database.Client.Collection(constants.P_LocationCollection).Doc(constants.P_StorageDocument).Collection(constants.P_Inventory).Doc(scaffoldList[i].Type)
 
 		var firebasePart map[string]interface{} //Defines the database structure for the new part
 
@@ -116,13 +116,20 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		storagePath := database.Client.Collection(constants.P_LocationCollection).Doc(constants.P_StorageDocument).Collection(constants.P_Inventory).Doc(scaffoldList[i].Type)
 		data, err := database.GetDocumentData(storagePath)
 		if err != nil {
 			tool.HandleError(tool.DATABASEREADERROR, w)
 			return
 		}
-		json.NewEncoder(w).Encode(data)
 
+		oldQuantity, oldExpected := getQuantity(w, data)
+		_, err = storagePath.Set(database.Ctx, map[string]interface{}{
+			"type": scaffoldList[i].Type,
+			"Quantity": map[string]interface{}{
+				"expected":   oldQuantity + 1,
+				"registered": oldExpected,
+			}})
 	}
 
 	err = json.NewEncoder(w).Encode(scaffoldList)
@@ -160,6 +167,30 @@ func deletePart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+}
+
+//getQuantity Function takes an object of scaffolding type in storage and returns the expected amount and registered quantity
+func getQuantity(w http.ResponseWriter, object map[string]interface{}) (int, int) {
+	marshalled, err := json.Marshal(object)
+	if err != nil {
+		tool.HandleError(tool.MARSHALLERROR, w)
+		return 0, 0
+	}
+
+	err = json.Unmarshal(marshalled, &_struct.Scaffolding{})
+	if err != nil {
+		tool.HandleError(tool.UNMARSHALLERROR, w)
+		return 0, 0
+	}
+	quantityString := string(marshalled)
+	splitString := strings.Split(quantityString, ":")
+	oldQuantity := strings.Split(splitString[2], ",")
+	quantity, _ := strconv.Atoi(oldQuantity[0])
+
+	oldExpected := strings.Split(splitString[0], "expected")
+	expected, _ := strconv.Atoi(oldExpected[0])
+
+	return quantity, expected
 }
 
 /**
