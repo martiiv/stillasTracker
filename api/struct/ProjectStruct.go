@@ -23,8 +23,14 @@ type Customer struct {
 
 // Scaffolding information at the project for expected and registered scaffolding units.
 type Scaffolding struct {
-	Type string `json:"type"`
-	Quantity
+	Type     string `json:"type"`
+	Quantity `json:"Quantity"`
+}
+
+// Scaffolding information at the project for expected and registered scaffolding units.
+type ScaffoldingArray []struct {
+	Type     string `json:"type"`
+	Quantity `json:"Quantity"`
 }
 
 type Quantity struct {
