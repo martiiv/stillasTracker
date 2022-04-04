@@ -29,7 +29,21 @@ struct MapDisplay: UIViewRepresentable {
         mapView.showsUserLocation = true
         mapView.userTrackingMode = .follow
         mapView.setRegion(viewModel.region, animated: true)
+        updateUIView(mapView)
         return mapView
+    }
+    
+    func updateUIView(_ uiView: MKMapView) {
+        let projVi = ProjectView()
+        
+        let annotations = projVi.projectsArr.map { project -> MKAnnotation in
+            let annotation = MKPointAnnotation()
+            annotation.title = project.projectName
+            annotation.subtitle = "\(project.id)"
+            annotation.coordinate = CLLocationCoordinate2D(latitude: project.latitude, longitude: project.longitude)
+            return annotation
+        }
+        uiView.addAnnotations(annotations)
     }
 
     /**
@@ -38,3 +52,4 @@ struct MapDisplay: UIViewRepresentable {
     func updateUIView(_ uiView: MKMapView, context: Context) {
     }
 }
+
