@@ -4,7 +4,7 @@
 //
 //  Created by Tormod Mork Muller on 24/03/2022.
 //
-
+/*
 import SwiftUI
 import UIKit
 import MapKit
@@ -207,15 +207,15 @@ struct NavView: View {
     
     var body: some View {
         ZStack {
-            //NavigationView {
+            NavigationView {
                 List (searchResults) { scaffolding in
                 NavigationLink(destination: DetailView(scaffolding: scaffolding)) { ScaffoldingUnitRow (scaffolding: scaffolding) }
                 }
                 .listStyle(PlainListStyle())
                 .searchable(text: $searchQuery)
                 .navigationTitle("Scaffolding units")
-            //}
-            //.navigationViewStyle(.stack)
+            }
+            .navigationViewStyle(.stack)
         }
     }
     
@@ -228,3 +228,19 @@ struct NavView: View {
     }
     
 }
+
+extension UINavigationController {
+    override open func viewDidLoad() {
+        super.viewDidLoad()
+
+        overrideUserInterfaceStyle = .unspecified
+
+        let appearance = UINavigationBarAppearance()
+        appearance.backgroundColor = UIColor.clear
+        
+        navigationBar.standardAppearance = appearance
+        navigationBar.compactAppearance = appearance
+        navigationBar.scrollEdgeAppearance = appearance
+    }
+}
+*/

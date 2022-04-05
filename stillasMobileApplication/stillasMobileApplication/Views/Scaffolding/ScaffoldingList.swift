@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-
+/*
 struct ScaffoldingList: View {
     
     let scaffoldingUnits = [
@@ -34,4 +34,4 @@ struct ScaffoldingList_Previews: PreviewProvider {
     static var previews: some View {
         ScaffoldingList()
     }
-}
+}*/

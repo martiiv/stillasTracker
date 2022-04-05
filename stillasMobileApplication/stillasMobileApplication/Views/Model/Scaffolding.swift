@@ -8,7 +8,7 @@
 import SwiftUI
 import Foundation
 import CoreLocation
-
+/*
 struct Scaffolding: Hashable, Codable, Identifiable {
     var id: Int
     var type: String
@@ -45,4 +45,4 @@ struct Scaffolding: Hashable, Codable, Identifiable {
     }
     
     var batteryLevel: Int
-}
+}*/
