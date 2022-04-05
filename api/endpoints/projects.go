@@ -201,6 +201,7 @@ func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 /*
 getProjectWithID will fetch a project based on the id
 */
+//todo trim name Query
 func getProjectWithID(w http.ResponseWriter, r *http.Request) {
 	queryMap, _ := tool.GetQueryProject(r)
 	var documentReference []*firestore.DocumentRef
