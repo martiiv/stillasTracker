@@ -8,4 +8,4 @@ RUN go mod tidy
 RUN go mod download
 RUN go mod vendor
 RUN go mod verify
-CMD["go", "run", "main.go"]
+CMD ["go", "run", "cmd/main.go"]
