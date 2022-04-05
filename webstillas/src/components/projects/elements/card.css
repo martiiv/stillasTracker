@@ -1,0 +1,72 @@
+.card{
+    background-color: #F28A04;
+    border-radius: 8px;
+    position: relative;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    padding: 24px;
+}
+
+.image {
+    -webkit-padding-after: 16px;
+    display: flex;
+    flex-direction: column;
+    padding-block-end: 16px;
+    position: relative;
+}
+
+.information-list {
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+
+.horizontal-list {
+    list-style-type: none;
+    padding: 20px;
+    overflow: hidden;
+
+}
+.horizontal-list-contact{
+    list-style-type: none;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.horizontal-list{
+    padding-left: 11px;
+    padding-right: 11px;
+
+}
+
+.horizontal-list+.horizontal-list { border-left: 1.3px solid #000000 }
+
+
+
+
+.card-btn{
+    padding: 0 24px 24px;
+}
+
+.card-btns{
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    padding-top: 24px;
+}
+
+
+.left-contact-text{
+    float: left;
+}
+
+.right-contact-text{
+    float: right;
+}
+
+
+

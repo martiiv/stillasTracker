@@ -1,7 +1,7 @@
 import React from "react";
 import "./projects.css"
-import PreView from "./elements/preView"
-import {Container, Grid} from "@material-ui/core";
+import  CardElement from './elements/card'
+
 /**
  Class that will create an overview of the projects
  */
@@ -9,11 +9,10 @@ import {Container, Grid} from "@material-ui/core";
 class Projects extends React.Component {
     render() {
         return(
-            <Container>
-                <Grid lg={2} xs={25} md={30}>
-                    <PreView />
-                </Grid>
-¨            </Container>
+            <div className={"main"}>
+                <CardElement />
+
+            </div>
         );
     }
 }

@@ -10,7 +10,7 @@ import React from "react";
 function App() {
   return (
           <div>
-              <TopBar />
+              <TopBar/>
               <Routes>
                       <Route path="/prosjekt" element={<Projects />} />
                       <Route path="/kart" element={ <MapPage />} />
