@@ -54,7 +54,10 @@ a user can search based on projects, id or type
 */
 func getPart(w http.ResponseWriter, r *http.Request) {
 	lastElement := tool.GetLastUrlElement(r)
-	query := tool.GetQueryScaffolding(r)
+	query, err := tool.GetQueryScaffolding(r)
+	if !err {
+		tool.HandleError(tool.INVALIDREQUEST, w)
+	}
 
 	switch true {
 	case "unit" == lastElement && len(query) > 1: //URL is on the following format: /stillastracking/v1/api/unit?type=""&id=""
@@ -234,6 +237,7 @@ Function connects to the database and fetches all the parts in the database
 URL format: /stillastracking/v1/api/unit/
 */
 func getAllScaffoldingParts(w http.ResponseWriter, r *http.Request) {
+	var scaffoldList []_struct.ScaffoldingType
 	partPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collections(database.Ctx)
 	for {
 		scaffoldingType, err := partPath.Next()
@@ -259,11 +263,25 @@ func getAllScaffoldingParts(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			err = json.NewEncoder(w).Encode(part)
+			var scaffoldPart _struct.ScaffoldingType
+			partByte, err := json.Marshal(part)
 			if err != nil {
-				tool.HandleError(tool.ENCODINGERROR, w)
+				tool.HandleError(tool.UNMARSHALLERROR, w)
 				return
 			}
+
+			err = json.Unmarshal(partByte, &scaffoldPart)
+			if err != nil {
+				tool.HandleError(tool.UNMARSHALLERROR, w)
+				return
+			}
+			scaffoldList = append(scaffoldList, scaffoldPart)
 		}
+	}
+
+	err := json.NewEncoder(w).Encode(scaffoldList)
+	if err != nil {
+		tool.HandleError(tool.ENCODINGERROR, w)
+		return
 	}
 }

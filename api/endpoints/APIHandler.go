@@ -7,23 +7,28 @@ import (
 	"os"
 )
 
+/**
+Class APIHandler.go
+Class forwards requests to the appropriate endpoint and assigns the port of the program
+Last modified by martiiv@stud.ntnu.no
+Date: 06.04.2022
+Version 0.8
+*/
+
 const baseURL = "/stillastracking/v1/api"
 
-// Handle /**
+//Handle Function starts when launching program, function forwards the request to the appropriate endpoint
 func Handle() {
-
 	fmt.Println("Listening on port" + getPort())
-
-	//Scaffolding endpoints
+	//Scaffolding endpoint
 	http.HandleFunc(baseURL+"/unit/", ScaffoldingRequest) //GET POST PUT DELETE
 	//Project endpoint
 	http.HandleFunc(baseURL+"/project/", ProjectRequest) //DELETE, POST, GET
-
+	//Storage endpoint
 	http.HandleFunc(baseURL+"/storage/", storageRequest)
 	//Profile endpoint
 	http.HandleFunc(baseURL+"/user/", ProfileRequest)
 	log.Println(http.ListenAndServe(getPort(), nil))
-
 }
 
 /*

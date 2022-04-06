@@ -29,6 +29,7 @@ Class contains the following functions:
 
 Version 0.1
 Last modified Aleksander Aaboen
+
 */
 
 var baseCollection *firestore.DocumentRef
