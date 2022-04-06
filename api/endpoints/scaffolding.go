@@ -31,6 +31,7 @@ Last modified Martin Iversen
 //ScaffoldingRequest Function redirects the user to different parts of the scaffolding class
 func ScaffoldingRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	switch r.Method {
 	case http.MethodGet:
@@ -52,8 +53,7 @@ getPart function gets all scaffolding parts, some parts or one part
 a user can search based on projects, id or type
 */
 func getPart(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	lastElement := getLastUrlElement(r)
+	lastElement := tool.GetLastUrlElement(r)
 	query := tool.GetQueryScaffolding(r)
 
 	switch true {
@@ -74,10 +74,7 @@ function adds a list of scaffolding parts to the database
 responds to a POST request with a body containing new scaffolding parts
 */
 func createPart(w http.ResponseWriter, r *http.Request) {
-
 	var scaffoldList _struct.AddScaffolding //Defines the structure of the body
-
-	w.Header().Set("Content-Type", "application/json")
 
 	err := json.NewDecoder(r.Body).Decode(&scaffoldList) //Decodes the requests body into the structure defined above
 	if err != nil {
@@ -140,7 +137,7 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 
 func deletePart(w http.ResponseWriter, r *http.Request) {
 	var deleteList _struct.DeleteScaffolding
-	w.Header().Set("Content-Type", "application/json")
+
 	err := json.NewDecoder(r.Body).Decode(&deleteList)
 	if err != nil {
 		tool.HandleError(tool.READALLERROR, w)

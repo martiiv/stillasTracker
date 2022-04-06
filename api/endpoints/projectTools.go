@@ -7,18 +7,11 @@ import (
 	"google.golang.org/api/iterator"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
 	_struct "stillasTracker/api/struct"
 	"time"
 )
-
-func getQuery(r *http.Request) url.Values {
-	query := r.URL.Query()
-
-	return query
-}
 
 func interfaceToInt(input interface{}) (int, error) {
 	bytes, err := json.Marshal(input)
