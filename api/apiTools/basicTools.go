@@ -41,6 +41,7 @@ func GetQueryProject(r *http.Request) (url.Values, bool) {
 func GetQueryProfile(r *http.Request) (url.Values, bool) {
 	query := r.URL.Query()
 
+	//Defines the allowed parts of the url
 	allowedQuery := map[string]bool{constants.U_nameURL: true, constants.U_Role: true, constants.U_idURL: true}
 
 	for k := range query {
@@ -49,6 +50,7 @@ func GetQueryProfile(r *http.Request) (url.Values, bool) {
 		}
 	}
 
+	//Checks that the URL only contains the allowed roles
 	if query.Has(constants.U_Role) {
 		if !(query.Get(constants.U_Role) == constants.U_admin || query.Get(constants.U_Role) == strings.ToLower(constants.U_Installer) || query.Get(constants.U_Role) == strings.ToLower(constants.U_Storage)) {
 			return nil, false
@@ -58,23 +60,26 @@ func GetQueryProfile(r *http.Request) (url.Values, bool) {
 	return query, true
 }
 
-func GetQueryScaffolding(r *http.Request) url.Values {
+func GetQueryScaffolding(r *http.Request) (url.Values, bool) {
 	query := r.URL.Query()
-	if len(query) == 0 {
-		return nil
-	} else if len(query) == 1 {
-		switch true {
-		case query.Has("type"):
-			return query
-		}
-	} else {
-		switch true {
-		case query.Has("type"),
-			query.Has("id"):
-			return query
+
+	allowedQuery := map[string]bool{constants.S_id: true, constants.S_type: true}
+
+	for k := range query {
+		if _, ok := allowedQuery[k]; !ok {
+			return nil, false
 		}
 	}
-	return nil
+
+	if query.Has(constants.S_type) {
+		for _, i := range constants.ScaffoldingTypes {
+			if i == query.Get(constants.S_type) {
+				return nil, true
+			}
+		}
+	}
+
+	return query, true
 }
 
 /*
@@ -94,7 +99,10 @@ func GetQueries(w http.ResponseWriter, r *http.Request) url.Values {
 
 	switch true {
 	case "unit" == lastElement:
-		query := GetQueryScaffolding(r)
+		query, err := GetQueryScaffolding(r)
+		if !err {
+			HandleError(INVALIDREQUEST, w)
+		}
 		return query
 
 	case "project" == lastElement:
