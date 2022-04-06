@@ -9,7 +9,7 @@ import React from "react";
 
 function App() {
   return (
-          <div>
+          <div className={"maintodo"}>
               <TopBar/>
               <Routes>
                       <Route path="/prosjekt" element={<Projects />} />

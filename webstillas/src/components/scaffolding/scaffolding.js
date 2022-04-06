@@ -1,6 +1,6 @@
 import React from "react";
 import "./scaffolding.css"
-
+import CardElement from "./elements/scaffoldingCard";
 
 /**
  Class that will create an overview of the scaffolding parts
@@ -9,7 +9,7 @@ import "./scaffolding.css"
 class Scaffolding extends React.Component {
     render() {
         return(
-            <h1>Place Scaffolding Here</h1>
+            <CardElement />
         );
     }
 }
