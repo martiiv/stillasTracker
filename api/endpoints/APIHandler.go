@@ -11,6 +11,7 @@ const baseURL = "/stillastracking/v1/api"
 
 // Handle /**
 func Handle() {
+
 	fmt.Println("Listening on port" + getPort())
 
 	//Scaffolding endpoints
@@ -18,9 +19,9 @@ func Handle() {
 	//Project endpoint
 	http.HandleFunc(baseURL+"/project/", ProjectRequest) //DELETE, POST, GET
 
-	http.HandleFunc(baseURL+"/storage", storageRequest)
+	http.HandleFunc(baseURL+"/storage/", storageRequest)
 	//Profile endpoint
-	http.HandleFunc(baseURL+"/user/", profileRequest)
+	http.HandleFunc(baseURL+"/user/", ProfileRequest)
 	log.Println(http.ListenAndServe(getPort(), nil))
 
 }
