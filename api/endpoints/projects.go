@@ -118,6 +118,7 @@ The user will be redirected to either getProjectCollection or getProjectWithID.
 If the user made an invalid request, the user will be redirected to invalidRequest.
 */
 func getProject(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 	query, err := tool.GetQueryProject(r)
 	if !err {

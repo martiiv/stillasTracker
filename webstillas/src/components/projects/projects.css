@@ -5,6 +5,23 @@
     justify-content: center;
 }
 
-.main{
-    background-color: #F28A04;
+.body{
+    background-color: aquamarine;
+}
+
+.projectClass{
+    background: #d2d2d2;
+    height: 100pc;
+    width: 100%;
+}
+
+.grid-container{
+    grid-template-columns: 1fr 1fr;
+}
+
+.grid-container {
+    grid-gap: 24px;
+    align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr;
 }
