@@ -9,7 +9,7 @@ function CardElement(props){
         <div className={"main"}>
             <article className={"card"}>
                     <section className={"header"}>
-                        <h3>Project Name</h3>
+                        <h3>{props.name}</h3>
                     </section>
                     <section className={"image"}>
                         <img src={img} alt={""}/>
@@ -19,15 +19,15 @@ function CardElement(props){
                             <ul className={"information-list"}>
                                 <li className={"horizontal-list"}>
                                     <div className={"highlightText"}>
-                                        <span>NTNU Prosjekt</span>
+                                        <span>{props.state}</span>
                                     </div>
                                     <div className={"highlightText-caption"}>
-                                        <span>Leier</span>
+                                        <span>Status</span>
                                     </div>
                                 </li>
                                 <li className={"horizontal-list"}>
                                     <div className={"highlightText"}>
-                                        <span >01.02.2020-02.02.2022</span>
+                                        <span >{props.rentPeriod}</span>
                                     </div>
                                     <div className={"highlightText-caption"}>
                                         <span>Leieperiode</span>
@@ -35,7 +35,7 @@ function CardElement(props){
                                 </li>
                                 <li className={"horizontal-list"}>
                                     <div className={"highlightText"}>
-                                        <span >&nbsp;&nbsp; 200</span>
+                                        <span >&nbsp;&nbsp; {props.size}</span>
                                         <span >&#13217;</span>
                                     </div>
                                     <div className={"highlightText-caption"}>
@@ -50,15 +50,15 @@ function CardElement(props){
                             <ul className={"contact-list"}>
                                 <li className={"horizontal-list-contact"}>
                                     <span className={"left-contact-text"}>Kontakt person</span>
-                                    <span className={"right-contact-text"}>Ola Nordmann</span>
+                                    <span className={"right-contact-text"}>{props.contactPerson}</span>
                                 </li>
                                 <li className={"horizontal-list-contact"}>
                                     <span className={"left-contact-text"}>Adresse</span>
-                                    <span className={"right-contact-text"}>TEKNOLOGIVEGEN 22, 2815 GJØVIK</span>
+                                    <span className={"right-contact-text"}>{props.address_Street}, {props.address_zip} {props.address_Municipality}</span>
                                 </li>
                                 <li className={"horizontal-list-contact"}>
                                     <span className={"left-contact-text"}>Nummer</span>
-                                    <span className={"right-contact-text"}>61135400</span>
+                                    <span className={"right-contact-text"}>{props.contactNumber}</span>
                                 </li>
                             </ul>
                         </div>

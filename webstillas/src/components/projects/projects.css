@@ -1,6 +1,5 @@
 .wrapper{
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(12rem, 16rem));
     gap: 2rem;
     justify-content: center;
 }
@@ -10,18 +9,14 @@
 }
 
 .projectClass{
-    background: #d2d2d2;
+    background: #9f9e9e;
     height: 100pc;
     width: 100%;
 }
 
-.grid-container{
-    grid-template-columns: 1fr 1fr;
-}
-
 .grid-container {
-    grid-gap: 24px;
-    align-items: stretch;
-    display: grid;
-    grid-template-columns: 1fr;
+    display: inline-grid;
+    grid-template-columns: fit-content(300px) fit-content(300px) 1fr;
+    grid-template-rows: 1fr;
+
 }

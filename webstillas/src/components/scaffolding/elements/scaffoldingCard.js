@@ -8,7 +8,7 @@ function CardElement(props){
         <div className={"scaffoldingElement"}>
             <article className={"card"}>
                 <section className={"header"}>
-                    <h3>Scaffolding Part</h3>
+                    <h3>{props.type.toUpperCase()}</h3>
                 </section>
                 <section className={"image"}>
                     <img className={"img"} src={img} alt={""}/>
@@ -18,7 +18,7 @@ function CardElement(props){
                         <ul className={"information-list"}>
                             <li className={"horizontal-list"}>
                                 <div className={"highlightText"}>
-                                    <span>274033</span>
+                                    <span>{props.total}</span>
                                 </div>
                                 <div className={"highlightText-caption"}>
                                     <span>Totalmengde</span>
@@ -26,7 +26,7 @@ function CardElement(props){
                             </li>
                             <li className={"horizontal-list"}>
                                 <div className={"highlightText"}>
-                                    <span >65000</span>
+                                    <span >{props.storage}</span>
                                 </div>
                                 <div className={"highlightText-caption"}>
                                     <span>Lager</span>

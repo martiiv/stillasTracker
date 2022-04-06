@@ -1,14 +1,7 @@
-.card{
-
-
-}
-
 .main{
     border-radius: 8px;
-    width: 600px;
-    height: 300px;
-    position: relative;
-    background-color: #F28A04;
+    height: 10%;
+    position: static;
 
 }
 
