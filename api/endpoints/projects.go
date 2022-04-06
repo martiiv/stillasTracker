@@ -37,6 +37,8 @@ ProjectRequest
 Main function to switch between the different request types.
 */
 func ProjectRequest(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	projectCollection = database.Client.Doc(constants.P_LocationCollection + "/" + constants.P_ProjectDocument)
 	requestType := r.Method
@@ -53,23 +55,15 @@ func ProjectRequest(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*
-getLastUrlElement will split the url and return the last element.
-*/
-func getLastUrlElement(r *http.Request) string {
-	url := r.URL.Path
-	trimmedURL := strings.TrimRight(url, "/")
-	splittedURL := strings.Split(trimmedURL, "/")
-	lastElement := splittedURL[len(splittedURL)-1]
-	return lastElement
-}
-
 //storageRequest will return all the scaffolding parts in the selected storage location.
 func storageRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	var storageArray []_struct.Scaffolding
 	var storageArr []*firestore.DocumentIterator
-	query := getQuery(r)
+	query := r.URL.Query()
+
 	var storage *firestore.DocumentIterator
 	if query.Has(constants.S_type) {
 		storage = database.Client.Collection(constants.P_LocationCollection+"/"+constants.P_StorageDocument+"/"+constants.P_Inventory).Where(constants.S_type, "==", query.Get(constants.S_type)).Documents(database.Ctx)
@@ -118,7 +112,6 @@ The user will be redirected to either getProjectCollection or getProjectWithID.
 If the user made an invalid request, the user will be redirected to invalidRequest.
 */
 func getProject(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	query, err := tool.GetQueryProject(r)
 	if !err {
 		tool.HandleError(tool.INVALIDREQUEST, w)
@@ -143,7 +136,8 @@ getProjectCollection will fetch every projects in the database.
 */
 func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 	var projects []_struct.GetProject
-	queryMap := getQuery(r)
+	queryMap := r.URL.Query()
+
 	collectionIterator := projectCollection.Collections(database.Ctx)
 	for {
 		collRef, err := collectionIterator.Next()
@@ -462,7 +456,7 @@ The user will be redirected to either updateState or transferProject.
 If the user made an invalid request, the user will be redirected to invalidRequest.
 */
 func putRequest(w http.ResponseWriter, r *http.Request) {
-	lastElement := getLastUrlElement(r)
+	lastElement := tool.GetLastUrlElement(r)
 
 	switch true {
 	case constants.P_scaffolding == lastElement:

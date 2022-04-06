@@ -34,8 +34,11 @@ Last modified Aleksander Aaboen
 var baseCollection *firestore.DocumentRef
 
 func ProfileRequest(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	baseCollection = database.Client.Doc(constants.U_UsersCollection + "/" + constants.U_Employee)
-	lastElement := getLastUrlElement(r)
+	lastElement := tool.GetLastUrlElement(r)
 	if lastElement != constants.U_User {
 		tool.HandleError(tool.INVALIDREQUEST, w)
 		return
@@ -201,7 +204,6 @@ func createProfile(w http.ResponseWriter, r *http.Request) {
 
 //getProfile will fetch the profile based on employeeID or role.
 func getProfile(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	query, err := tool.GetQueryProfile(r)
 	if !err {
 		tool.HandleError(tool.INVALIDREQUEST, w)
@@ -306,11 +308,10 @@ func getIndividualUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUserByName(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	var documentReference []*firestore.DocumentRef
 	var employees []_struct.Employee
 	var err error
-	queryMap := getQuery(r)
+	queryMap := r.URL.Query()
 
 	documentReference, err = iterateProfiles(0, queryMap.Get(constants.U_nameURL))
 	if err != nil {
@@ -351,10 +352,10 @@ func getUserByName(w http.ResponseWriter, r *http.Request) {
 }
 
 func getIndividualUserByID(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+
 	var documentReference []*firestore.DocumentRef
 	var err error
-	queryMap := getQuery(r)
+	queryMap := r.URL.Query()
 
 	intID, err := strconv.Atoi(queryMap.Get(constants.U_idURL))
 	if err != nil {

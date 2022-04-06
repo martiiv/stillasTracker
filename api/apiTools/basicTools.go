@@ -76,3 +76,41 @@ func GetQueryScaffolding(r *http.Request) url.Values {
 	}
 	return nil
 }
+
+/*
+GetLastUrlElement will split the url and return the last element.
+*/
+func GetLastUrlElement(r *http.Request) string {
+	url := r.URL.Path
+	trimmedURL := strings.TrimRight(url, "/")
+	splittedURL := strings.Split(trimmedURL, "/")
+	lastElement := splittedURL[len(splittedURL)-1]
+	return lastElement
+}
+
+func GetQueries(w http.ResponseWriter, r *http.Request) url.Values {
+	w.Header().Set("Content-Type", "application/json")
+	lastElement := GetLastUrlElement(r)
+
+	switch true {
+	case "unit" == lastElement:
+		query := GetQueryScaffolding(r)
+		return query
+
+	case "project" == lastElement:
+		query, err := GetQueryProject(r)
+		if !err {
+			HandleError(INVALIDREQUEST, w)
+		}
+		return query
+
+	case "profile" == lastElement:
+		query, err := GetQueryProfile(r)
+		if !err {
+			HandleError(INVALIDREQUEST, w)
+		}
+		return query
+	}
+
+	return r.URL.Query()
+}
