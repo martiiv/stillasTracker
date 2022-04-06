@@ -9,26 +9,44 @@ import SwiftUI
 import MapKit
 
 struct ProjectDetailView: View {
+    @Environment(\.colorScheme) var colorScheme
+    @State private var isShowingSheet = false
+        
     var project: Project
 
     var body: some View {
         ScrollView {
-            /// MapView displaying the map in the top of the screen
-            MapView()
-                .ignoresSafeArea(edges: .top)
-                .frame(height: 300)
-            
-            DetailView(project: project)
-            /*VStack {
-                Text(project.projectName).font(.title)
+            VStack {
+                /// MapView displaying the map in the top of the screen
+                MapView()
+                    .frame(height: 300)
                 
-                HStack {
-                    Text("\(project.projectName) - \(String(format: "%d", project.state))")
+                Text("\(project.projectName)")
+                    .font(.title).bold()
+                    .foregroundColor(colorScheme == .dark ? Color(UIColor.darkGray) : Color(UIColor.darkGray))
+                
+                DetailView(project: project)
+                
+                Button {
+                    isShowingSheet.toggle()
+                } label: {
+                    Text("Transfere Scaffolding")
+                        .padding(12)
+                        .font(.system(size: 20))
+                        .foregroundColor(colorScheme == .dark ? Color(UIColor.black) : Color(UIColor.darkGray))
                 }
-                
-                Spacer()
-            }*/
+                .contentShape(Rectangle())
+                .background(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
+                .sheet(isPresented: $isShowingSheet,
+                       onDismiss: didDismiss) {
+                    TransfereScaffolding()
+                }
+             }
         }
+        .ignoresSafeArea(edges: .top)
+    }
+    func didDismiss() {
+        // Handle the dismissing action.
     }
 }
 
@@ -37,7 +55,6 @@ struct DetailView: View {
 
     @Environment(\.colorScheme) var colorScheme
 
-    
     var body: some View {
         let projectInfoTitle = "Project Information"
         let duration = "Duration:"
