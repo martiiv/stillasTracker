@@ -39,7 +39,7 @@ struct MapDisplay: UIViewRepresentable {
         let annotations = projVi.projectsArr.map { project -> MKAnnotation in
             let annotation = MKPointAnnotation()
             annotation.title = project.projectName
-            annotation.subtitle = "\(project.id)"
+            annotation.subtitle = "\(project.projectID)"
             annotation.coordinate = CLLocationCoordinate2D(latitude: project.latitude, longitude: project.longitude)
             return annotation
         }

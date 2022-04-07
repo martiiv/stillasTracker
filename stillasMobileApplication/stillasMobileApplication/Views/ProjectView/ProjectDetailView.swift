@@ -78,7 +78,7 @@ struct DetailView: View {
                     Text(customer)
                         .font(.body).bold()
                     
-                    Text("\(project.leier.name)")
+                    Text("\(project.customer.name)")
                         .font(.body)
                 }
                 
