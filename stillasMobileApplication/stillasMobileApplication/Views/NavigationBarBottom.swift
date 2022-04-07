@@ -14,6 +14,7 @@ struct NavigationBarBottom: View {
         case project
         case map
         case profile
+        case projectViewAPI
     }
     
     
@@ -37,6 +38,10 @@ struct NavigationBarBottom: View {
                     Label("Profile", systemImage: "person.crop.circle")
                 }
                 .tag(Tab.profile)
+            /*ProjectViewN()
+                .tabItem {
+                    Label("Project API", systemImage: "map")
+                }*/
         }
         .onAppear() {
             /// https://www.bigmountainstudio.com/community/public/posts/86559-how-to-customize-the-background-of-the-tabview-in-swiftui
