@@ -50,6 +50,9 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	queries := mux.Vars(r)
 
+	print(queries["type"])
+	print(queries["id"])
+
 	switch true {
 	case queries["type"] != "" && queries["id"] != "": //URL is on the following format: /stillastracking/v1/api/unit?type=""&id=""
 		getIndividualScaffoldingPart(w, queries["type"], queries["id"])
