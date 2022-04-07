@@ -115,6 +115,9 @@ The user will be redirected to either getProjectCollection or getProjectWithID.
 If the user made an invalid request, the user will be redirected to invalidRequest.
 */
 func getProject(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	query, err := tool.GetQueryProject(r)
 	if !err {
 		tool.HandleError(tool.INVALIDREQUEST, w)
@@ -139,6 +142,9 @@ getProjectCollection will fetch every project in the database.
 Uses getScaffoldingStruct in order to fetch all scaffolding parts associated with a project
 */
 func getProjectCollection(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	//Defines the necessary variables
 	var projects []_struct.GetProject //Defines a list containing multiple GetProject structs
 	collectionIterator := ProjectCollection.Collections(database.Ctx)
@@ -202,6 +208,9 @@ Uses IterateProjects to search through the database for a project containing the
 Uses getScaffoldingStruct in order to fetch all scaffolding parts associated with a project
 */
 func getProjectWithID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	var documentReference []*firestore.DocumentRef
 	var projects []_struct.GetProject
 	var err error
@@ -277,6 +286,9 @@ func getProjectWithID(w http.ResponseWriter, r *http.Request) {
 deleteProject deletes selected projects from the database.
 */
 func deleteProject(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	request, err := io.ReadAll(r.Body)
 	if err != nil {
 		tool.HandleError(tool.READALLERROR, w)
@@ -388,6 +400,9 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 
 //createProject will create a Project and add it to the database
 func createProject(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	request, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		tool.HandleError(tool.READALLERROR, w)
@@ -450,6 +465,9 @@ The user will be redirected to either updateState or transferProject.
 If the user made an invalid request, the user will be redirected to invalidRequest.
 */
 func putRequest(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	lastElement := tool.GetLastUrlElement(r)
 
 	switch true {
@@ -466,6 +484,9 @@ func putRequest(w http.ResponseWriter, r *http.Request) {
 /*updateState will change the state of the project. In an atomic operation the project will change state,
 be moved into the state collection and deleted form the old state collection.*/
 func updateState(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	batch := database.Client.Batch()    //Defines the database batch
 	data, err := ioutil.ReadAll(r.Body) //Reads the body of the request
 	if err != nil {
@@ -536,6 +557,9 @@ transferProject will move a project from one collection of a given state to anot
 This function will use batched writes to ensure integrity.
 */
 func transferProject(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	batch := database.Client.Batch()                   //Defines the database operation
 	_, inputScaffolding, err := GetScaffoldingInput(r) //Gets the scaffolding parts the user wants to transfer
 	if err != nil {
