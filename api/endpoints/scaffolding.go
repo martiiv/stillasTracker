@@ -16,19 +16,14 @@ import (
 /**
 Class scaffolding
 This class will contain all functions used for the handling of scaffolding units
-The class contains the following functions:
-
-	ScaffoldingRequest Function routes the request to the appropriate function
-	getPart Handles all the get requests
-	createPart Handles post requests
-	deletePart Handles delete requests
-
-TODO update file head comment
-Version 0.1
-Last modified Martin Iversen
+Version 0.9
+Last modified Martin Iversen 07.04.2022
 */
 
-//ScaffoldingRequest Function redirects the user to different parts of the scaffolding class
+/*
+ScaffoldingRequest Function forwards all requests to the appropriate function
+Uses getPart, createPart and deletePart
+*/
 func ScaffoldingRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -41,10 +36,7 @@ func ScaffoldingRequest(w http.ResponseWriter, r *http.Request) {
 		createPart(w, r) //Function for adding new scaffolding parts to the system
 
 	case http.MethodDelete:
-		deletePart(w, r) //Function for deleting scaffolding part
-
-	case http.MethodPut:
-
+		deletePart(w, r) //Function for deleting scaffolding part}
 	}
 }
 
