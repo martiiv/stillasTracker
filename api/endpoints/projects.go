@@ -21,13 +21,8 @@ import (
 Class projects
 This class will contain all data formatting and handling of the clients projects
 Class contains the following functions:
-	getProject:         The function returns information regarding an active project
-	createProject:      The function lets a user create a project and assign scaffolding units as well as a geofence
-	deleteProject:      The function deletes a project from the system
-	getStorageFacility: The function returns the state of the storage facility (amount of scaffolding equipment)
-
-Version 0.2
-Last modified Aleksander Aaboen
+Version 0.9
+Last modified Martin Iversen 07.04.2022
 TODO Find alternative for strings.Title since the function is deprecated
 TODO If possible modularize the unmarshalling and encoding of lists since there is a lot of duplicate code doing this
 */
