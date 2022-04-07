@@ -25,7 +25,7 @@ func Handle() {
 	//router.HandleFunc(baseURL+"/unit", ScaffoldingRequest) //DELETE, POST, GET
 
 	//Scaffolding endpoint
-	router.Path(baseURL+"/unit/").Queries("type", "{type}").HandlerFunc(ScaffoldingRequest) //GET POST PUT DELETE
+	router.Path(baseURL+"/unit").HandlerFunc(ScaffoldingRequest).Queries("type", "{type}").Queries("id", "{id}") //GET POST PUT DELETE
 	//Project endpoint
 	router.HandleFunc(baseURL+"/project/{scaffolding}", ProjectRequest) //DELETE, POST, GET
 	//Storage endpoint
