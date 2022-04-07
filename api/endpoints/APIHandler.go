@@ -21,17 +21,20 @@ const baseURL = "/stillastracking/v1/api"
 //Handle Function starts when launching program, function forwards the request to the appropriate endpoint
 func Handle() {
 	router := mux.NewRouter()
-	router.HandleFunc(baseURL+"/unit/", ScaffoldingRequest)
+
+	//router.HandleFunc(baseURL+"/unit", ScaffoldingRequest) //DELETE, POST, GET
+
 	//Scaffolding endpoint
-	router.HandleFunc(baseURL+"/unit/", ScaffoldingRequest) //GET POST PUT DELETE
+	router.Path(baseURL+"/unit/").Queries("type", "{type}").HandlerFunc(ScaffoldingRequest) //GET POST PUT DELETE
 	//Project endpoint
-	router.HandleFunc(baseURL+"/project/", ProjectRequest) //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/{scaffolding}", ProjectRequest) //DELETE, POST, GET
 	//Storage endpoint
 	router.HandleFunc(baseURL+"/storage/", storageRequest)
 	//Profile endpoint
 	router.HandleFunc(baseURL+"/user/", ProfileRequest)
-	log.Println(http.ListenAndServe(getPort(), nil))
 
+	http.Handle("/", router)
+	log.Println(http.ListenAndServe(getPort(), nil))
 }
 
 func oldHandle() {

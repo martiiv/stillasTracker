@@ -2,9 +2,9 @@ package endpoints
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"google.golang.org/api/iterator"
 	"net/http"
-	"net/url"
 	tool "stillasTracker/api/apiTools"
 	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
@@ -48,14 +48,14 @@ a user can search based on projects, id or type
 func getPart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	query := r.URL.Query()
+	queries := mux.Vars(r)
 
 	switch true {
-	case query.Has("type"): //URL is on the following format: /stillastracking/v1/api/unit?type=""&id=""
-		getIndividualScaffoldingPart(w, query)
+	case queries["type"] != "" && queries["id"] != "": //URL is on the following format: /stillastracking/v1/api/unit?type=""&id=""
+		getIndividualScaffoldingPart(w, queries["type"], queries["id"])
 
-	case query.Has("type") && query.Has(constants.S_id): //URL is on the following format: /stillastracking/v1/api/unit?type=""
-		getScaffoldingByType(w, query)
+	case queries["type"] != "": //URL is on the following format: /stillastracking/v1/api/unit?type=""
+		getScaffoldingByType(w, queries["type"])
 
 	default: //URL is on the following format: /stillastracking/v1/api/unit/
 		getAllScaffoldingParts(w, r)
@@ -196,11 +196,11 @@ getIndividualScaffoldingPart
 Function takes the url and uses the passed in type and id to fetch a specific part from the database
 URL Format: /stillastracking/v1/api/unit?type=""&?id=""
 */
-func getIndividualScaffoldingPart(w http.ResponseWriter, query url.Values) {
+func getIndividualScaffoldingPart(w http.ResponseWriter, scaffoldType string, scaffoldId string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(query.Get("type")).Doc(query.Get("id"))
+	objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldType).Doc(scaffoldId)
 
 	part, err := database.GetDocumentData(objectPath)
 	if err != nil {
@@ -221,11 +221,11 @@ Function takes the request URL, connects to the database and gets all the scaffo
 in the database with the passed in type
 The url: /stillastracking/v1/api/unit/type=""
 */
-func getScaffoldingByType(w http.ResponseWriter, query url.Values) {
+func getScaffoldingByType(w http.ResponseWriter, scaffoldingType string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(query.Get("type")).Documents(database.Ctx)
+	objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldingType).Documents(database.Ctx)
 	partList := database.GetCollectionData(objectPath)
 
 	err := json.NewEncoder(w).Encode(partList)
