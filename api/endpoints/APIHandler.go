@@ -25,13 +25,25 @@ func Handle() {
 	//router.HandleFunc(baseURL+"/unit", ScaffoldingRequest) //DELETE, POST, GET
 
 	//Scaffolding endpoint
+	router.Path(baseURL + "/unit").HandlerFunc(ScaffoldingRequest)                                               //GET POST PUT DELETE
+	router.Path(baseURL+"/unit").HandlerFunc(ScaffoldingRequest).Queries("type", "{type}")                       //GET POST PUT DELETE
 	router.Path(baseURL+"/unit").HandlerFunc(ScaffoldingRequest).Queries("type", "{type}").Queries("id", "{id}") //GET POST PUT DELETE
+
 	//Project endpoint
-	router.HandleFunc(baseURL+"/project/{scaffolding}", ProjectRequest) //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/", ProjectRequest)                                  //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/", ProjectRequest).Queries()                        //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/", ProjectRequest).Queries().Queries()              //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/{scaffolding}", ProjectRequest)                     //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/{scaffolding}", ProjectRequest).Queries()           //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/{scaffolding}", ProjectRequest).Queries().Queries() //DELETE, POST, GET
 	//Storage endpoint
 	router.HandleFunc(baseURL+"/storage/", storageRequest)
+	router.HandleFunc(baseURL+"/storage/", storageRequest).Queries()
+
 	//Profile endpoint
 	router.HandleFunc(baseURL+"/user/", ProfileRequest)
+	router.HandleFunc(baseURL+"/user/", ProfileRequest).Queries()
+	router.HandleFunc(baseURL+"/user/", ProfileRequest).Queries()
 
 	http.Handle("/", router)
 	log.Println(http.ListenAndServe(getPort(), nil))
