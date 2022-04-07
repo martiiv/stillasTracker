@@ -18,6 +18,7 @@ Class scaffolding
 This class will contain all functions used for the handling of scaffolding units
 Version 0.9
 Last modified Martin Iversen 07.04.2022
+TODO make type non case sensitive
 */
 
 /*
@@ -47,21 +48,16 @@ a user can search based on projects, id or type
 func getPart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	lastElement := tool.GetLastUrlElement(r)
-	query, err := tool.GetQueryScaffolding(r)
-	if !err {
-		tool.HandleError(tool.INVALIDREQUEST, w)
-	}
+	query := r.URL.Query()
 
 	switch true {
-	case "unit" == lastElement && len(query) > 1: //URL is on the following format: /stillastracking/v1/api/unit?type=""&id=""
+	case query.Has("type"): //URL is on the following format: /stillastracking/v1/api/unit?type=""&id=""
 		getIndividualScaffoldingPart(w, query)
 
-	case "unit" == lastElement && len(query) == 1: //URL is on the following format: /stillastracking/v1/api/unit?type=""
+	case query.Has("type") && query.Has(constants.S_id): //URL is on the following format: /stillastracking/v1/api/unit?type=""
 		getScaffoldingByType(w, query)
 
-	case "unit" == lastElement && len(query) == 0: //URL is on the following format: /stillastracking/v1/api/unit/
+	default: //URL is on the following format: /stillastracking/v1/api/unit/
 		getAllScaffoldingParts(w, r)
 	}
 }

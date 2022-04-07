@@ -17,7 +17,9 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 		"you can find the official api guide in the readme file in the gitlab repo of the project: https://git.gvk.idi.ntnu.no/aleksaab/stillastracker/-/tree/main/api" +
 		"You have access to the following endpoints: \n"
 
-	scaffoldingEndpoints := "To insert scaffolding parts into the database, use the following endpoint:"
+	scaffoldingEndpoints := "To insert scaffolding parts into the database, use the following endpoints:" +
+		"get all scaffolding parts: http://10.212.138.205:8080/stillastracking/v1/api/unit\n" +
+		"get a specific scaffolding part: "
 
 	err := json.NewEncoder(w).Encode(welcomeMessage)
 	if err != nil {
