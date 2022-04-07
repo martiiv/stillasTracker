@@ -62,6 +62,9 @@ getProfile Function will get a user profile based on role or id
 Function uses getUsersByRole and getIndividualUser as well as getAll
 */
 func getProfile(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	query, err := tool.GetQueryProfile(r)
 	if !err {
 		tool.HandleError(tool.INVALIDREQUEST, w)
@@ -83,6 +86,9 @@ createProfile function adds new profiles to the database
 Function uses iterateProfiles
 */
 func createProfile(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	requestBody, err := io.ReadAll(r.Body) //Reads body
 	if !checkStruct(requestBody) {
 		tool.HandleError(tool.INVALIDBODY, w)
@@ -127,6 +133,9 @@ updateProfile function updates the information about a user in the database
 Function uses iterateProfiles and checkUpdate
 */
 func updateProfile(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		tool.HandleError(tool.READALLERROR, w)
@@ -180,6 +189,9 @@ deleteProfile function deletes profiles
 Function uses checkDeleteBody and iterateProfiles
 */
 func deleteProfile(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	batch := database.Client.Batch() //Defines the database operation
 
 	requestBody, err := io.ReadAll(r.Body) //Read body of the request
@@ -220,6 +232,9 @@ func deleteProfile(w http.ResponseWriter, r *http.Request) {
 getAll function gets all the profiles in the database
 */
 func getAll(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	var employees []_struct.Employee //Defines the list of employees
 
 	collection := baseCollection.Collections(database.Ctx) //Defines the path to the profiles collection
@@ -258,6 +273,9 @@ getUsersByRole function gets profiles with specific roles
 Function uses getQueryCustomer
 */
 func getUsersByRole(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	queryValue := getQueryCustomer(w, r)
 	documentPath := baseCollection.Collection(queryValue).Documents(database.Ctx)
 	var employees []_struct.Employee
@@ -295,6 +313,9 @@ getIndividualUser function gets a user with a specific profile id
 Function uses tool.GetQueryProfile, getUserByName and getIndividualUserByID
 */
 func getIndividualUser(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	query, err := tool.GetQueryProfile(r)
 	if !err {
 		tool.HandleError(tool.INVALIDREQUEST, w)
@@ -313,6 +334,9 @@ getUserByName function gets profiles based on their name
 Function uses iterateProfiles
 */
 func getUserByName(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	var documentReference []*firestore.DocumentRef
 	var employees []_struct.Employee
 	var err error
@@ -358,6 +382,9 @@ getIndividualUserByID function gets a profile based on a user id
 function uses iterateProfiles
 */
 func getIndividualUserByID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	var documentReference []*firestore.DocumentRef
 	var err error
 	queryMap := r.URL.Query()
@@ -403,6 +430,9 @@ func getIndividualUserByID(w http.ResponseWriter, r *http.Request) {
 getQueryCustomer Function returns a query list containing the queries specific to the profile endpoint
 */
 func getQueryCustomer(w http.ResponseWriter, r *http.Request) string {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	m, _ := url.ParseQuery(r.URL.RawQuery)
 	_, ok := m[constants.U_Role]
 	if ok {

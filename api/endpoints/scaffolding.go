@@ -45,6 +45,9 @@ getPart function gets all scaffolding parts, some parts or one part
 a user can search based on projects, id or type
 */
 func getPart(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	lastElement := tool.GetLastUrlElement(r)
 	query, err := tool.GetQueryScaffolding(r)
 	if !err {
@@ -69,6 +72,9 @@ function adds a list of scaffolding parts to the database
 responds to a POST request with a body containing new scaffolding parts
 */
 func createPart(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	var scaffoldList _struct.AddScaffolding //Defines the structure of the body
 
 	err := json.NewDecoder(r.Body).Decode(&scaffoldList) //Decodes the requests body into the structure defined above
@@ -131,6 +137,9 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 }
 
 func deletePart(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	var deleteList _struct.DeleteScaffolding
 
 	err := json.NewDecoder(r.Body).Decode(&deleteList)
@@ -192,6 +201,9 @@ Function takes the url and uses the passed in type and id to fetch a specific pa
 URL Format: /stillastracking/v1/api/unit?type=""&?id=""
 */
 func getIndividualScaffoldingPart(w http.ResponseWriter, query url.Values) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(query.Get("type")).Doc(query.Get("id"))
 
 	part, err := database.GetDocumentData(objectPath)
@@ -214,6 +226,9 @@ in the database with the passed in type
 The url: /stillastracking/v1/api/unit/type=""
 */
 func getScaffoldingByType(w http.ResponseWriter, query url.Values) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(query.Get("type")).Documents(database.Ctx)
 	partList := database.GetCollectionData(objectPath)
 
@@ -229,6 +244,9 @@ Function connects to the database and fetches all the parts in the database
 URL format: /stillastracking/v1/api/unit/
 */
 func getAllScaffoldingParts(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	var scaffoldList []_struct.ScaffoldingType
 	partPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collections(database.Ctx)
 	for {
