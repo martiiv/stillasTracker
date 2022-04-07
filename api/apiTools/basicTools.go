@@ -1,6 +1,8 @@
 package apiTools
 
 import (
+	"encoding/json"
+	"errors"
 	"net/http"
 	"net/url"
 	"stillasTracker/api/constants"
@@ -121,4 +123,36 @@ func GetQueries(w http.ResponseWriter, r *http.Request) url.Values {
 	}
 
 	return r.URL.Query()
+}
+
+func InterfaceToInt(input interface{}) (int, error) {
+	bytes, err := json.Marshal(input)
+	if err != nil {
+		return 0, errors.New("cannot marshal")
+	}
+
+	var returnInt int
+	err = json.Unmarshal(bytes, &returnInt)
+	if err != err {
+		return 0, errors.New("cannot unmarshal")
+	}
+
+	return returnInt, nil
+}
+
+//https://freshman.tech/snippets/go/check-if-slice-contains-element/
+func Contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
+}
+
+//InvalidRequest
+func InvalidRequest(w http.ResponseWriter, r *http.Request) {
+	HandleError(INVALIDREQUEST, w)
+	return
 }

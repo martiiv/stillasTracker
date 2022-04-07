@@ -23,7 +23,7 @@ The class contains the following functions:
 	createPart Handles post requests
 	deletePart Handles delete requests
 
-TODO update file head comment
+TODO Sjekk om storage fungerer ordentlig (type oppdateres ikke inne i type dokumentet
 Version 0.1
 Last modified Martin Iversen
 */
