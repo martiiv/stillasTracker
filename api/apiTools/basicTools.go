@@ -156,3 +156,18 @@ func InvalidRequest(w http.ResponseWriter, r *http.Request) {
 	HandleError(INVALIDREQUEST, w)
 	return
 }
+
+func StructToMap(input interface{}) ([]map[string]interface{}, error) {
+	output, err := json.Marshal(input)
+	if err != nil {
+		return nil, err
+	}
+
+	var outputMap []map[string]interface{}
+	err = json.Unmarshal(output, &outputMap)
+	if err != nil {
+		return nil, err
+	}
+
+	return outputMap, nil
+}

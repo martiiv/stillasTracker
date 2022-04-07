@@ -278,48 +278,46 @@ func getProjectWithID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//deleteProject deletes selected projects from the database.
+/*
+deleteProject deletes selected projects from the database.
+*/
 func deleteProject(w http.ResponseWriter, r *http.Request) {
-	bytes, err := io.ReadAll(r.Body)
+	request, err := io.ReadAll(r.Body)
 	if err != nil {
 		tool.HandleError(tool.READALLERROR, w)
 		return
 	}
 
-	var dat []map[string]interface{}
-	err = json.Unmarshal(bytes, &dat)
+	var requestStructure []map[string]interface{}    //Defines a data structure
+	err = json.Unmarshal(request, &requestStructure) //Unmarshall the request body into the defined structure
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
 	}
 
-	correctBody := true
-	for _, m := range dat {
+	//Defines a bool which we use in order to check that the project id is in the correct format
+	for _, m := range requestStructure {
 		_, correct := m[constants.P_idBody].(float64)
 		if !correct {
-			correctBody = false
+			tool.HandleError(tool.INVALIDBODY, w)
+			return
 		}
-	}
-
-	if !correctBody {
-		tool.HandleError(tool.INVALIDBODY, w)
-		return
 	}
 
 	var deleteID _struct.IDStruct
 	batch := database.Client.Batch()
 
-	err = json.Unmarshal(bytes, &deleteID)
+	err = json.Unmarshal(request, &deleteID)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
 	}
 
-	for _, num := range deleteID {
+	for _, num := range deleteID { //Iterates through the list of ID's
 		var correctID []*firestore.DocumentRef
 
-		if num.ID != 0 {
-			correctID, err = IterateProjects(num.ID, "", "")
+		if num.ID != 0 { //If the ID exists
+			correctID, err = IterateProjects(num.ID, "", "") //We find the ID with IterateProjects
 		}
 
 		if correctID == nil {
@@ -328,7 +326,7 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 		}
 
 		subCollection := database.GetCollectionData(correctID[0].Collection(constants.P_StillasType).Documents(database.Ctx))
-		if subCollection != nil {
+		if subCollection != nil { //If the project contains scaffolding parts we iterate through the list and remove them
 			iter := correctID[0].Collection(constants.P_StillasType).Documents(database.Ctx)
 
 			for {
@@ -342,22 +340,22 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 				}
 
 				scaffoldingType, err := doc.DataAt(constants.S_type)
-
 				scaffoldingParts, err := doc.DataAt(constants.P_QuantityExpected)
-				byte, err := json.Marshal(scaffoldingParts)
+
+				scaffoldingByte, err := json.Marshal(scaffoldingParts) //Gets the expected amount of scaffolding parts for the project
 				if err != nil {
 					tool.HandleError(tool.MARSHALLERROR, w)
 					return
 				}
 
 				var restScaffold int
-				err = json.Unmarshal(byte, &restScaffold)
+				err = json.Unmarshal(scaffoldingByte, &restScaffold)
 				if err != nil {
 					tool.HandleError(tool.UNMARSHALLERROR, w)
 					return
 				}
 
-				if restScaffold != 0 {
+				if restScaffold != 0 { //If the expected amount of scaffolding units isn't 0 we need to delete them
 					typeScaffold := fmt.Sprint(scaffoldingType)
 
 					move := _struct.InputScaffoldingWithID{
@@ -380,68 +378,62 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 					read := strings.NewReader(string(moveByte))
 					req, _ := http.NewRequest(http.MethodPut, "/stillastracking/v1/api/project/scaffolding/", read)
 					transferProject(w, req)
-
 				}
-
 				batch.Delete(doc.Ref)
 			}
 		}
-
 		batch.Delete(correctID[0])
-
 	}
 	_, err = batch.Commit(database.Ctx)
 	if err != nil {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return
 	}
-
 }
 
 //createProject will create a Project and add it to the database
 func createProject(w http.ResponseWriter, r *http.Request) {
-	bytes, err := ioutil.ReadAll(r.Body)
+	request, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		tool.HandleError(tool.READALLERROR, w)
 		return
 	}
-	correctBody := CheckStateBody(bytes)
+
+	correctBody := CheckStateBody(request)
 	if !correctBody {
 		tool.HandleError(tool.INVALIDBODY, w)
 		return
 	}
-	var project _struct.NewProject
-	err = json.Unmarshal(bytes, &project)
+
+	var project _struct.NewProject          //Defines the structure of the request
+	err = json.Unmarshal(request, &project) //Unmarshall the request data into the project struct
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
 	}
 
-	id := strconv.Itoa(project.ProjectID)
-
+	id := strconv.Itoa(project.ProjectID) //Converts the project id into a string
 	var correctID []*firestore.DocumentRef
 
 	if project.ProjectID != 0 {
-		correctID, err = IterateProjects(project.ProjectID, "", "")
+		correctID, err = IterateProjects(project.ProjectID, "", "") //If the project id is passed in we check if it already exists
 	}
-
 	if correctID != nil {
 		tool.HandleError(tool.CouldNotAddSameID, w)
 		return
 	}
 
 	state := project.State
-	documentPath := ProjectCollection.Collection(state).Doc(id)
-
+	documentPath := ProjectCollection.Collection(state).Doc(id) //We define the path to the document we wish to create
 	var firebaseInput map[string]interface{}
 
-	bytes, err = json.Marshal(project)
+	request, err = json.Marshal(project) //Formatting the desired structure
 	if err != nil {
 		tool.HandleError(tool.MARSHALLERROR, w)
 		return
 	}
 
-	err = json.Unmarshal(bytes, &firebaseInput)
+	err = json.Unmarshal(request, &firebaseInput) //More formatting
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
@@ -479,8 +471,8 @@ func putRequest(w http.ResponseWriter, r *http.Request) {
 /*updateState will change the state of the project. In an atomic operation the project will change state,
 be moved into the state collection and deleted form the old state collection.*/
 func updateState(w http.ResponseWriter, r *http.Request) {
-	batch := database.Client.Batch()
-	data, err := ioutil.ReadAll(r.Body)
+	batch := database.Client.Batch()    //Defines the database batch
+	data, err := ioutil.ReadAll(r.Body) //Reads the body of the request
 	if err != nil {
 		tool.HandleError(tool.READALLERROR, w)
 		return
@@ -493,18 +485,19 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var stateStruct _struct.StateStruct
-	err = json.Unmarshal(data, &stateStruct)
+	err = json.Unmarshal(data, &stateStruct) //Unmarshall the body into the desired format
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
 	}
-
+	//Gets the database document matching with the one in the request
 	documentReference, err := IterateProjects(stateStruct.ID, "", "")
 	if err != nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
 	}
 
+	//Gets the document data of said project
 	project, err := database.GetDocumentData(documentReference[0])
 	if err != nil {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
@@ -512,53 +505,35 @@ func updateState(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newPath := ProjectCollection.Collection(stateStruct.State).Doc(strconv.Itoa(stateStruct.ID))
-	batch.Create(newPath, project)
+	batch.Create(newPath, project) //We start the database operation
 
-	scaffolding, err := getScaffoldingStruct(documentReference[0])
+	scaffolding, err := getScaffoldingStruct(documentReference[0]) //We get the scaffolding parts associated with the project
 	if err != nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
 	}
 
-	scaffoldingMap, err := structToMap(scaffolding)
+	scaffoldingMap, err := tool.StructToMap(scaffolding) //Formatting the scaffolding parts
 
-	for _, s := range scaffoldingMap {
-		scaffoldingType := strings.Title((s[constants.P_typeField].(string)))
+	for _, s := range scaffoldingMap { //Iterates through the scaffolding parts and deletes them form the project
+		scaffoldingType := strings.Title(s[constants.P_typeField].(string))
 		batch.Create(newPath.Collection(constants.P_StillasType).Doc(scaffoldingType), s)
 		batch.Delete(documentReference[0].Collection(constants.P_StillasType).Doc(scaffoldingType))
 	}
-
 	batch.Delete(documentReference[0])
-	update := firestore.Update{
+
+	update := firestore.Update{ //Updates the state of the project after the scaffolding parts are removed
 		Path:  constants.P_State,
 		Value: stateStruct.State,
 	}
 	var updates []firestore.Update
 	updates = append(updates, update)
-
 	batch.Update(newPath, updates)
-
 	_, err = batch.Commit(database.Ctx)
 	if err != nil {
 		tool.HandleError(tool.CHANGESWERENOTMADE, w)
 		return
 	}
-
-}
-
-func structToMap(input interface{}) ([]map[string]interface{}, error) {
-	output, err := json.Marshal(input)
-	if err != nil {
-		return nil, err
-	}
-
-	var outputMap []map[string]interface{}
-	err = json.Unmarshal(output, &outputMap)
-	if err != nil {
-		return nil, err
-	}
-
-	return outputMap, nil
 }
 
 /**
@@ -566,22 +541,23 @@ transferProject will move a project from one collection of a given state to anot
 This function will use batched writes to ensure integrity.
 */
 func transferProject(w http.ResponseWriter, r *http.Request) {
-	batch := database.Client.Batch()
-	_, inputScaffolding, err := GetScaffoldingInput(r)
+	batch := database.Client.Batch()                   //Defines the database operation
+	_, inputScaffolding, err := GetScaffoldingInput(r) //Gets the scaffolding parts the user wants to transfer
 	if err != nil {
 		tool.HandleError(tool.INVALIDBODY, w)
 		return
 	}
 
+	//Defining data structures
 	var fromLocation []interface{}
+	var fromPaths []*firestore.DocumentRef
 	var newLocation []interface{}
 	var newPath []*firestore.DocumentRef
-	var fromPaths []*firestore.DocumentRef
 
 	switch inputScaffolding.FromProjectID {
-	case 0:
+	case 0: //In this case the parts will be transferred from storage to a project
 		fromLocation, fromPaths = getScaffoldingFromStorage(inputScaffolding.InputScaffolding)
-	default:
+	default: //If not we get the path to the project we want to take the scaffolding parts from
 		fromLocation, fromPaths = getScaffoldingFromProject(inputScaffolding.FromProjectID, inputScaffolding.InputScaffolding)
 	}
 	if fromLocation == nil {
@@ -589,6 +565,7 @@ func transferProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//Same as line 557-566
 	switch inputScaffolding.ToProjectID {
 	case 0:
 		newLocation, newPath = getScaffoldingFromStorage(inputScaffolding.InputScaffolding)
@@ -599,7 +576,6 @@ func transferProject(w http.ResponseWriter, r *http.Request) {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return
 	}
-
 	if len(fromLocation) != len(newLocation) {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
@@ -609,19 +585,19 @@ func transferProject(w http.ResponseWriter, r *http.Request) {
 	var add = map[string]interface{}{}
 
 	for i := range fromLocation {
-		quantity := inputScaffolding.InputScaffolding[i].Quantity
-
-		intVar, err := tool.InterfaceToInt(fromLocation[i])
+		quantity := inputScaffolding.InputScaffolding[i].Quantity //Defines the quantity of a type of scaffolding
+		intVar, err := tool.InterfaceToInt(fromLocation[i])       //Converts the number from an interface to an int
 		if err != nil {
 			tool.HandleError(tool.UNMARSHALLERROR, w)
 			return
 		}
 
-		if quantity > intVar {
+		if quantity > intVar { //If you want to transfer more than allowed bad luck
 			tool.HandleError(tool.CANNOTTRANSFERESCAFFOLDS, w)
 			return
 		}
 
+		//Converts the different quantities to ints so we can do the operations
 		inputQuantity, err := tool.InterfaceToInt(inputScaffolding.InputScaffolding[i].Quantity)
 		fromLoc, err := tool.InterfaceToInt(fromLocation[i])
 		newLoc, err := tool.InterfaceToInt(newLocation[i])
@@ -630,6 +606,7 @@ func transferProject(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		//Does the operations
 		sub[constants.P_Quantity] = map[string]interface{}{}
 		sub[constants.P_Quantity].(map[string]interface{})[constants.P_Expected] = fromLoc - inputQuantity
 
@@ -649,7 +626,7 @@ func transferProject(w http.ResponseWriter, r *http.Request) {
 
 /**
 getScaffoldingFromProject will get the selected scaffolding from a project, and return the number of scaffolding parts
-and the documentref where the scaffolding are placed.
+and the documentRef where the scaffolding are placed.
 */
 func getScaffoldingFromProject(input int, scaffold _struct.InputScaffolding) ([]interface{}, []*firestore.DocumentRef) {
 
@@ -691,7 +668,7 @@ func getScaffoldingFromProject(input int, scaffold _struct.InputScaffolding) ([]
 
 /**
 getScaffoldingFromStorage will get the selected scaffolding from a project, and return the number of scaffolding parts
-and the documentref where the scaffolding are placed.
+and the documentRef where the scaffolding are placed.
 This function is used in
 */
 func getScaffoldingFromStorage(scaffold _struct.InputScaffolding) ([]interface{}, []*firestore.DocumentRef) {
