@@ -23,6 +23,7 @@ Class profiles
 This class will contain all data formatting and modification regarding the users of the system
 Version 0.9
 Last modified Martin Iversen 07.04.2022
+TODO Maybe modularize som functionality the marshall, unmarshall encode routine is repeated often
 */
 
 var baseCollection *firestore.DocumentRef

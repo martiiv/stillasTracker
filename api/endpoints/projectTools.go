@@ -14,9 +14,19 @@ import (
 	"time"
 )
 
-func GetScaffoldingInput(r *http.Request) ([]_struct.Scaffolding, _struct.InputScaffoldingWithID, error) {
+/*
+projectTools File contains tools used in the projects.go file
+Last edited Martin Iversen 07.04.2022
+Version 0.9
+TODO Delete checkProjectBody? It isn't used
+*/
 
-	data, err := ioutil.ReadAll(r.Body)
+/*
+GetScaffoldingInput Function returns a list of scaffolding units
+Function uses checkTransaction
+*/
+func GetScaffoldingInput(r *http.Request) ([]_struct.Scaffolding, _struct.InputScaffoldingWithID, error) {
+	data, err := ioutil.ReadAll(r.Body) //Reads the request body
 	if err != nil {
 		return nil, _struct.InputScaffoldingWithID{}, errors.New("could not read")
 	}
@@ -32,8 +42,8 @@ func GetScaffoldingInput(r *http.Request) ([]_struct.Scaffolding, _struct.InputS
 		return nil, _struct.InputScaffoldingWithID{}, errors.New("could not unmarshal")
 	}
 	var scaffolds []_struct.Scaffolding
-	for i := range inputScaffolding.InputScaffolding {
 
+	for i := range inputScaffolding.InputScaffolding { //Iterates through the scaffolding units
 		quantity := _struct.Quantity{
 			Expected:   inputScaffolding.InputScaffolding[i].Quantity,
 			Registered: 0,
@@ -52,17 +62,16 @@ func GetScaffoldingInput(r *http.Request) ([]_struct.Scaffolding, _struct.InputS
 //IterateProjects will iterate through every project in active, inactive and upcoming projects.
 func IterateProjects(id int, name string, state string) ([]*firestore.DocumentRef, error) {
 	var documentReferences []*firestore.DocumentRef
-
 	collection := ProjectCollection.Collections(database.Ctx)
-	for {
+
+	for { //Iterates through all the projects in the database
 		collRef, err := collection.Next()
-		if err == iterator.Done {
+		if err == iterator.Done || err != nil {
 			break
 		}
-		if err != nil {
-			break
-		}
+
 		var document *firestore.DocumentIterator
+
 		if name != "" {
 			document = ProjectCollection.Collection(collRef.ID).Where(constants.P_ProjectName, "==", name).Documents(database.Ctx)
 		} else if id != 0 {
@@ -75,20 +84,17 @@ func IterateProjects(id int, name string, state string) ([]*firestore.DocumentRe
 			if err == iterator.Done {
 				break
 			}
-
 			documentReferences = append(documentReferences, documentRef.Ref)
 		}
 	}
-
 	if documentReferences != nil {
 		return documentReferences, nil
 	} else {
 		return nil, errors.New("could not find document")
 	}
-
 }
 
-//CheckStateBody will check if the body is of correct format, and if the values are correct datatypes.
+//CheckStateBody will check if the body is of correct format, and if the values are correct datatype.
 func CheckStateBody(body []byte) bool {
 	var dat map[string]interface{}
 	err := json.Unmarshal(body, &dat)
