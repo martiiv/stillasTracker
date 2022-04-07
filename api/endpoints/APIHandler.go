@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"os"
@@ -19,6 +20,21 @@ const baseURL = "/stillastracking/v1/api"
 
 //Handle Function starts when launching program, function forwards the request to the appropriate endpoint
 func Handle() {
+	router := mux.NewRouter()
+	router.HandleFunc(baseURL+"/unit/", ScaffoldingRequest)
+	//Scaffolding endpoint
+	router.HandleFunc(baseURL+"/unit/", ScaffoldingRequest) //GET POST PUT DELETE
+	//Project endpoint
+	router.HandleFunc(baseURL+"/project/", ProjectRequest) //DELETE, POST, GET
+	//Storage endpoint
+	router.HandleFunc(baseURL+"/storage/", storageRequest)
+	//Profile endpoint
+	router.HandleFunc(baseURL+"/user/", ProfileRequest)
+	log.Println(http.ListenAndServe(getPort(), nil))
+
+}
+
+func oldHandle() {
 	fmt.Println("Listening on port" + getPort())
 	//Scaffolding endpoint
 	http.HandleFunc(baseURL+"/unit/", ScaffoldingRequest) //GET POST PUT DELETE
