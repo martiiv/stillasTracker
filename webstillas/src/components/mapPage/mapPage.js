@@ -70,8 +70,8 @@ class MapPage extends React.Component {
                     for (const marker of result) {
                         // Create a DOM element for each marker.
                         const el = document.createElement('div');
-                        const width = 50;
-                        const height = 50;
+                        const width = result.size;
+                        const height = result.size;
                         el.className = 'marker';
                         el.style.backgroundImage = ("src/components/mapPage/mapbox-marker-icon-20px-orange.png");
                         el.style.width = `${width}px`;

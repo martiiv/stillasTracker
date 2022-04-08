@@ -37,7 +37,7 @@ function CardElement(props){
                 </section>
                 <section className={"card-btn"}>
                     <div className={"card-btns"}>
-                        <button className={"btn"} type={"button"}>Mer informasjon</button>
+                        <button className={"btn"} type={"button"} >Mer informasjon</button>
                     </div>
                 </section>
             </article>

@@ -8,6 +8,16 @@
     background-color: aquamarine;
 }
 
+.main-project-window{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.main-sidebar{
+    width: 300px;
+}
+
+
 .projectClass{
     background: #9f9e9e;
     height: 100pc;
@@ -16,7 +26,29 @@
 
 .grid-container {
     display: inline-grid;
-    grid-template-columns: fit-content(300px) fit-content(300px) 1fr;
+    alignment: center;
+
+    grid-template-columns: 1fr 1fr 1fr;
+    column-gap: 80px;
+    row-gap: 20px;
     grid-template-rows: 1fr;
 
+}
+
+.input[type=number] {
+    width: 33%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.filter-content {
+    display: grid;
+    grid-template-columns: 1em auto;
+    gap: 0.5em;
+    padding-left: 20px;
+    padding-top: 30px;
 }

@@ -10,6 +10,8 @@ class Scaffolding extends React.Component {
     constructor(props) {
         super(props);
         this.state={
+            isLoaded1: false,
+            isLoaded2: false,
             scaffolding: [],
             storage:[],
             items: []
@@ -17,14 +19,13 @@ class Scaffolding extends React.Component {
     }
 
     async componentDidMount() {
-
         const urlScaffolding ="http://10.212.138.205:8080/stillastracking/v1/api/unit/";
         fetch(urlScaffolding)
             .then(res => res.json())
             .then(
                 (result) => {
                     this.setState({
-                        isLoaded: true,
+                        isLoaded1: true,
                         scaffolding: result
                     });
                 },
@@ -33,7 +34,7 @@ class Scaffolding extends React.Component {
                 // exceptions from actual bugs in components.
                 (error) => {
                     this.setState({
-                        isLoaded: true,
+                        isLoaded1: true,
                     });
                 }
                 )
@@ -44,7 +45,7 @@ class Scaffolding extends React.Component {
             .then(
                 (result) => {
                     this.setState({
-                        isLoaded: true,
+                        isLoaded2: true,
                         storage: result
                     });
                 },
@@ -53,7 +54,7 @@ class Scaffolding extends React.Component {
                 // exceptions from actual bugs in components.
                 (error) => {
                     this.setState({
-                        isLoaded: true,
+                        isLoaded2: true,
                     });
                 }
             )
@@ -115,43 +116,34 @@ class Scaffolding extends React.Component {
     }
 
 
-/*    Element(){
-         scaffoldingObject.map((e) =>{
-            return(
-                <CardElement
-                    type = {e.type}
-                    scaffolding = {e.scaffolding}
-                    storage = {e.storage}
-                />
-            )
-        })}*/
-
-
 
 
   render() {
-      const {scaffolding, storage } = this.state;
+      const {scaffolding, storage, isLoaded1,isLoaded2 } = this.state;
       const objectArr = this.countObjects(scaffolding, "type")
       const scaffoldingObject = this.scaffoldingAndStorage(objectArr, storage)
-     // const mapping = Object.values(scaffoldingObject).map(key => key.valueOf())
       const result = Object.keys(scaffoldingObject).map((key) => scaffoldingObject[key]);
 
-      return(
-         <div>
-             {result[0].map((e) =>{
-                 console.log(e)
-                 return(
-                     <CardElement key = {e.type}
-                                  type = {e.type}
-                                  total = {e.scaffolding}
-                                  storage = {e.storage}
-                     />
+      if (!isLoaded1 && !isLoaded2) {
+          return <h1>Is Loading Data....</h1>
+      } else {
+          return (
+              <div className={"grid-container"}>
+                  {result[0].map((e) => {
+                      console.log(e)
+                      return (
+                          <CardElement key={e.type}
+                                       type={e.type}
+                                       total={e.scaffolding}
+                                       storage={e.storage}
+                          />
 
-                 )
-             })}
-         </div>
-        )
-    }
+                      )
+                  })}
+              </div>
+          )
+      }
+  }
 }
 
 export default Scaffolding;

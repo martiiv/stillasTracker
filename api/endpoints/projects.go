@@ -204,6 +204,9 @@ getProjectWithID will fetch a project based on the id
 */
 //todo trim name Query
 func getProjectWithID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 	queryMap, _ := tool.GetQueryProject(r)
 	var documentReference []*firestore.DocumentRef
 	var projects []_struct.GetProject

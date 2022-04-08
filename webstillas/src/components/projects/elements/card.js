@@ -2,6 +2,8 @@ import React from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './card.css'
 import img from '../images/blog-item.jpg'
+import {useNavigate} from "react-router";
+import {Link} from "react-router-dom";
 
 
 function CardElement(props){
@@ -65,7 +67,7 @@ function CardElement(props){
                     </section>
                     <section className={"card-btn"}>
                         <div className={"card-btns"}>
-                            <button className={"btn"} type={"button"}>Mer informasjon</button>
+                            <Link className={"btn"} to={"/project/" + props.id}>Mer Informasjon</Link>
                         </div>
                     </section>
             </article>
