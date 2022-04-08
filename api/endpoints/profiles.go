@@ -73,9 +73,9 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch true { //Forwards the request to the appropriate function based on the passed in query
-	case query.Has(constants.U_Role):
+	case query[constants.U_Role] != "":
 		getUsersByRole(w, r)
-	case query.Has(constants.U_idURL) || query.Has(constants.U_nameURL):
+	case query[constants.U_idURL] != "" || query[constants.U_nameURL] != "":
 		getIndividualUser(w, r)
 	default:
 		getAll(w)
@@ -323,9 +323,9 @@ func getIndividualUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	switch true { //Forwards the request based on the passed in constant
-	case query.Has(constants.U_name):
+	case query[constants.U_name] != "":
 		getUserByName(w, r)
-	case query.Has(constants.U_idURL):
+	case query[constants.U_idURL] != "":
 		getIndividualUserByID(w, r)
 	}
 }
