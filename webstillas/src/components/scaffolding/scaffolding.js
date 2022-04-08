@@ -19,11 +19,12 @@ class Scaffolding extends React.Component {
     }
 
     async componentDidMount() {
-        const urlScaffolding ="http://10.212.138.205:8080/stillastracking/v1/api/unit/";
+        const urlScaffolding ="http://10.212.138.205:8080/stillastracking/v1/api/unit";
         fetch(urlScaffolding)
             .then(res => res.json())
             .then(
                 (result) => {
+                    sessionStorage.setItem('allScaffolding',JSON.stringify(result))
                     this.setState({
                         isLoaded1: true,
                         scaffolding: result
@@ -44,6 +45,7 @@ class Scaffolding extends React.Component {
             .then(res => res.json())
             .then(
                 (result) => {
+                    sessionStorage.setItem('fromStorage',JSON.stringify(result))
                     this.setState({
                         isLoaded2: true,
                         storage: result
@@ -63,7 +65,6 @@ class Scaffolding extends React.Component {
 
     countObjects(arr, key){
         let arr2 = [];
-
         arr.forEach((x)=>{
             // Checking if there is any object in arr2
             // which contains the key value
@@ -120,10 +121,37 @@ class Scaffolding extends React.Component {
 
   render() {
       const {scaffolding, storage, isLoaded1,isLoaded2 } = this.state;
-      const objectArr = this.countObjects(scaffolding, "type")
-      const scaffoldingObject = this.scaffoldingAndStorage(objectArr, storage)
-      const result = Object.keys(scaffoldingObject).map((key) => scaffoldingObject[key]);
 
+      //todo add session storage
+      let scaffoldingArray
+      if (sessionStorage.getItem('allScaffolding') != null){
+          const scaffold = sessionStorage.getItem('allScaffolding')
+          console.log('From Storage')
+          scaffoldingArray = (JSON.parse(scaffold))
+      }else {
+
+          console.log('From API')
+          scaffoldingArray = scaffolding
+      }
+
+      const objectArr = this.countObjects(scaffoldingArray, "type")
+
+
+      //todo add session storage
+      let storageArray
+      if (sessionStorage.getItem('fromStorage') != null){
+          const storage = sessionStorage.getItem('fromStorage')
+          //console.log('From Storage')
+          storageArray = (JSON.parse(storage))
+      }else {
+          console.log('From API')
+          storageArray = storage
+      }
+      const scaffoldingObject = this.scaffoldingAndStorage(objectArr, storageArray)
+
+
+
+      const result = Object.keys(scaffoldingObject).map((key) => scaffoldingObject[key]);
       if (!isLoaded1 && !isLoaded2) {
           return <h1>Is Loading Data....</h1>
       } else {

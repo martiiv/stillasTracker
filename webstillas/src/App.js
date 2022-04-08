@@ -10,7 +10,6 @@ import PreView from "./components/projects/elements/preView";
 
 
 function App() {
-    const queryClient = new QueryClient();
 
     return (
           <div className={"maintodo"}>

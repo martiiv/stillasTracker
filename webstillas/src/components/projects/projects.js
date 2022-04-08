@@ -1,7 +1,7 @@
 import React from "react";
 import "./projects.css"
-import  CardElement from './elements/card'
-import { Routes, Route} from "react-router-dom";
+import CardElement from './elements/card'
+import {Route, Routes} from "react-router-dom";
 
 
 /**
@@ -25,26 +25,35 @@ class Projects extends React.Component {
 
 
     async componentDidMount() {
-       const url ="http://10.212.138.205:8080/stillastracking/v1/api/project/";
-        fetch(url)
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    this.setState({
-                        isLoaded: true,
-                        projectData: result
-                    });
-                },
-                // Note: it's important to handle errors here
-                // instead of a catch() block so that we don't swallow
-                // exceptions from actual bugs in components.
-                (error) => {
-                    this.setState({
-                        isLoaded: true,
+        if (sessionStorage.getItem('allProjects') == null){
+            const url ="http://10.212.138.205:8080/stillastracking/v1/api/project/";
+            fetch(url)
+                .then(res => res.json())
+                .then(
+                    (result) => {
+                        sessionStorage.setItem('allProjects',JSON.stringify(result))
+                        console.log('API Kjores')
+                        this.setState({
+                            isLoaded: true,
+                            projectData: result,
+                        });
+                    },
+                    // Note: it's important to handle errors here
+                    // instead of a catch() block so that we don't swallow
+                    // exceptions from actual bugs in components.
+                    (error) => {
+                        this.setState({
+                            isLoaded: true,
 
-                    });
-                }
-            )
+                        });
+                    }
+                )
+        }else{
+           console.log('API Kjøres ikke')
+            this.setState({
+                isLoaded: true,
+            });
+        }
     };
 
 
@@ -97,15 +106,26 @@ class Projects extends React.Component {
 
 
     render() {
-
         const {projectData, fromSize, toSize, fromDate, toDate, searchName ,selectedOption } = this.state;
+
+        let allProjects
+       if (sessionStorage.getItem('allProjects') != null){
+             allProjects = sessionStorage.getItem('allProjects')
+            console.log('From Storage')
+           allProjects = (JSON.parse(allProjects))
+        }else {
+            console.log('From API')
+           allProjects = projectData
+        }
+
         return(
             <div className={"main-project-window"}>
                 {this.SideBarFunction()}
                 <div className={"grid-container"}>
 
 
-                    {projectData.filter(data => (data.projectName.toLowerCase()).includes(searchName.toLowerCase()))
+
+                    {allProjects.filter(data => (data.projectName.toLowerCase()).includes(searchName.toLowerCase()))
                         .filter(data => data.size > fromSize)
                         //todo add date filter
                         .filter(data => data.size < toSize)
