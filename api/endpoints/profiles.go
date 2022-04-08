@@ -9,7 +9,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	tool "stillasTracker/api/apiTools"
 	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
@@ -277,7 +276,8 @@ func getUsersByRole(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	queryValue := getQueryCustomer(w, r)
+	queryValue := tool.GetQueryCustomer(w, r)
+
 	documentPath := baseCollection.Collection(queryValue).Documents(database.Ctx)
 	var employees []_struct.Employee
 	for { //Iterates through the documents with the specified type
@@ -425,28 +425,6 @@ func getIndividualUserByID(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-}
-
-/*
-getQueryCustomer Function returns a query list containing the queries specific to the profile endpoint
-*/
-func getQueryCustomer(w http.ResponseWriter, r *http.Request) string {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	m, _ := url.ParseQuery(r.URL.RawQuery)
-	_, ok := m[constants.U_Role]
-	if ok {
-		validRoles := []string{constants.U_Admin, constants.U_Storage, constants.U_Installer}
-		for _, role := range validRoles {
-			if m[constants.U_Role][0] == strings.ToLower(role) {
-				return m[constants.U_Role][0]
-			}
-		}
-	}
-	http.Error(w, "no valid query", http.StatusBadRequest)
-	return ""
-
 }
 
 //iterateProjects will iterate through every project in active, inactive and upcoming projects.

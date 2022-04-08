@@ -102,6 +102,26 @@ func GetQueryProfile(r *http.Request) (map[string]string, bool) {
 }
 
 /*
+getQueryCustomer Function returns a query list containing the queries specific to the profile endpoint
+*/
+func GetQueryCustomer(w http.ResponseWriter, r *http.Request) string {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	queries := mux.Vars(r)
+
+	validRoles := []string{constants.U_Admin, constants.U_Storage, constants.U_Installer}
+
+	for _, role := range validRoles {
+		if queries[constants.U_Role] == strings.ToLower(role) {
+			return queries[constants.U_Role]
+		}
+	}
+	return "Invalid query"
+
+}
+
+/*
 GetLastUrlElement will split the url and return the last element.
 */
 func GetLastUrlElement(r *http.Request) string {
