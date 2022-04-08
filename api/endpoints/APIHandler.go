@@ -8,43 +8,58 @@ import (
 	"os"
 )
 
+/**
+Class APIHandler.go
+Class forwards requests to the appropriate endpoint and assigns the port of the program
+Last modified by martiiv@stud.ntnu.no
+Date: 06.04.2022
+Version 0.8
+*/
+
 const baseURL = "/stillastracking/v1/api"
 
-// Handle /**
+//Handle Function starts when launching program, function forwards the request to the appropriate endpoint
 func Handle() {
-	//fmt.Println("Listening on port" + getPort())
-	/*//Scaffolding endpoints
+	router := mux.NewRouter()
+
+	//router.HandleFunc(baseURL+"/unit", ScaffoldingRequest) //DELETE, POST, GET
+
+	//Scaffolding endpoint
+	router.Path(baseURL+"/unit").HandlerFunc(ScaffoldingRequest).Queries("type", "{type}").Queries("id", "{id}") //GET POST PUT DELETE
+	router.Path(baseURL+"/unit").HandlerFunc(ScaffoldingRequest).Queries("type", "{type}")                       //GET POST PUT DELETE
+	router.Path(baseURL + "/unit").HandlerFunc(ScaffoldingRequest)                                               //GET POST PUT DELETE
+
+	//Project endpoint
+	router.HandleFunc(baseURL+"/project/", ProjectRequest).Queries("id", "{id}").Queries("scaffolding", "{scaffolding}")     //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/", ProjectRequest).Queries("name", "{name}").Queries("scaffolding", "{scaffolding}") //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/", ProjectRequest).Queries("id", "{id}")                                             //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/", ProjectRequest).Queries("name", "{name}")                                         //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/{scaffolding}", ProjectRequest)                                                      //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/", ProjectRequest)                                                                   //DELETE, POST, GET
+
+	//Storage endpoint
+	router.HandleFunc(baseURL+"/storage/", storageRequest)
+
+	//Profile endpoint
+	router.HandleFunc(baseURL+"/user/", ProfileRequest).Queries("id", "{id}")
+	router.HandleFunc(baseURL+"/user/", ProfileRequest).Queries("role", "{role}")
+	router.HandleFunc(baseURL+"/user/", ProfileRequest)
+
+	http.Handle("/", router)
+	log.Println(http.ListenAndServe(getPort(), nil))
+}
+
+func oldHandle() {
+	fmt.Println("Listening on port" + getPort())
+	//Scaffolding endpoint
 	http.HandleFunc(baseURL+"/unit/", ScaffoldingRequest) //GET POST PUT DELETE
 	//Project endpoint
 	http.HandleFunc(baseURL+"/project/", ProjectRequest) //DELETE, POST, GET
+	//Storage endpoint
 	http.HandleFunc(baseURL+"/storage/", storageRequest)
 	//Profile endpoint
 	http.HandleFunc(baseURL+"/user/", ProfileRequest)
-	log.Println(http.ListenAndServe(getPort(), nil))*/
-
-	router := mux.NewRouter()
-	router.HandleFunc("/exchange/v1/diag", diagnostics).Queries("limit", "{limit}")
-	router.HandleFunc("/exchange/v1/diag/", diagnostics)
-
-	http.Handle("/", router)
-	log.Println(http.ListenAndServe(getPort(), router))
-
-}
-
-func diagnostics(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	queryMap := mux.Vars(r)
-
-	countryName := queryMap["limit"]
-
-	//Prints the information
-	fmt.Fprintf(w, `{
-   	"exchangeratesapi": "HEi",
-   "restcountries": "Dette",
-   "version": "v1",
-   "uptime": "%v" }`, countryName)
+	log.Println(http.ListenAndServe(getPort(), nil))
 }
 
 /*

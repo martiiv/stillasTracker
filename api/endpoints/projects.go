@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gorilla/mux"
 	"google.golang.org/api/iterator"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	tool "stillasTracker/api/apiTools"
 	"stillasTracker/api/constants"
@@ -20,27 +20,32 @@ import (
 
 /**
 Class projects
-This class will contain all data formating and handling of the clients projects
+This class will contain all data formatting and handling of the clients projects
 Class contains the following functions:
-	- getProject:         The function returns information regarding an active project
-	- createProject:      The function lets a user create a project and assign scaffolding units as well as a geofence
-	- deleteProject:      The function deletes a project from the system
-	- getStorageFacility: The function returns the state of the storage facility (amount of scaffolding equipment)
-
-Version 0.2
-Last modified Aleksander Aaboen
+Version 0.9
+Last modified Martin Iversen 07.04.2022
+TODO Find alternative for strings.Title since the function is deprecated
+TODO If possible modularize the unmarshalling and encoding of lists since there is a lot of duplicate code doing this
 */
-var projectCollection *firestore.DocumentRef
 
-/**
+//ProjectCollection reference to a firestore document
+var ProjectCollection *firestore.DocumentRef
+
+/*
 ProjectRequest
-Main function to switch between the different request types.
+Function will redirect the user request to the appropriate endpoint
+All communication with the project side of the API goes through this function
 */
 func ProjectRequest(w http.ResponseWriter, r *http.Request) {
+	//Sets headers to communicate with mobile and web application
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	projectCollection = database.Client.Doc(constants.P_LocationCollection + "/" + constants.P_ProjectDocument)
+	//Defines the path to the project Documents in the firestore database
+	ProjectCollection = database.Client.Doc(constants.P_LocationCollection + "/" + constants.P_ProjectDocument)
 	requestType := r.Method
 
+	//Redirects the request to the appropriate function based on the type of request
 	switch requestType {
 	case http.MethodGet:
 		getProject(w, r)
@@ -53,32 +58,27 @@ func ProjectRequest(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*
-getLastUrlElement will split the url and return the last element.
-*/
-func getLastUrlElement(r *http.Request) string {
-	url := r.URL.Path
-	trimmedURL := strings.TrimRight(url, "/")
-	splittedURL := strings.Split(trimmedURL, "/")
-	lastElement := splittedURL[len(splittedURL)-1]
-	return lastElement
-}
-
 //storageRequest will return all the scaffolding parts in the selected storage location.
 func storageRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	//Predefines the necessary variables and structs for the function
 	var storageArray []_struct.Scaffolding
 	var storageArr []*firestore.DocumentIterator
-	query := getQuery(r)
 	var storage *firestore.DocumentIterator
-	if query.Has(constants.S_type) {
+
+	query := r.URL.Query()
+
+	//Checks if the query contains a scaffolding type
+	if query.Has(constants.S_type) { //If it does, it gets the amount of scaffolding of that type from the database
 		storage = database.Client.Collection(constants.P_LocationCollection+"/"+constants.P_StorageDocument+"/"+constants.P_Inventory).Where(constants.S_type, "==", query.Get(constants.S_type)).Documents(database.Ctx)
 		storageArr = append(storageArr, storage)
-	} else {
+	} else { //If not it gets all the scaffolding types in the storage section of the database
 		storage = database.Client.Collection(constants.P_LocationCollection + "/" + constants.P_StorageDocument + "/" + constants.P_Inventory).Documents(database.Ctx)
-
 	}
-	for {
+
+	for { //The function will iterate through the documents defined by the database path above
 		doc, err := storage.Next()
 		if err == iterator.Done {
 			break
@@ -88,24 +88,22 @@ func storageRequest(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var storageStruct _struct.Scaffolding
-		bytes, err := json.Marshal(doc.Data())
+		var storageStruct _struct.Scaffolding  //Defines a struct with the structure of the Scaffolding type in the storage section of the database
+		bytes, err := json.Marshal(doc.Data()) //Formats the data of the database document
 		if err != nil {
 			tool.HandleError(tool.MARSHALLERROR, w)
 			return
 		}
 
-		err = json.Unmarshal(bytes, &storageStruct)
+		err = json.Unmarshal(bytes, &storageStruct) //Unmarshal the document into the predefined struct on line 94
 		if err != nil {
-			log.Println("Her det fucker seg?")
 			tool.HandleError(tool.UNMARSHALLERROR, w)
 			return
 		}
-
-		storageArray = append(storageArray, storageStruct)
+		storageArray = append(storageArray, storageStruct) //Appends the storageStruct from line 94 to the array of the same type
 	}
 
-	err := json.NewEncoder(w).Encode(storageArray)
+	err := json.NewEncoder(w).Encode(storageArray) //"Sends" the storageArray to the user
 	if err != nil {
 		tool.HandleError(tool.ENCODINGERROR, w)
 		return
@@ -118,35 +116,43 @@ The user will be redirected to either getProjectCollection or getProjectWithID.
 If the user made an invalid request, the user will be redirected to invalidRequest.
 */
 func getProject(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
-	query, err := tool.GetQueryProject(r)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	queries := mux.Vars(r)
+
+	/*query, err := tool.GetQueryProject(r)
 	if !err {
 		tool.HandleError(tool.INVALIDREQUEST, w)
 		return
-	}
+	}*/
 
 	switch true {
-	case !query.Has(constants.P_idURL) && !query.Has(constants.P_nameURL) && !query.Has(constants.P_State):
-		getProjectCollection(w, r)
+	case queries[constants.P_idURL] == "" && queries[constants.P_nameURL] == "" && queries[constants.P_State] == "":
+		getProjectCollection(w, r) //If the query has keywords specific to the state of the project it ends up here
 		break
-	case query.Has(constants.P_idURL) || query.Has(constants.P_nameURL) || query.Has(constants.P_State):
-		getProjectWithID(w, r)
+	case queries[constants.P_idURL] != "" || queries[constants.P_nameURL] != "" || queries[constants.P_State] != "":
+		getProjectWithID(w, r) //If the query has keywords specific to the state of the project it ends up here
 		break
 	default:
-		invalidRequest(w, r)
+		tool.InvalidRequest(w, r) //If the query has neither the request is invalid
 		break
 	}
 }
 
 /*
-getProjectCollection will fetch every projects in the database.
+getProjectCollection will fetch every project in the database.
+Uses getScaffoldingStruct in order to fetch all scaffolding parts associated with a project
 */
 func getProjectCollection(w http.ResponseWriter, r *http.Request) {
-	var projects []_struct.GetProject
-	queryMap := getQuery(r)
-	collectionIterator := projectCollection.Collections(database.Ctx)
-	for {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	//Defines the necessary variables
+	var projects []_struct.GetProject //Defines a list containing multiple GetProject structs
+	collectionIterator := ProjectCollection.Collections(database.Ctx)
+	queryMap := mux.Vars(r)
+
+	for { //For loop iterates through all the documents in the project collection and appends them
 		collRef, err := collectionIterator.Next()
 		if err == iterator.Done {
 			break
@@ -155,39 +161,38 @@ func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 			tool.HandleError(tool.COLLECTIONITERATORERROR, w)
 			return
 		}
-		document := projectCollection.Collection(collRef.ID).Documents(database.Ctx)
+		document := ProjectCollection.Collection(collRef.ID).Documents(database.Ctx) //Gets the project collection from the database
 		for {
 			documentRef, err := document.Next()
 			if err == iterator.Done {
 				break
 			}
 
-			var projectNew _struct.NewProject
+			var projectNew _struct.NewProject //Defines the struct of a new project
 			doc, err := database.GetDocumentData(documentRef.Ref)
 			if err != nil {
 				tool.HandleError(tool.NODOCUMENTWITHID, w)
 				return
 			}
 
-			projectByte, err := json.Marshal(doc)
-			err = json.Unmarshal(projectByte, &projectNew)
+			projectByte, err := json.Marshal(doc)          //Formats the project data
+			err = json.Unmarshal(projectByte, &projectNew) //Unmarshal the data into the struct defined on 165
 			if err != nil {
 				tool.HandleError(tool.UNMARSHALLERROR, w)
 				return
 			}
 
-			var project _struct.GetProject
-			project.NewProject = projectNew
-			if queryMap.Has(constants.P_scaffolding) && queryMap.Get(constants.P_scaffolding) == "true" {
-				scaffold, err := getScaffoldingStruct(documentRef.Ref)
+			var project _struct.GetProject  //Defines one instance of the GetProject struct, we have the project details but need scaffolding parts
+			project.NewProject = projectNew //Defines the project section of the GetProject struct
+
+			if queryMap[constants.P_scaffolding] == "true" {
+				scaffold, err := getScaffoldingStruct(documentRef.Ref) //If the request asks for scaffolding parts we get the scaffolding struct
 				if err != nil {
 					tool.HandleError(tool.COULDNOTFINDDATA, w)
 					return
 				}
-				project.ScaffoldingArray = scaffold
-
+				project.ScaffoldingArray = scaffold //We define the section of the GetProject struct which contains scaffolding parts and insert scaffolding parts
 			}
-
 			projects = append(projects, project)
 		}
 	}
@@ -201,40 +206,43 @@ func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 
 /*
 getProjectWithID will fetch a project based on the id
+Uses IterateProjects to search through the database for a project containing the passed in ID
+Uses getScaffoldingStruct in order to fetch all scaffolding parts associated with a project
 */
-//todo trim name Query
 func getProjectWithID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	queryMap, _ := tool.GetQueryProject(r)
 	var documentReference []*firestore.DocumentRef
 	var projects []_struct.GetProject
 	var err error
-	if queryMap.Has(constants.P_idURL) {
-		intID, err := strconv.Atoi(queryMap.Get(constants.P_idURL))
+
+	queryMap := mux.Vars(r)
+	if queryMap[constants.P_idURL] != "" { //If the query contains a project ID we convert it to int and store it for later use
+		intID, err := strconv.Atoi(queryMap[constants.P_idURL])
 		if err != nil {
 			tool.HandleError(tool.INVALIDBODY, w)
 			return
 		}
-		documentReference, err = iterateProjects(intID, "", "")
 
-	} else if queryMap.Has(constants.P_nameURL) {
-		documentReference, err = iterateProjects(0, queryMap.Get(constants.P_nameURL), "")
-	} else {
-		documentReference, err = iterateProjects(0, "", strings.Title(queryMap.Get(constants.P_State)))
+		documentReference, err = IterateProjects(intID, "", "") //Finds the project with the defined ID
+
+	} else if queryMap[constants.P_nameURL] != "" { //If the url contains a project name we will use that instead
+		documentReference, err = IterateProjects(0, queryMap[constants.P_nameURL], "")
+	} else { //If the url contains a state we will use that instead
+		//Function strings.Title is deprecated however formatting makes usages of cases.Title impossible
+		documentReference, err = IterateProjects(0, "", strings.Title(queryMap[constants.P_State]))
 	}
 	if err != nil {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return
 	}
-
 	if documentReference == nil {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return
 	}
 
-	for _, ref := range documentReference {
+	for _, ref := range documentReference { //Iterates through the projects found in the if statement on line 214-228
 
 		data, err := database.GetDocumentData(ref)
 		if err != nil {
@@ -257,7 +265,7 @@ func getProjectWithID(w http.ResponseWriter, r *http.Request) {
 
 		var project _struct.GetProject
 		project.NewProject = projectNew
-		if queryMap.Has(constants.P_scaffolding) && queryMap.Get(constants.P_scaffolding) == "true" {
+		if queryMap[constants.P_scaffolding] == "true" {
 			scaffold, err := getScaffoldingStruct(ref)
 			if err != nil {
 				tool.HandleError(tool.COULDNOTFINDDATA, w)
@@ -276,54 +284,49 @@ func getProjectWithID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//invalidRequest
-func invalidRequest(w http.ResponseWriter, r *http.Request) {
-	tool.HandleError(tool.INVALIDREQUEST, w)
-	return
-}
-
-//deleteProject deletes selected projects from the database.
+/*
+deleteProject deletes selected projects from the database.
+*/
 func deleteProject(w http.ResponseWriter, r *http.Request) {
-	bytes, err := io.ReadAll(r.Body)
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	request, err := io.ReadAll(r.Body)
 	if err != nil {
 		tool.HandleError(tool.READALLERROR, w)
 		return
 	}
 
-	var dat []map[string]interface{}
-	err = json.Unmarshal(bytes, &dat)
+	var requestStructure []map[string]interface{}    //Defines a data structure
+	err = json.Unmarshal(request, &requestStructure) //Unmarshall the request body into the defined structure
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
 	}
 
-	correctBody := true
-	for _, m := range dat {
+	//Defines a bool which we use in order to check that the project id is in the correct format
+	for _, m := range requestStructure {
 		_, correct := m[constants.P_idBody].(float64)
 		if !correct {
-			correctBody = false
+			tool.HandleError(tool.INVALIDBODY, w)
+			return
 		}
-	}
-
-	if !correctBody {
-		tool.HandleError(tool.INVALIDBODY, w)
-		return
 	}
 
 	var deleteID _struct.IDStruct
 	batch := database.Client.Batch()
 
-	err = json.Unmarshal(bytes, &deleteID)
+	err = json.Unmarshal(request, &deleteID)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
 	}
 
-	for _, num := range deleteID {
+	for _, num := range deleteID { //Iterates through the list of ID's
 		var correctID []*firestore.DocumentRef
 
-		if num.ID != 0 {
-			correctID, err = iterateProjects(num.ID, "", "")
+		if num.ID != 0 { //If the ID exists
+			correctID, err = IterateProjects(num.ID, "", "") //We find the ID with IterateProjects
 		}
 
 		if correctID == nil {
@@ -332,7 +335,7 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 		}
 
 		subCollection := database.GetCollectionData(correctID[0].Collection(constants.P_StillasType).Documents(database.Ctx))
-		if subCollection != nil {
+		if subCollection != nil { //If the project contains scaffolding parts we iterate through the list and remove them
 			iter := correctID[0].Collection(constants.P_StillasType).Documents(database.Ctx)
 
 			for {
@@ -346,22 +349,22 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 				}
 
 				scaffoldingType, err := doc.DataAt(constants.S_type)
-
 				scaffoldingParts, err := doc.DataAt(constants.P_QuantityExpected)
-				byte, err := json.Marshal(scaffoldingParts)
+
+				scaffoldingByte, err := json.Marshal(scaffoldingParts) //Gets the expected amount of scaffolding parts for the project
 				if err != nil {
 					tool.HandleError(tool.MARSHALLERROR, w)
 					return
 				}
 
 				var restScaffold int
-				err = json.Unmarshal(byte, &restScaffold)
+				err = json.Unmarshal(scaffoldingByte, &restScaffold)
 				if err != nil {
 					tool.HandleError(tool.UNMARSHALLERROR, w)
 					return
 				}
 
-				if restScaffold != 0 {
+				if restScaffold != 0 { //If the expected amount of scaffolding units isn't 0 we need to delete them
 					typeScaffold := fmt.Sprint(scaffoldingType)
 
 					move := _struct.InputScaffoldingWithID{
@@ -384,68 +387,65 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 					read := strings.NewReader(string(moveByte))
 					req, _ := http.NewRequest(http.MethodPut, "/stillastracking/v1/api/project/scaffolding/", read)
 					transferProject(w, req)
-
 				}
-
 				batch.Delete(doc.Ref)
 			}
 		}
-
 		batch.Delete(correctID[0])
-
 	}
 	_, err = batch.Commit(database.Ctx)
 	if err != nil {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return
 	}
-
 }
 
 //createProject will create a Project and add it to the database
 func createProject(w http.ResponseWriter, r *http.Request) {
-	bytes, err := ioutil.ReadAll(r.Body)
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	request, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		tool.HandleError(tool.READALLERROR, w)
 		return
 	}
-	correctBody := checkProjectBody(bytes)
+
+	correctBody := CheckStateBody(request)
 	if !correctBody {
 		tool.HandleError(tool.INVALIDBODY, w)
 		return
 	}
-	var project _struct.NewProject
-	err = json.Unmarshal(bytes, &project)
+
+	var project _struct.NewProject          //Defines the structure of the request
+	err = json.Unmarshal(request, &project) //Unmarshall the request data into the project struct
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
 	}
 
-	id := strconv.Itoa(project.ProjectID)
-
+	id := strconv.Itoa(project.ProjectID) //Converts the project id into a string
 	var correctID []*firestore.DocumentRef
 
 	if project.ProjectID != 0 {
-		correctID, err = iterateProjects(project.ProjectID, "", "")
+		correctID, err = IterateProjects(project.ProjectID, "", "") //If the project id is passed in we check if it already exists
 	}
-
 	if correctID != nil {
 		tool.HandleError(tool.CouldNotAddSameID, w)
 		return
 	}
 
 	state := project.State
-	documentPath := projectCollection.Collection(state).Doc(id)
-
+	documentPath := ProjectCollection.Collection(state).Doc(id) //We define the path to the document we wish to create
 	var firebaseInput map[string]interface{}
 
-	bytes, err = json.Marshal(project)
+	request, err = json.Marshal(project) //Formatting the desired structure
 	if err != nil {
 		tool.HandleError(tool.MARSHALLERROR, w)
 		return
 	}
 
-	err = json.Unmarshal(bytes, &firebaseInput)
+	err = json.Unmarshal(request, &firebaseInput) //More formatting
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
@@ -453,7 +453,7 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 
 	batch := database.Client.Batch()
 	batch.Create(documentPath, firebaseInput)
-	err = addScaffolding(w, documentPath, batch)
+	err = addScaffolding(documentPath, batch)
 	if err != nil {
 		tool.HandleError(tool.COULDNOTADDDOCUMENT, w)
 		return
@@ -467,7 +467,10 @@ The user will be redirected to either updateState or transferProject.
 If the user made an invalid request, the user will be redirected to invalidRequest.
 */
 func putRequest(w http.ResponseWriter, r *http.Request) {
-	lastElement := getLastUrlElement(r)
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	lastElement := tool.GetLastUrlElement(r)
 
 	switch true {
 	case constants.P_scaffolding == lastElement:
@@ -475,7 +478,7 @@ func putRequest(w http.ResponseWriter, r *http.Request) {
 	case constants.P_projectURL == lastElement:
 		updateState(w, r)
 	default:
-		invalidRequest(w, r)
+		tool.InvalidRequest(w, r)
 	}
 
 }
@@ -483,86 +486,72 @@ func putRequest(w http.ResponseWriter, r *http.Request) {
 /*updateState will change the state of the project. In an atomic operation the project will change state,
 be moved into the state collection and deleted form the old state collection.*/
 func updateState(w http.ResponseWriter, r *http.Request) {
-	batch := database.Client.Batch()
-	data, err := ioutil.ReadAll(r.Body)
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	batch := database.Client.Batch()    //Defines the database batch
+	data, err := ioutil.ReadAll(r.Body) //Reads the body of the request
 	if err != nil {
 		tool.HandleError(tool.READALLERROR, w)
 		return
 	}
 
-	correctBody := checkStateBody(data)
+	correctBody := CheckStateBody(data)
 	if !correctBody {
 		tool.HandleError(tool.INVALIDBODY, w)
 		return
 	}
 
 	var stateStruct _struct.StateStruct
-	err = json.Unmarshal(data, &stateStruct)
+	err = json.Unmarshal(data, &stateStruct) //Unmarshall the body into the desired format
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
 	}
-
-	documentReference, err := iterateProjects(stateStruct.ID, "", "")
+	//Gets the database document matching with the one in the request
+	documentReference, err := IterateProjects(stateStruct.ID, "", "")
 	if err != nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
 	}
 
+	//Gets the document data of said project
 	project, err := database.GetDocumentData(documentReference[0])
 	if err != nil {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return
 	}
 
-	newPath := projectCollection.Collection(stateStruct.State).Doc(strconv.Itoa(stateStruct.ID))
-	batch.Create(newPath, project)
+	newPath := ProjectCollection.Collection(stateStruct.State).Doc(strconv.Itoa(stateStruct.ID))
+	batch.Create(newPath, project) //We start the database operation
 
-	scaffolding, err := getScaffoldingStruct(documentReference[0])
+	scaffolding, err := getScaffoldingStruct(documentReference[0]) //We get the scaffolding parts associated with the project
 	if err != nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
 	}
 
-	scaffoldingMap, err := structToMap(scaffolding)
+	scaffoldingMap, err := tool.StructToMap(scaffolding) //Formatting the scaffolding parts
 
-	for _, s := range scaffoldingMap {
-		scaffoldingType := strings.Title((s[constants.P_typeField].(string)))
+	for _, s := range scaffoldingMap { //Iterates through the scaffolding parts and deletes them form the project
+		scaffoldingType := strings.Title(s[constants.P_typeField].(string))
 		batch.Create(newPath.Collection(constants.P_StillasType).Doc(scaffoldingType), s)
 		batch.Delete(documentReference[0].Collection(constants.P_StillasType).Doc(scaffoldingType))
 	}
-
 	batch.Delete(documentReference[0])
-	update := firestore.Update{
+
+	update := firestore.Update{ //Updates the state of the project after the scaffolding parts are removed
 		Path:  constants.P_State,
 		Value: stateStruct.State,
 	}
 	var updates []firestore.Update
 	updates = append(updates, update)
-
 	batch.Update(newPath, updates)
-
 	_, err = batch.Commit(database.Ctx)
 	if err != nil {
 		tool.HandleError(tool.CHANGESWERENOTMADE, w)
 		return
 	}
-
-}
-
-func structToMap(input interface{}) ([]map[string]interface{}, error) {
-	output, err := json.Marshal(input)
-	if err != nil {
-		return nil, err
-	}
-
-	var outputMap []map[string]interface{}
-	err = json.Unmarshal(output, &outputMap)
-	if err != nil {
-		return nil, err
-	}
-
-	return outputMap, nil
 }
 
 /**
@@ -570,22 +559,26 @@ transferProject will move a project from one collection of a given state to anot
 This function will use batched writes to ensure integrity.
 */
 func transferProject(w http.ResponseWriter, r *http.Request) {
-	batch := database.Client.Batch()
-	_, inputScaffolding, err := getScaffoldingInput(w, r)
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	batch := database.Client.Batch()                   //Defines the database operation
+	_, inputScaffolding, err := GetScaffoldingInput(r) //Gets the scaffolding parts the user wants to transfer
 	if err != nil {
 		tool.HandleError(tool.INVALIDBODY, w)
 		return
 	}
 
+	//Defining data structures
 	var fromLocation []interface{}
+	var fromPaths []*firestore.DocumentRef
 	var newLocation []interface{}
 	var newPath []*firestore.DocumentRef
-	var fromPaths []*firestore.DocumentRef
 
 	switch inputScaffolding.FromProjectID {
-	case 0:
-		fromLocation, fromPaths = getScaffoldingFromStorage(inputScaffolding.FromProjectID, inputScaffolding.InputScaffolding)
-	default:
+	case 0: //In this case the parts will be transferred from storage to a project
+		fromLocation, fromPaths = getScaffoldingFromStorage(inputScaffolding.InputScaffolding)
+	default: //If not we get the path to the project we want to take the scaffolding parts from
 		fromLocation, fromPaths = getScaffoldingFromProject(inputScaffolding.FromProjectID, inputScaffolding.InputScaffolding)
 	}
 	if fromLocation == nil {
@@ -593,9 +586,10 @@ func transferProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//Same as line 557-566
 	switch inputScaffolding.ToProjectID {
 	case 0:
-		newLocation, newPath = getScaffoldingFromStorage(inputScaffolding.ToProjectID, inputScaffolding.InputScaffolding)
+		newLocation, newPath = getScaffoldingFromStorage(inputScaffolding.InputScaffolding)
 	default:
 		newLocation, newPath = getScaffoldingFromProject(inputScaffolding.ToProjectID, inputScaffolding.InputScaffolding)
 	}
@@ -603,7 +597,6 @@ func transferProject(w http.ResponseWriter, r *http.Request) {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return
 	}
-
 	if len(fromLocation) != len(newLocation) {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
@@ -613,27 +606,28 @@ func transferProject(w http.ResponseWriter, r *http.Request) {
 	var add = map[string]interface{}{}
 
 	for i := range fromLocation {
-		quantity := inputScaffolding.InputScaffolding[i].Quantity
-
-		intVar, err := interfaceToInt(fromLocation[i])
+		quantity := inputScaffolding.InputScaffolding[i].Quantity //Defines the quantity of a type of scaffolding
+		intVar, err := tool.InterfaceToInt(fromLocation[i])       //Converts the number from an interface to an int
 		if err != nil {
 			tool.HandleError(tool.UNMARSHALLERROR, w)
 			return
 		}
 
-		if quantity > intVar {
+		if quantity > intVar { //If you want to transfer more than allowed bad luck
 			tool.HandleError(tool.CANNOTTRANSFERESCAFFOLDS, w)
 			return
 		}
 
-		inputQuantity, err := interfaceToInt(inputScaffolding.InputScaffolding[i].Quantity)
-		fromLoc, err := interfaceToInt(fromLocation[i])
-		newLoc, err := interfaceToInt(newLocation[i])
+		//Converts the different quantities to ints so we can do the operations
+		inputQuantity, err := tool.InterfaceToInt(inputScaffolding.InputScaffolding[i].Quantity)
+		fromLoc, err := tool.InterfaceToInt(fromLocation[i])
+		newLoc, err := tool.InterfaceToInt(newLocation[i])
 		if err != nil {
 			tool.HandleError(tool.READALLERROR, w)
 			return
 		}
 
+		//Does the operations
 		sub[constants.P_Quantity] = map[string]interface{}{}
 		sub[constants.P_Quantity].(map[string]interface{})[constants.P_Expected] = fromLoc - inputQuantity
 
@@ -653,7 +647,7 @@ func transferProject(w http.ResponseWriter, r *http.Request) {
 
 /**
 getScaffoldingFromProject will get the selected scaffolding from a project, and return the number of scaffolding parts
-and the documentref where the scaffolding are placed.
+and the documentRef where the scaffolding are placed.
 */
 func getScaffoldingFromProject(input int, scaffold _struct.InputScaffolding) ([]interface{}, []*firestore.DocumentRef) {
 
@@ -661,7 +655,7 @@ func getScaffoldingFromProject(input int, scaffold _struct.InputScaffolding) ([]
 	var fromPaths []*firestore.DocumentRef
 	var scaffoldingArray []interface{}
 
-	newPath, _ := iterateProjects(input, "", "")
+	newPath, _ := IterateProjects(input, "", "")
 	if newPath == nil {
 		return nil, nil
 	}
@@ -695,10 +689,10 @@ func getScaffoldingFromProject(input int, scaffold _struct.InputScaffolding) ([]
 
 /**
 getScaffoldingFromStorage will get the selected scaffolding from a project, and return the number of scaffolding parts
-and the documentref where the scaffolding are placed.
+and the documentRef where the scaffolding are placed.
 This function is used in
 */
-func getScaffoldingFromStorage(input int, scaffold _struct.InputScaffolding) ([]interface{}, []*firestore.DocumentRef) {
+func getScaffoldingFromStorage(scaffold _struct.InputScaffolding) ([]interface{}, []*firestore.DocumentRef) {
 
 	var fromPath *firestore.DocumentRef
 	var fromPaths []*firestore.DocumentRef
@@ -727,7 +721,7 @@ func getScaffoldingFromStorage(input int, scaffold _struct.InputScaffolding) ([]
 
 }
 
-func addScaffolding(w http.ResponseWriter, documentPath *firestore.DocumentRef, batch *firestore.WriteBatch) error {
+func addScaffolding(documentPath *firestore.DocumentRef, batch *firestore.WriteBatch) error {
 	scaffoldingCollection := documentPath.Collection(constants.P_StillasType)
 
 	for _, scaffoldingType := range constants.ScaffoldingTypes {
@@ -741,13 +735,13 @@ func addScaffolding(w http.ResponseWriter, documentPath *firestore.DocumentRef, 
 			},
 		}
 
-		byte, err := json.Marshal(scaffoldingStruct)
+		scaffoldByte, err := json.Marshal(scaffoldingStruct)
 		if err != nil {
 			return err
 		}
 
 		var scaffoldingInput map[string]interface{}
-		err = json.Unmarshal(byte, &scaffoldingInput)
+		err = json.Unmarshal(scaffoldByte, &scaffoldingInput)
 		if err != nil {
 			return err
 		}
@@ -760,18 +754,18 @@ func addScaffolding(w http.ResponseWriter, documentPath *firestore.DocumentRef, 
 	return err
 }
 
+//getScaffoldingStruct function will take a project document and return all the scaffolding parts associated with the project
 func getScaffoldingStruct(document *firestore.DocumentRef) (_struct.ScaffoldingArray, error) {
-
 	scaffolding := document.Collection(constants.P_StillasType).Documents(database.Ctx)
 	var scaffoldArr _struct.ScaffoldingArray
 
-	for {
+	for { //Iterates through the section of the project document containing the associated scaffolding parts
 		documentRef, err := scaffolding.Next()
 		if err == iterator.Done {
 			break
 		}
 
-		var scaffold _struct.Scaffolding
+		var scaffold _struct.Scaffolding //Defines format for individual scaffolding part
 		doc, err := database.GetDocumentData(documentRef.Ref)
 		if err != nil {
 			return _struct.ScaffoldingArray{}, errors.New("no document")
@@ -783,8 +777,8 @@ func getScaffoldingStruct(document *firestore.DocumentRef) (_struct.ScaffoldingA
 			return _struct.ScaffoldingArray{}, errors.New("no document")
 		}
 
-		scaffoldArr = append(scaffoldArr, scaffold)
+		scaffoldArr = append(scaffoldArr, scaffold) //Appends data to the scaffolding array
 
 	}
-	return scaffoldArr, nil
+	return scaffoldArr, nil //Returns an array containing the list of scaffolding parts associated with a project
 }

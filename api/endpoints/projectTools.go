@@ -7,37 +7,26 @@ import (
 	"google.golang.org/api/iterator"
 	"io/ioutil"
 	"net/http"
-	"net/url"
+	"stillasTracker/api/apiTools"
 	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
 	_struct "stillasTracker/api/struct"
 	"time"
 )
 
-func getQuery(r *http.Request) url.Values {
-	query := r.URL.Query()
+/*
+projectTools File contains tools used in the projects.go file
+Last edited Martin Iversen 07.04.2022
+Version 0.9
+TODO Delete checkProjectBody? It isn't used
+*/
 
-	return query
-}
-
-func interfaceToInt(input interface{}) (int, error) {
-	bytes, err := json.Marshal(input)
-	if err != nil {
-		return 0, errors.New("cannot marshal")
-	}
-
-	var returnInt int
-	err = json.Unmarshal(bytes, &returnInt)
-	if err != err {
-		return 0, errors.New("cannot unmarshal")
-	}
-
-	return returnInt, nil
-}
-
-func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaffolding, _struct.InputScaffoldingWithID, error) {
-
-	data, err := ioutil.ReadAll(r.Body)
+/*
+GetScaffoldingInput Function returns a list of scaffolding units
+Function uses checkTransaction
+*/
+func GetScaffoldingInput(r *http.Request) ([]_struct.Scaffolding, _struct.InputScaffoldingWithID, error) {
+	data, err := ioutil.ReadAll(r.Body) //Reads the request body
 	if err != nil {
 		return nil, _struct.InputScaffoldingWithID{}, errors.New("could not read")
 	}
@@ -53,8 +42,8 @@ func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaf
 		return nil, _struct.InputScaffoldingWithID{}, errors.New("could not unmarshal")
 	}
 	var scaffolds []_struct.Scaffolding
-	for i := range inputScaffolding.InputScaffolding {
 
+	for i := range inputScaffolding.InputScaffolding { //Iterates through the scaffolding units
 		quantity := _struct.Quantity{
 			Expected:   inputScaffolding.InputScaffolding[i].Quantity,
 			Registered: 0,
@@ -70,47 +59,43 @@ func getScaffoldingInput(w http.ResponseWriter, r *http.Request) ([]_struct.Scaf
 	return scaffolds, inputScaffolding, nil
 }
 
-//iterateProjects will iterate through every project in active, inactive and upcoming projects.
-func iterateProjects(id int, name string, state string) ([]*firestore.DocumentRef, error) {
+//IterateProjects will iterate through every project in active, inactive and upcoming projects.
+func IterateProjects(id int, name string, state string) ([]*firestore.DocumentRef, error) {
 	var documentReferences []*firestore.DocumentRef
+	collection := ProjectCollection.Collections(database.Ctx)
 
-	collection := projectCollection.Collections(database.Ctx)
-	for {
+	for { //Iterates through all the projects in the database
 		collRef, err := collection.Next()
-		if err == iterator.Done {
+		if err == iterator.Done || err != nil {
 			break
 		}
-		if err != nil {
-			break
-		}
+
 		var document *firestore.DocumentIterator
+
 		if name != "" {
-			document = projectCollection.Collection(collRef.ID).Where(constants.P_ProjectName, "==", name).Documents(database.Ctx)
+			document = ProjectCollection.Collection(collRef.ID).Where(constants.P_ProjectName, "==", name).Documents(database.Ctx)
 		} else if id != 0 {
-			document = projectCollection.Collection(collRef.ID).Where(constants.P_ProjectId, "==", id).Documents(database.Ctx)
+			document = ProjectCollection.Collection(collRef.ID).Where(constants.P_ProjectId, "==", id).Documents(database.Ctx)
 		} else {
-			document = projectCollection.Collection(collRef.ID).Where(constants.P_State, "==", state).Documents(database.Ctx)
+			document = ProjectCollection.Collection(collRef.ID).Where(constants.P_State, "==", state).Documents(database.Ctx)
 		}
 		for {
 			documentRef, err := document.Next()
 			if err == iterator.Done {
 				break
 			}
-
 			documentReferences = append(documentReferences, documentRef.Ref)
 		}
 	}
-
 	if documentReferences != nil {
 		return documentReferences, nil
 	} else {
 		return nil, errors.New("could not find document")
 	}
-
 }
 
-//checkStateBody will check if the body is of correct format, and if the values are correct datatypes.
-func checkStateBody(body []byte) bool {
+//CheckStateBody will check if the body is of correct format, and if the values are correct datatype.
+func CheckStateBody(body []byte) bool {
 	var dat map[string]interface{}
 	err := json.Unmarshal(body, &dat)
 	if err != nil {
@@ -281,7 +266,7 @@ func checkGeofenceCoordinates(location interface{}) bool {
 func checkState(input string) bool {
 	state := []string{constants.P_Active, constants.P_Inactive, constants.P_Upcoming}
 
-	return contains(state, input)
+	return apiTools.Contains(state, input)
 }
 
 func checkTransaction(body []byte) bool {
@@ -326,7 +311,7 @@ func checkScaffoldingBody(scaffold interface{}) bool {
 		}
 
 		for _, m2 := range scaffoldMap {
-			isEqual := contains(constants.ScaffoldingTypes, m2[constants.P_typeField].(string))
+			isEqual := apiTools.Contains(constants.ScaffoldingTypes, m2[constants.P_typeField].(string))
 			if !isEqual {
 				return false
 			}
@@ -334,17 +319,6 @@ func checkScaffoldingBody(scaffold interface{}) bool {
 	}
 
 	return true
-}
-
-//https://freshman.tech/snippets/go/check-if-slice-contains-element/
-func contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
-			return true
-		}
-	}
-
-	return false
 }
 
 //checkScaffoldingBody will check the body, to ensure the required fields are filled

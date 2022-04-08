@@ -4,6 +4,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"encoding/json"
 	"errors"
+	"github.com/gorilla/mux"
 	"google.golang.org/api/iterator"
 	"io"
 	"io/ioutil"
@@ -20,29 +21,32 @@ import (
 
 /**
 Class profiles
-This class will contain all data formating and modification regarding the users of the system
-Class contains the following functions:
-	- getProfiles: The function returns all the active profiles in the system
-	- updateProfile: The function lets a user modify their profile
-	- createProfile: THe function lets the admin create a new profile
-	- deleteProfile: The function deletes a user profile
-
-Version 0.1
-Last modified Aleksander Aaboen
+This class will contain all data formatting and modification regarding the users of the system
+Version 0.9
+Last modified Martin Iversen 07.04.2022
+TODO Maybe modularize som functionality the marshall, unmarshall encode routine is repeated often
 */
 
 var baseCollection *firestore.DocumentRef
 
+/*
+ProfileRequest Function will redirect all requests from users to the appropriate function
+Uses getProfile, createProfile, updateProfile and deleteProfile
+*/
 func ProfileRequest(w http.ResponseWriter, r *http.Request) {
-	baseCollection = database.Client.Doc(constants.U_UsersCollection + "/" + constants.U_Employee)
-	lastElement := getLastUrlElement(r)
+	w.Header().Set("Content-Type", "application/json") //Defines data type
+	w.Header().Set("Access-Control-Allow-Origin", "*") //Allows mobile and web application to access the api
+
+	baseCollection = database.Client.Doc(constants.U_UsersCollection + "/" + constants.U_Employee) //Defines the path to the profiles collection in the database
+	lastElement := tool.GetLastUrlElement(r)
+
 	if lastElement != constants.U_User {
 		tool.HandleError(tool.INVALIDREQUEST, w)
 		return
 	}
 
-	requestType := r.Method
-	switch requestType {
+	requestType := r.Method //Defines the method of the request
+	switch requestType {    //Forwards the request to the appropriate function
 	case http.MethodGet:
 		getProfile(w, r)
 	case http.MethodPost:
@@ -54,84 +58,108 @@ func ProfileRequest(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func deleteProfile(w http.ResponseWriter, r *http.Request) {
-	batch := database.Client.Batch()
+/*
+getProfile Function will get a user profile based on role or id
+Function uses getUsersByRole and getIndividualUser as well as getAll
+*/
+func getProfile(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	bytes, err := io.ReadAll(r.Body)
-	if err != nil {
-		tool.HandleError(tool.READALLERROR, w)
+	query, err := tool.GetQueryProfile(r)
+	if !err {
+		tool.HandleError(tool.INVALIDREQUEST, w)
 		return
 	}
 
-	ok := checkDeleteBody(bytes)
-	if !ok {
+	switch true { //Forwards the request to the appropriate function based on the passed in query
+	case query.Has(constants.U_Role):
+		getUsersByRole(w, r)
+	case query.Has(constants.U_idURL) || query.Has(constants.U_nameURL):
+		getIndividualUser(w, r)
+	default:
+		getAll(w)
+	}
+}
+
+/*
+createProfile function adds new profiles to the database
+Function uses iterateProfiles
+*/
+func createProfile(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	requestBody, err := io.ReadAll(r.Body) //Reads body
+	if !checkStruct(requestBody) {
 		tool.HandleError(tool.INVALIDBODY, w)
 		return
 	}
 
-	var deleteID _struct.ProfileDelete
-	err = json.Unmarshal(bytes, &deleteID)
+	var employee _struct.Employee                //Defines the appropriate struct
+	err = json.Unmarshal(requestBody, &employee) //Unmarshall the requestBody into the struct
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
 	}
 
-	for _, num := range deleteID {
-		document, err := iterateProfiles(num.Id, "")
-		if err != nil {
-			tool.HandleError(tool.CouldNotDelete, w)
-			return
-		}
-
-		batch.Delete(document[0])
+	id := strconv.Itoa(employee.EmployeeID)           //Converts the employee id to string
+	_, err = iterateProfiles(employee.EmployeeID, "") //Iterates through the profiles using the id
+	if err == nil {
+		tool.HandleError(tool.CouldNotAddSameID, w)
+		return
 	}
-	_, err = batch.Commit(database.Ctx)
+
+	state := employee.Role                                   //Gets the state of the employee
+	documentPath := baseCollection.Collection(state).Doc(id) //Defines the path to the profile using state and id
+	var firebaseInput map[string]interface{}
+
+	err = json.Unmarshal(requestBody, &firebaseInput) //Formats the requestBody
 	if err != nil {
-		tool.HandleError(tool.CouldNotDelete, w)
+		tool.HandleError(tool.UNMARSHALLERROR, w)
+		return
+	}
+
+	err = database.AddDocument(documentPath, firebaseInput) //Adds the profile to the database
+	if err != nil {
+		tool.HandleError(tool.COULDNOTADDDOCUMENT, w)
+		return
+	} else {
+		tool.HandleError(tool.ADDED, w)
 	}
 }
 
-func checkDeleteBody(bytes []byte) bool {
-
-	var deleteID []map[string]interface{}
-	err := json.Unmarshal(bytes, &deleteID)
-	if err != nil {
-		return false
-	}
-
-	for _, m := range deleteID {
-		_, errDelete := m[constants.U_idURL].(float64)
-		if !errDelete {
-			return false
-		}
-	}
-
-	return true
-}
-
+/*
+updateProfile function updates the information about a user in the database
+Function uses iterateProfiles and checkUpdate
+*/
 func updateProfile(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		tool.HandleError(tool.READALLERROR, w)
 		return
 	}
-	batch := database.Client.Batch()
+
+	batch := database.Client.Batch() //Defines the database operation
 
 	var employeeStruct map[string]interface{}
-	err = json.Unmarshal(data, &employeeStruct)
+	err = json.Unmarshal(data, &employeeStruct) //Unmarshall data into the employeeStruct
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
 	}
 
-	if !checkUpdate(employeeStruct) {
+	if !checkUpdate(employeeStruct) { //Checks if the body is in the correct format
 		tool.HandleError(tool.INVALIDBODY, w)
 		return
 	}
 
-	employee := employeeStruct[constants.U_employeeID].(float64)
+	employee := employeeStruct[constants.U_employeeID].(float64) //Defines the employee id
 
-	documentReference, err := iterateProfiles(int(employee), "")
+	documentReference, err := iterateProfiles(int(employee), "") //Finds the profile using the id
 	if err != nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
@@ -139,7 +167,7 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 
 	var updates []firestore.Update
 
-	for s, i := range employeeStruct {
+	for s, i := range employeeStruct { //Updates the information about the profiles
 		update := firestore.Update{
 			Path:  s,
 			Value: i,
@@ -150,126 +178,118 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 	for _, ref := range documentReference {
 		batch.Update(ref, updates)
 	}
-	_, err = batch.Commit(database.Ctx)
+	_, err = batch.Commit(database.Ctx) //Commits the database changes if all changes pass
 	if err != nil {
 		tool.HandleError(tool.COULDNOTADDDOCUMENT, w)
 		return
 	}
-
 }
 
-func createProfile(w http.ResponseWriter, r *http.Request) {
-	bytes, err := io.ReadAll(r.Body)
-	if !checkStruct(bytes) {
+/*
+deleteProfile function deletes profiles
+Function uses checkDeleteBody and iterateProfiles
+*/
+func deleteProfile(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	batch := database.Client.Batch() //Defines the database operation
+
+	requestBody, err := io.ReadAll(r.Body) //Read body of the request
+	if err != nil {
+		tool.HandleError(tool.READALLERROR, w)
+		return
+	}
+
+	ok := checkDeleteBody(requestBody) //Checks format
+	if !ok {
 		tool.HandleError(tool.INVALIDBODY, w)
 		return
 	}
 
-	var employee _struct.Employee
-	err = json.Unmarshal(bytes, &employee)
+	var deleteID _struct.ProfileDelete           //Defines the structure of the request
+	err = json.Unmarshal(requestBody, &deleteID) //Unmarshall the body into the defined struct
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
 	}
 
-	id := strconv.Itoa(employee.EmployeeID)
-
-	_, err = iterateProfiles(employee.EmployeeID, "")
-	if err == nil {
-		tool.HandleError(tool.CouldNotAddSameID, w)
-		return
-	}
-
-	state := employee.Role
-	documentPath := baseCollection.Collection(state).Doc(id)
-
-	var firebaseInput map[string]interface{}
-	err = json.Unmarshal(bytes, &firebaseInput)
-	if err != nil {
-		tool.HandleError(tool.UNMARSHALLERROR, w)
-		return
-	}
-
-	err = database.AddDocument(documentPath, firebaseInput)
-	if err != nil {
-		tool.HandleError(tool.COULDNOTADDDOCUMENT, w)
-		return
-	} else {
-		tool.HandleError(tool.ADDED, w)
-	}
-}
-
-//getProfile will fetch the profile based on employeeID or role.
-func getProfile(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	query, err := tool.GetQueryProfile(r)
-	if !err {
-		tool.HandleError(tool.INVALIDREQUEST, w)
-		return
-	}
-	switch true {
-	case query.Has(constants.U_Role):
-		getUsersByRole(w, r)
-	case query.Has(constants.U_idURL) || query.Has(constants.U_nameURL):
-		getIndividualUser(w, r)
-	default:
-		getAll(w, r)
-	}
-
-}
-
-func getAll(w http.ResponseWriter, r *http.Request) {
-	var employees []_struct.Employee
-
-	collection := baseCollection.Collections(database.Ctx)
-	for {
-		collRef, err := collection.Next()
-		if err == iterator.Done {
-			break
-		}
+	for _, num := range deleteID { //Iterates through the profiles
+		document, err := iterateProfiles(num.Id, "")
 		if err != nil {
+			tool.HandleError(tool.CouldNotDelete, w)
+			return
+		}
+
+		batch.Delete(document[0]) //Deletes the profile
+	}
+	_, err = batch.Commit(database.Ctx) //Commits the change if all deletes pass
+	if err != nil {
+		tool.HandleError(tool.CouldNotDelete, w)
+	}
+}
+
+/*
+getAll function gets all the profiles in the database
+*/
+func getAll(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	var employees []_struct.Employee //Defines the list of employees
+
+	collection := baseCollection.Collections(database.Ctx) //Defines the path to the profiles collection
+	for {                                                  //Iterates through the collection
+		collRef, err := collection.Next()
+		if err == iterator.Done || err != nil {
 			break
 		}
-		document := baseCollection.Collection(collRef.ID).Documents(database.Ctx)
-		for {
+
+		document := baseCollection.Collection(collRef.ID).Documents(database.Ctx) //Defines the path to the documents within the collection
+		for {                                                                     //Iterates through the documents
 			documentRef, err := document.Next()
 			if err == iterator.Done {
 				break
 			}
 
-			var employee _struct.Employee
-			doc, _ := database.GetDocumentData(documentRef.Ref)
-			projectByte, err := json.Marshal(doc)
-			err = json.Unmarshal(projectByte, &employee)
+			var employee _struct.Employee                       //Defines the employee
+			doc, _ := database.GetDocumentData(documentRef.Ref) //Gets the employee
+			employeeByte, err := json.Marshal(doc)              //Formatting
+			err = json.Unmarshal(employeeByte, &employee)       //Unmarshall data into employee
 			if err != nil {
 				tool.HandleError(tool.UNMARSHALLERROR, w)
 				return
 			}
-
 			employees = append(employees, employee)
 		}
 	}
-
 	err := json.NewEncoder(w).Encode(employees)
 	if err != nil {
 		return
 	}
 }
 
+/*
+getUsersByRole function gets profiles with specific roles
+Function uses getQueryCustomer
+*/
 func getUsersByRole(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	queryValue := getQueryCustomer(w, r)
 	documentPath := baseCollection.Collection(queryValue).Documents(database.Ctx)
 	var employees []_struct.Employee
-	for {
+	for { //Iterates through the documents with the specified type
 		documentRef, err := documentPath.Next()
 		if err == iterator.Done {
 			break
 		}
 
-		var employee _struct.Employee
-		doc, _ := database.GetDocumentData(documentRef.Ref)
-		projectByte, err := json.Marshal(doc)
-		err = json.Unmarshal(projectByte, &employee)
+		var employee _struct.Employee                       //Defines the employee struct
+		doc, _ := database.GetDocumentData(documentRef.Ref) //Gets the profile from the database
+		projectByte, err := json.Marshal(doc)               //Formats data
+		err = json.Unmarshal(projectByte, &employee)        //Unmarshall data
 		if err != nil {
 			tool.HandleError(tool.UNMARSHALLERROR, w)
 			return
@@ -277,7 +297,6 @@ func getUsersByRole(w http.ResponseWriter, r *http.Request) {
 
 		employees = append(employees, employee)
 	}
-
 	if employees == nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
@@ -290,52 +309,62 @@ func getUsersByRole(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+/*
+getIndividualUser function gets a user with a specific profile id
+Function uses tool.GetQueryProfile, getUserByName and getIndividualUserByID
+*/
 func getIndividualUser(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	query, err := tool.GetQueryProfile(r)
 	if !err {
 		tool.HandleError(tool.INVALIDREQUEST, w)
 		return
 	}
-	switch true {
+	switch true { //Forwards the request based on the passed in constant
 	case query.Has(constants.U_name):
 		getUserByName(w, r)
 	case query.Has(constants.U_idURL):
 		getIndividualUserByID(w, r)
-
 	}
 }
 
+/*
+getUserByName function gets profiles based on their name
+Function uses iterateProfiles
+*/
 func getUserByName(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	var documentReference []*firestore.DocumentRef
 	var employees []_struct.Employee
 	var err error
-	queryMap := getQuery(r)
 
-	documentReference, err = iterateProfiles(0, queryMap.Get(constants.U_nameURL))
+	queryMap := r.URL.Query()
+
+	documentReference, err = iterateProfiles(0, queryMap.Get(constants.U_nameURL)) //Gets the profile with the appropriate name
 	if err != nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
 	}
 
-	for _, ref := range documentReference {
-		data, _ := database.GetDocumentData(ref)
-
-		jsonStr, err := json.Marshal(data)
+	for _, ref := range documentReference { //Iterates through documentReference
+		data, _ := database.GetDocumentData(ref) //Gets the profile
+		jsonStr, err := json.Marshal(data)       //Formats the data
 		if err != nil {
 			tool.HandleError(tool.MARSHALLERROR, w)
 			return
 		}
 
 		var employee _struct.Employee
-		err = json.Unmarshal(jsonStr, &employee)
+		err = json.Unmarshal(jsonStr, &employee) //Unmarshalls the document into the struct
 		if err != nil {
 			tool.HandleError(tool.UNMARSHALLERROR, w)
 			return
 		}
-
 		employees = append(employees, employee)
-
 	}
 
 	if employees == nil {
@@ -347,36 +376,41 @@ func getUserByName(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-
 }
 
+/*
+getIndividualUserByID function gets a profile based on a user id
+function uses iterateProfiles
+*/
 func getIndividualUserByID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	var documentReference []*firestore.DocumentRef
 	var err error
-	queryMap := getQuery(r)
+	queryMap := mux.Vars(r)
 
-	intID, err := strconv.Atoi(queryMap.Get(constants.U_idURL))
+	intID, err := strconv.Atoi(queryMap[constants.U_idURL]) //Converts the query id to int
 	if err != nil {
 		tool.HandleError(tool.INVALIDREQUEST, w)
 		return
 	}
-	documentReference, err = iterateProfiles(intID, "")
+
+	documentReference, err = iterateProfiles(intID, "") //Gets the documents with the id
 	if err != nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
 	}
 
-	data, _ := database.GetDocumentData(documentReference[0])
-
-	jsonStr, err := json.Marshal(data)
+	data, _ := database.GetDocumentData(documentReference[0]) //Gets the profile from the database
+	jsonStr, err := json.Marshal(data)                        //Formats the data
 	if err != nil {
 		tool.HandleError(tool.MARSHALLERROR, w)
 		return
 	}
 
-	var employee _struct.Employee
-	err = json.Unmarshal(jsonStr, &employee)
+	var employee _struct.Employee            //Defines the struct
+	err = json.Unmarshal(jsonStr, &employee) //Unmarshall data into the struct
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
@@ -393,7 +427,13 @@ func getIndividualUserByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+/*
+getQueryCustomer Function returns a query list containing the queries specific to the profile endpoint
+*/
 func getQueryCustomer(w http.ResponseWriter, r *http.Request) string {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	m, _ := url.ParseQuery(r.URL.RawQuery)
 	_, ok := m[constants.U_Role]
 	if ok {
@@ -448,6 +488,9 @@ func iterateProfiles(id int, name string) ([]*firestore.DocumentRef, error) {
 
 }
 
+/*
+checkUpdate Function checks the update object
+*/
 func checkUpdate(update map[string]interface{}) bool {
 	var counter int
 	_, employeeID := update[constants.U_employeeID]
@@ -488,6 +531,9 @@ func checkUpdate(update map[string]interface{}) bool {
 	return employeeID
 }
 
+/*
+checkName Function checks the name object
+*/
 func checkName(name interface{}) bool {
 	var counter int
 	nameByte, err := json.Marshal(name)
@@ -517,6 +563,9 @@ func checkName(name interface{}) bool {
 	return true
 }
 
+/*
+checkStruct Function checks the struct objects
+*/
 func checkStruct(body []byte) bool {
 	var userMap map[string]interface{}
 	err := json.Unmarshal(body, &userMap)
@@ -557,6 +606,9 @@ func checkStruct(body []byte) bool {
 	return true
 }
 
+/*
+checkNameFormat Function checks the format of the name
+*/
 func checkNameFormat(name interface{}) bool {
 	periodByte, err := json.Marshal(name)
 	if err != nil {
@@ -575,5 +627,25 @@ func checkNameFormat(name interface{}) bool {
 	if !firstName || !lastName {
 		return false
 	}
+	return true
+}
+
+/*
+checkDeleteBody function checks formatting for the deleteProfile function
+*/
+func checkDeleteBody(bytes []byte) bool {
+	var deleteID []map[string]interface{}
+	err := json.Unmarshal(bytes, &deleteID) //Formats the body
+	if err != nil {
+		return false
+	}
+
+	for _, m := range deleteID { //Checks that it is in the appropriate format
+		_, errDelete := m[constants.U_idURL].(float64)
+		if !errDelete {
+			return false
+		}
+	}
+
 	return true
 }
