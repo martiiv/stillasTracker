@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gorilla/mux"
 	"google.golang.org/api/iterator"
 	"io"
 	"io/ioutil"
@@ -117,18 +118,19 @@ If the user made an invalid request, the user will be redirected to invalidReque
 func getProject(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	queries := mux.Vars(r)
 
-	query, err := tool.GetQueryProject(r)
+	/*query, err := tool.GetQueryProject(r)
 	if !err {
 		tool.HandleError(tool.INVALIDREQUEST, w)
 		return
-	}
+	}*/
 
 	switch true {
-	case !query.Has(constants.P_idURL) && !query.Has(constants.P_nameURL) && !query.Has(constants.P_State):
+	case queries[constants.P_idURL] == "" && queries[constants.P_nameURL] == "" && queries[constants.P_State] == "":
 		getProjectCollection(w, r) //If the query has keywords specific to the state of the project it ends up here
 		break
-	case query.Has(constants.P_idURL) || query.Has(constants.P_nameURL) || query.Has(constants.P_State):
+	case queries[constants.P_idURL] != "" || queries[constants.P_nameURL] != "" || queries[constants.P_State] != "":
 		getProjectWithID(w, r) //If the query has keywords specific to the state of the project it ends up here
 		break
 	default:
@@ -148,7 +150,7 @@ func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 	//Defines the necessary variables
 	var projects []_struct.GetProject //Defines a list containing multiple GetProject structs
 	collectionIterator := ProjectCollection.Collections(database.Ctx)
-	queryMap := r.URL.Query()
+	queryMap := mux.Vars(r)
 
 	for { //For loop iterates through all the documents in the project collection and appends them
 		collRef, err := collectionIterator.Next()
@@ -183,7 +185,7 @@ func getProjectCollection(w http.ResponseWriter, r *http.Request) {
 			var project _struct.GetProject  //Defines one instance of the GetProject struct, we have the project details but need scaffolding parts
 			project.NewProject = projectNew //Defines the project section of the GetProject struct
 
-			if queryMap.Has(constants.P_scaffolding) && queryMap.Get(constants.P_scaffolding) == "true" {
+			if queryMap[constants.P_scaffolding] == "true" {
 				scaffold, err := getScaffoldingStruct(documentRef.Ref) //If the request asks for scaffolding parts we get the scaffolding struct
 				if err != nil {
 					tool.HandleError(tool.COULDNOTFINDDATA, w)
@@ -215,9 +217,9 @@ func getProjectWithID(w http.ResponseWriter, r *http.Request) {
 	var projects []_struct.GetProject
 	var err error
 
-	queryMap, _ := tool.GetQueryProject(r)
-	if queryMap.Has(constants.P_idURL) { //If the query contains a project ID we convert it to int and store it for later use
-		intID, err := strconv.Atoi(queryMap.Get(constants.P_idURL))
+	queryMap := mux.Vars(r)
+	if queryMap[constants.P_idURL] != "" { //If the query contains a project ID we convert it to int and store it for later use
+		intID, err := strconv.Atoi(queryMap[constants.P_idURL])
 		if err != nil {
 			tool.HandleError(tool.INVALIDBODY, w)
 			return
@@ -225,11 +227,11 @@ func getProjectWithID(w http.ResponseWriter, r *http.Request) {
 
 		documentReference, err = IterateProjects(intID, "", "") //Finds the project with the defined ID
 
-	} else if queryMap.Has(constants.P_nameURL) { //If the url contains a project name we will use that instead
-		documentReference, err = IterateProjects(0, queryMap.Get(constants.P_nameURL), "")
+	} else if queryMap[constants.P_nameURL] != "" { //If the url contains a project name we will use that instead
+		documentReference, err = IterateProjects(0, queryMap[constants.P_nameURL], "")
 	} else { //If the url contains a state we will use that instead
 		//Function strings.Title is deprecated however formatting makes usages of cases.Title impossible
-		documentReference, err = IterateProjects(0, "", strings.Title(queryMap.Get(constants.P_State)))
+		documentReference, err = IterateProjects(0, "", strings.Title(queryMap[constants.P_State]))
 	}
 	if err != nil {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
@@ -263,7 +265,7 @@ func getProjectWithID(w http.ResponseWriter, r *http.Request) {
 
 		var project _struct.GetProject
 		project.NewProject = projectNew
-		if queryMap.Has(constants.P_scaffolding) && queryMap.Get(constants.P_scaffolding) == "true" {
+		if queryMap[constants.P_scaffolding] == "true" {
 			scaffold, err := getScaffoldingStruct(ref)
 			if err != nil {
 				tool.HandleError(tool.COULDNOTFINDDATA, w)

@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"os"
@@ -19,6 +20,36 @@ const baseURL = "/stillastracking/v1/api"
 
 //Handle Function starts when launching program, function forwards the request to the appropriate endpoint
 func Handle() {
+	router := mux.NewRouter()
+
+	//router.HandleFunc(baseURL+"/unit", ScaffoldingRequest) //DELETE, POST, GET
+
+	//Scaffolding endpoint
+	router.Path(baseURL+"/unit").HandlerFunc(ScaffoldingRequest).Queries("type", "{type}").Queries("id", "{id}") //GET POST PUT DELETE
+	router.Path(baseURL+"/unit").HandlerFunc(ScaffoldingRequest).Queries("type", "{type}")                       //GET POST PUT DELETE
+	router.Path(baseURL + "/unit").HandlerFunc(ScaffoldingRequest)                                               //GET POST PUT DELETE
+
+	//Project endpoint
+	router.HandleFunc(baseURL+"/project/", ProjectRequest).Queries("id", "{id}").Queries("scaffolding", "{scaffolding}")     //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/", ProjectRequest).Queries("name", "{name}").Queries("scaffolding", "{scaffolding}") //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/", ProjectRequest).Queries("id", "{id}")                                             //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/", ProjectRequest).Queries("name", "{name}")                                         //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/{scaffolding}", ProjectRequest)                                                      //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/", ProjectRequest)                                                                   //DELETE, POST, GET
+
+	//Storage endpoint
+	router.HandleFunc(baseURL+"/storage/", storageRequest)
+
+	//Profile endpoint
+	router.HandleFunc(baseURL+"/user/", ProfileRequest).Queries("id", "{id}")
+	router.HandleFunc(baseURL+"/user/", ProfileRequest).Queries("role", "{role}")
+	router.HandleFunc(baseURL+"/user/", ProfileRequest)
+
+	http.Handle("/", router)
+	log.Println(http.ListenAndServe(getPort(), nil))
+}
+
+func oldHandle() {
 	fmt.Println("Listening on port" + getPort())
 	//Scaffolding endpoint
 	http.HandleFunc(baseURL+"/unit/", ScaffoldingRequest) //GET POST PUT DELETE

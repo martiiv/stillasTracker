@@ -62,28 +62,6 @@ func GetQueryProfile(r *http.Request) (url.Values, bool) {
 	return query, true
 }
 
-func GetQueryScaffolding(r *http.Request) (url.Values, bool) {
-	query := r.URL.Query()
-
-	allowedQuery := map[string]bool{constants.S_id: true, constants.S_type: true}
-
-	for k := range query {
-		if _, ok := allowedQuery[k]; !ok {
-			return nil, false
-		}
-	}
-
-	if query.Has(constants.S_type) {
-		for _, i := range constants.ScaffoldingTypes {
-			if i == query.Get(constants.S_type) {
-				return nil, true
-			}
-		}
-	}
-
-	return query, true
-}
-
 /*
 GetLastUrlElement will split the url and return the last element.
 */
@@ -93,36 +71,6 @@ func GetLastUrlElement(r *http.Request) string {
 	splittedURL := strings.Split(trimmedURL, "/")
 	lastElement := splittedURL[len(splittedURL)-1]
 	return lastElement
-}
-
-func GetQueries(w http.ResponseWriter, r *http.Request) url.Values {
-	w.Header().Set("Content-Type", "application/json")
-	lastElement := GetLastUrlElement(r)
-
-	switch true {
-	case "unit" == lastElement:
-		query, err := GetQueryScaffolding(r)
-		if !err {
-			HandleError(INVALIDREQUEST, w)
-		}
-		return query
-
-	case "project" == lastElement:
-		query, err := GetQueryProject(r)
-		if !err {
-			HandleError(INVALIDREQUEST, w)
-		}
-		return query
-
-	case "profile" == lastElement:
-		query, err := GetQueryProfile(r)
-		if !err {
-			HandleError(INVALIDREQUEST, w)
-		}
-		return query
-	}
-
-	return r.URL.Query()
 }
 
 func InterfaceToInt(input interface{}) (int, error) {
