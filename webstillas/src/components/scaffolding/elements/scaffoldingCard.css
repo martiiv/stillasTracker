@@ -1,0 +1,23 @@
+.img{
+    height: 250px;
+    width: 300px;
+    alignment: center;
+}
+
+.card{
+    width: 400px;
+}
+
+.highlightText{
+    text-align: center;
+}
+
+.highlightText-caption{
+    text-align: center;
+}
+
+
+.image{
+    alignment: center;
+}
+

@@ -5,16 +5,20 @@ import MapPage from "./components/mapPage/mapPage";
 import Scaffolding from "./components/scaffolding/scaffolding";
 import TopBar from "./components/topBar/topBar";
 import React from "react";
+import PreView from "./components/projects/elements/preView";
+
 
 
 function App() {
-  return (
-          <div>
-              <TopBar />
-              <Routes>
+
+    return (
+          <div className={"maintodo"}>
+              <TopBar/>
+                  <Routes>
                       <Route path="/prosjekt" element={<Projects />} />
                       <Route path="/kart" element={ <MapPage />} />
                       <Route path="/stillas" element={ <Scaffolding />} />
+                      <Route path="/project/:id" element={<PreView />} />
                   </Routes>
           </div>
   );
