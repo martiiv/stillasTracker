@@ -1,5 +1,16 @@
 .map-container{
     position:absolute;
     width: 100%;
-    height: 100%;
+    height: 93%;
 }
+
+.marker {
+    background-image: url('/src/components/mapPage/mapbox-marker-icon-20px-orange.png');
+    background-size: cover;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+
