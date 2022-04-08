@@ -4,6 +4,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"encoding/json"
 	"errors"
+	"github.com/gorilla/mux"
 	"google.golang.org/api/iterator"
 	"io"
 	"io/ioutil"
@@ -387,9 +388,9 @@ func getIndividualUserByID(w http.ResponseWriter, r *http.Request) {
 
 	var documentReference []*firestore.DocumentRef
 	var err error
-	queryMap := r.URL.Query()
+	queryMap := mux.Vars(r)
 
-	intID, err := strconv.Atoi(queryMap.Get(constants.U_idURL)) //Converts the query id to int
+	intID, err := strconv.Atoi(queryMap[constants.U_idURL]) //Converts the query id to int
 	if err != nil {
 		tool.HandleError(tool.INVALIDREQUEST, w)
 		return

@@ -41,9 +41,9 @@ func Handle() {
 	router.HandleFunc(baseURL+"/storage/", storageRequest)
 
 	//Profile endpoint
+	router.HandleFunc(baseURL+"/user/", ProfileRequest).Queries("id", "{id}")
+	router.HandleFunc(baseURL+"/user/", ProfileRequest).Queries("role", "{role}")
 	router.HandleFunc(baseURL+"/user/", ProfileRequest)
-	router.HandleFunc(baseURL+"/user/", ProfileRequest).Queries()
-	router.HandleFunc(baseURL+"/user/", ProfileRequest).Queries()
 
 	http.Handle("/", router)
 	log.Println(http.ListenAndServe(getPort(), nil))
