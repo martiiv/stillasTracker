@@ -40,7 +40,7 @@ class Scaffolding extends React.Component {
                 }
                 )
 
-        const urlStorage ="http://10.212.138.205:8080/stillastracking/v1/api/storage/";
+        const urlStorage ="http://10.212.138.205:8080/stillastracking/v1/api/storage";
         fetch(urlStorage)
             .then(res => res.json())
             .then(

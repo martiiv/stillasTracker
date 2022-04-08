@@ -1,1 +1,24 @@
 
+.preView-Project-Main{
+    display: flex;
+    width: 100%;
+    height: 100%;
+    float: left;
+    position: absolute;
+}
+
+
+.informasjon{
+    width: 40%;
+}
+
+.map-container-project{
+    width: 40%;
+    height: 93%;
+}
+
+
+.tabs{
+    padding-top: 10px;
+    padding-left: 150px;
+}
