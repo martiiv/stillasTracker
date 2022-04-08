@@ -9,7 +9,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	tool "stillasTracker/api/apiTools"
 	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
@@ -73,9 +72,9 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch true { //Forwards the request to the appropriate function based on the passed in query
-	case query.Has(constants.U_Role):
+	case query[constants.U_Role] != "":
 		getUsersByRole(w, r)
-	case query.Has(constants.U_idURL) || query.Has(constants.U_nameURL):
+	case query[constants.U_idURL] != "" || query[constants.U_nameURL] != "":
 		getIndividualUser(w, r)
 	default:
 		getAll(w)
@@ -277,7 +276,8 @@ func getUsersByRole(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	queryValue := getQueryCustomer(w, r)
+	queryValue := tool.GetQueryCustomer(w, r)
+
 	documentPath := baseCollection.Collection(queryValue).Documents(database.Ctx)
 	var employees []_struct.Employee
 	for { //Iterates through the documents with the specified type
@@ -323,9 +323,9 @@ func getIndividualUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	switch true { //Forwards the request based on the passed in constant
-	case query.Has(constants.U_name):
+	case query[constants.U_name] != "":
 		getUserByName(w, r)
-	case query.Has(constants.U_idURL):
+	case query[constants.U_idURL] != "":
 		getIndividualUserByID(w, r)
 	}
 }
@@ -425,28 +425,6 @@ func getIndividualUserByID(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-}
-
-/*
-getQueryCustomer Function returns a query list containing the queries specific to the profile endpoint
-*/
-func getQueryCustomer(w http.ResponseWriter, r *http.Request) string {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	m, _ := url.ParseQuery(r.URL.RawQuery)
-	_, ok := m[constants.U_Role]
-	if ok {
-		validRoles := []string{constants.U_Admin, constants.U_Storage, constants.U_Installer}
-		for _, role := range validRoles {
-			if m[constants.U_Role][0] == strings.ToLower(role) {
-				return m[constants.U_Role][0]
-			}
-		}
-	}
-	http.Error(w, "no valid query", http.StatusBadRequest)
-	return ""
-
 }
 
 //iterateProjects will iterate through every project in active, inactive and upcoming projects.
