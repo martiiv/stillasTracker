@@ -26,7 +26,7 @@ class MapPage extends React.Component {
 
 
     async fetchData() {
-        const url ="http://10.212.138.205:8080/stillastracking/v1/api/project/";
+        const url ="http://10.212.138.205:8080/stillastracking/v1/api/project";
         fetch(url)
             .then(res => res.json())
             .then(
@@ -53,7 +53,7 @@ class MapPage extends React.Component {
     componentDidMount() {
         const { lng, lat, zoom, projectData} = this.state;
 
-        const url ="http://10.212.138.205:8080/stillastracking/v1/api/project/";
+        const url ="http://10.212.138.205:8080/stillastracking/v1/api/project";
         fetch(url)
             .then(res => res.json())
             .then(
@@ -79,7 +79,7 @@ class MapPage extends React.Component {
                         el.style.backgroundSize = '100%';
 
                         el.addEventListener('click', () => {
-                            window.alert(marker.properties.message);
+                            window.alert('Prosjekt ' + marker.projectName);
                         });
 
                         // Add markers to the map.

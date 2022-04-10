@@ -2,7 +2,6 @@ import React from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './card.css'
 import img from '../images/blog-item.jpg'
-import {useNavigate} from "react-router";
 import {Link} from "react-router-dom";
 
 
