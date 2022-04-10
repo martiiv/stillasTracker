@@ -34,7 +34,6 @@ class Projects extends React.Component {
                         sessionStorage.setItem('allProjects',JSON.stringify(result))
                         console.log('API Kjores')
                         this.setState({
-                            isLoaded: true,
                             projectData: result,
                         });
                     },

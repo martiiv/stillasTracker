@@ -1,7 +1,11 @@
-import React from "react";
+import React, {useState} from "react";
 import mapboxgl from "mapbox-gl";
 import "./preView.css"
 import Tabs from "../tabView/Tabs"
+import ScaffoldingCardProject from "../../scaffolding/elements/scaffoldingCardProject";
+import {Button, Modal, Offcanvas, Overlay} from "react-bootstrap";
+
+
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ';
 
@@ -11,7 +15,8 @@ class PreView extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-            data:[]
+            isLoaded: false,
+            data:null
         }
         this.mapContainer = React.createRef();
 
@@ -23,39 +28,22 @@ class PreView extends React.Component{
         return pathSplit[pathSplit.length - 1]
     }
 
-    async fetchData() {
-        const path = this.getProjectID()
-        console.log(path)
-        const url ="http://10.212.138.205:8080/stillastracking/v1/api/project?id=" + path + "&scaffolding=true";
-        fetch(url)
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    sessionStorage.setItem('project', (result))
-                    this.setState({
-                        isLoaded: true,
-                        data: result
-                    });
-                },
-                (error) => {
-                    this.setState({
-                        isLoaded: true,
-
-                    });
-                }
-            )
-    }
 
     //todo refactor dette
     async componentDidMount() {
         const path = this.getProjectID()
         console.log(path)
-        await this.fetchData()
         const url ="http://10.212.138.205:8080/stillastracking/v1/api/project?id=" + path + "&scaffolding=true";
-        fetch(url)
+        await fetch(url)
             .then(res => res.json())
             .then(
                 (result) => {
+                    sessionStorage.setItem('project', (JSON.stringify(result[0])))
+                   this.setState({
+                       isLoaded: true,
+
+                       data: result[0],
+                   })
                     const map = new mapboxgl.Map({
                         container: this.mapContainer.current,
                         style: 'mapbox://styles/mapbox/streets-v11',
@@ -96,42 +84,162 @@ class PreView extends React.Component{
                     });
                 }
             )
-
-
     }
 
 
+    contactInformation(){
+        const {data} = this.state
+        let project
+        if (sessionStorage.getItem('project') != null){
+            const scaffold = sessionStorage.getItem('project')
+            console.log('From Storage')
+            project = (JSON.parse(scaffold))
+        }else {
+            console.log('From API')
+            project = data
+        }
 
-    kontakt(){
-        const {data } = this.state;
 
         return(
-            <div className={"informasjon"}>
-                {JSON.stringify(data)}
-            </div>
-
+            <section className={"contact-highlights-cta"}>
+                <div className={"information-highlights"}>
+                    <ul className={"contact-list"}>
+                        <li className={"horizontal-list-contact"}>
+                            <span className={"left-contact-text"}>Navn/Bedrift</span>
+                            <span className={"right-contact-text"}>{project.customer.name}</span>
+                        </li>
+                        <li className={"horizontal-list-contact"}>
+                            <span className={"left-contact-text"}>Telefon nummer</span>
+                            <span className={"right-contact-text"}>{project.customer.number}</span>
+                        </li>
+                        <li className={"horizontal-list-contact"}>
+                            <span className={"left-contact-text"}>Adresse</span>
+                            <span className={"right-contact-text"}>{project.address.street}, {project.address.zipcode} {project.address.municipality}</span>
+                        </li>
+                        <li className={"horizontal-list-contact"}>
+                            <span className={"left-contact-text"}>E-mail</span>
+                            <span className={"right-contact-text"}>{project.customer.email}</span>
+                        </li>
+                        <li className={"horizontal-list-contact"}>
+                            <span className={"left-contact-text"}>Periode</span>
+                            <span className={"right-contact-text"}>{project.period.startDate} to {project.period.endDate}  </span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
         )
     }
+
+
+
+    scaffoldingComponents(){
+        const {data} = this.state
+        let project
+        if (sessionStorage.getItem('project') != null){
+            const scaffold = sessionStorage.getItem('project')
+            console.log('From Storage')
+            project = (JSON.parse(scaffold))
+        }else {
+            console.log('From API')
+            project = data
+        }
+
+        return(
+            <div className={"grid-container-project-scaffolding"}>
+                {project.scaffolding.map((e) => {
+                    console.log(e)
+                    return (
+                        <ScaffoldingCardProject
+                            key={e.type}
+                            type={e.type}
+                            expected={e.Quantity.expected}
+                            registered={e.Quantity.registered}
+
+
+                        />
+
+                    )
+                })}
+            </div>
+        )
+    }
+
+
+
+
+    Example() {
+        const {show, setShow} = this.state
+
+        const handleClose = () => setShow(false);
+        const handleShow = () => setShow(true);
+
+        return (
+            <>
+                <Button variant="primary" onClick={handleShow}>
+                    Launch static backdrop modal
+                </Button>
+
+                <Modal
+                    show={show}
+                    onHide={handleClose}
+                    backdrop="static"
+                    keyboard={false}
+                >
+                    <Modal.Header closeButton>
+                        <Modal.Title>Modal title</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        I will not close if you click outside me. Don't even try to press
+                        escape key.
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={handleClose}>
+                            Close
+                        </Button>
+                        <Button variant="primary">Understood</Button>
+                    </Modal.Footer>
+                </Modal>
+            </>
+        );
+    }
+
 
 
     render() {
+        const {isLoaded, data} = this.state
+        let project
+        if (sessionStorage.getItem('project') != null){
+            const scaffold = sessionStorage.getItem('project')
+            console.log('From Storage')
+            project = (JSON.parse(scaffold))
+        }else {
+            console.log('From API')
+            project = data
+        }
 
-        return(
-            <div className={"preView-Project-Main"}>
-                <div ref={this.mapContainer} className="map-container-project"/>
-                <div className={"tabs"}>
-                    <Tabs>
-                        <div label="Kontakt">
-                            {this.kontakt()}
-                        </div>
-                        <div label="Stillas komponenter">
-                            After 'while, <em>Crocodile</em>!
-                        </div>
-                    </Tabs>
+
+        if (!isLoaded){
+            return <h1>Is Loading Data....</h1>
+        }else{
+            return (
+                <div className={"preView-Project-Main"}>
+                    <div ref={this.mapContainer} className="map-container-project"/>
+                    <div className={"tabs"}>
+                        <Tabs>
+                            <div label="Kontakt">
+                                {this.contactInformation()}
+                            </div>
+                            <div label="Stillas-komponenter">
+                                <button className={"transfer-scaffolding-btn"} >Overfør delere til prosjekt</button>
+                                {this.scaffoldingComponents()}
+                            </div>
+                        </Tabs>
+                    </div>
                 </div>
-            </div>
 
-        )
+            )
+        }
+
     }
 
 }
