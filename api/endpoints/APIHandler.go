@@ -33,9 +33,10 @@ func Handle() {
 	router.HandleFunc(baseURL+"/project", ProjectRequest).Queries("id", "{id}").Queries("scaffolding", "{scaffolding}")     //DELETE, POST, GET
 	router.HandleFunc(baseURL+"/project", ProjectRequest).Queries("name", "{name}").Queries("scaffolding", "{scaffolding}") //DELETE, POST, GET
 	router.HandleFunc(baseURL+"/project", ProjectRequest).Queries("id", "{id}")                                             //DELETE, POST, GET
-	router.HandleFunc(baseURL+"/project", ProjectRequest).Queries("name", "{name}")                                         //DELETE, POST, GET
-	router.HandleFunc(baseURL+"/project/{scaffolding}", ProjectRequest)                                                     //DELETE, POST, GET
-	router.HandleFunc(baseURL+"/project", ProjectRequest)                                                                   //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project", ProjectRequest).Queries("name", "{name}")
+	router.HandleFunc(baseURL+"/project", ProjectRequest).Queries("scaffolding", "{scaffolding}") //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/{scaffolding}", ProjectRequest)                           //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project", ProjectRequest)                                         //DELETE, POST, GET
 
 	//Storage endpoint
 	router.HandleFunc(baseURL+"/storage", storageRequest)
