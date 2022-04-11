@@ -54,12 +54,13 @@ function addScaffolding(body){
     const requestOptions = {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body })
+        body: JSON.stringify(body)
     };
 
-    fetch('http://10.212.138.205:8080/stillastracking/v1/api/project/scaffolding', requestOptions)
+    fetch('http://localhost:8080/stillastracking/v1/api/project/scaffolding', requestOptions)
         .then(response => response.json())
         .then(data => console.log(data.id ))
+        .catch(error => console.log(error))
 }
 
 
@@ -82,7 +83,9 @@ export default function InfoModal() {
         let result = [...roomRent];
         result = result.map((x) => {
             if (x.type.toLowerCase() === id.toLowerCase()) {
-                x.quantity = e.target.value
+                const inputvalue = (e.target.value)
+                const intValue = parseInt(inputvalue, 10)
+                x.quantity = intValue
                 return x;
             } else return x;
         });
@@ -92,10 +95,28 @@ export default function InfoModal() {
 
 
     const move = {
-        "toProjectID": ToProject,
-        "fromProjectID": FromProject,
+        "toProjectID": Number(ToProject),
+        "fromProjectID": Number(FromProject),
         "scaffold": roomRent
     }
+
+    const test = {
+        "toProjectID": 9,
+        "fromProjectID": 4,
+        "scaffold":
+            [{
+                "type": "Spire",
+                "quantity": 4
+            },
+                {
+                    "type": "Bunnskrue",
+                    "quantity": 3
+                }]
+    }
+
+    console.log(move)
+
+
     return (
         <>
             <Button className="nextButton" onClick={handleShow}>
