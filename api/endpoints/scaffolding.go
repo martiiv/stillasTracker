@@ -2,7 +2,6 @@ package endpoints
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"google.golang.org/api/iterator"
 	"net/http"
 	tool "stillasTracker/api/apiTools"
@@ -48,7 +47,7 @@ a user can search based on projects, id or type
 func getPart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	queries := mux.Vars(r)
+	queries, _ := tool.GetQueryScaffolding(r)
 
 	switch true {
 	case queries["type"] != "" && queries["id"] != "": //URL is on the following format: /stillastracking/v1/api/unit?type=""&id=""
