@@ -6,14 +6,117 @@ import img from "../../scaffolding/images/spirstillas_solideq_spir_klasse_5_stil
 
 //https://ordinarycoders.com/blog/article/react-bootstrap-modal
 
-function scaffoldingSelection(){
-    const projects = sessionStorage.getItem('project')
+
+const scaffoldingMove =
+    [
+        {
+            "type": "Bunnskrue",
+            "quantity": 0
+        },
+        {
+            "type": "Diagonalstang",
+            "quantity": 0
+        },
+        {
+            "type": "Enrørsbjelke",
+            "quantity": 0
+        },
+        {
+            "type": "Gelender",
+            "quantity": 0
+        },
+        {
+            "type": "Lengdebjelke",
+            "quantity": 0
+        },
+        {
+            "type": "Plank",
+            "quantity": 0
+        },
+        {
+            "type": "Rekkverksramme",
+            "quantity": 0
+        },
+        {
+            "type": "Spire",
+            "quantity": 0
+        },
+        {
+            "type": "Stillaslem",
+            "quantity": 0
+        },
+        {
+            "type": "Trapp",
+            "quantity": 0
+        }
+        ]
+
+
+
+//todo rydd opp i kode
+function ScaffoldingSelection(){
+
+    //https://codesandbox.io/s/react-week-date-view-forked-ruxjr9?file=/src/App.js:857-868
+    //todo gjør om variablenavn
+    const projects = sessionStorage.getItem('allProjects')
     const jsonProjects = JSON.parse(projects)
+    const project = sessionStorage.getItem('project')
+    const jsonProject = JSON.parse(project)
+    const [roomRent, setRoomRent] = useState(scaffoldingMove);
 
 
+    const handleroom = (e, id) => {
+        let result = [...roomRent];
+        result = result.map((x) => {
+            if (x.type.toLowerCase() === id.toLowerCase()) {
+                x.quantity = e.target.value
+                return x;
+            } else return x;
+        });
+        setRoomRent(result)
+    };
+
+
+
+
+
+
+    const [ToProject, setToProject] = useState("");
+    const [FromProject, setFromProject] = useState("");
+
+
+    const move = {
+        "toProjectID": ToProject,
+        "fromProjectID": FromProject,
+        "scaffold": roomRent
+    }
+
+    console.log(move)
+
+    //todo get input and make a body for put request.
     return(
         <div className={"scaffoldingElement"}>
-            {jsonProjects.scaffolding.map(e => {
+            <div>
+                <span>Overfør til prosjekt:</span>
+                <Form.Select value={ToProject} onChange={(e) => setToProject(e.target.value)}>
+                    {jsonProjects.map(e =>{
+                        return(
+                            <option value={e.projectID}>{e.projectID}</option>
+                        )
+                    })}
+                </Form.Select>
+            </div>
+            <div>
+                <span>Overfør fra prosjekt:</span>
+                <Form.Select value={FromProject} onChange={(e) => setFromProject(e.target.value)}>
+                    {jsonProjects.map(e =>{
+                        return(
+                            <option value={e.projectID}>{e.projectID}</option>
+                        )
+                    })}
+                </Form.Select>
+            </div>
+          {jsonProject.scaffolding.map(e => {
                 return(
                         <article className={"card"}>
                             <section className={"header"}>
@@ -22,7 +125,7 @@ function scaffoldingSelection(){
                 <section className={"image"}>
                         <img className={"img"} src={img} alt={""}/>
                     </section>
-                            <input type={"number"} className={"input-transfer-scaffolding"}/>
+                            <input type="number" key={"input" + e.type} onChange={(j) => handleroom(j, e.type)}/>
                     </article>
                         )
             }
@@ -33,12 +136,13 @@ function scaffoldingSelection(){
 }
 
 
+
 export default function InfoModal() {
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
-    const projects = sessionStorage.getItem('allProjects')
-    const jsonProjects = JSON.parse(projects)
+
+
     return (
         <>
             <Button className="nextButton" onClick={handleShow}>
@@ -55,27 +159,7 @@ export default function InfoModal() {
                     <Modal.Title>Stillas Overføring</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <div>
-                        <span>Overfør til prosjekt:</span>
-                        <Form.Select>
-                            {jsonProjects.map(e =>{
-                                return(
-                                    <option>{e.projectID}</option>
-                                )
-                            })}
-                        </Form.Select>
-                    </div>
-                    <div>
-                        <span>Overfør fra prosjekt:</span>
-                        <Form.Select>
-                            {jsonProjects.map(e =>{
-                                return(
-                                    <option>{e.projectID}</option>
-                                )
-                            })}
-                        </Form.Select>
-                    </div>
-                    {scaffoldingSelection()}
+                    {ScaffoldingSelection()}
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleClose}>
