@@ -26,7 +26,7 @@ class Projects extends React.Component {
 
     async componentDidMount() {
         if (sessionStorage.getItem('allProjects') == null){
-            const url ="http://10.212.138.205:8080/stillastracking/v1/api/project/";
+            const url ="http://10.212.138.205:8080/stillastracking/v1/api/project?scaffolding=true";
             fetch(url)
                 .then(res => res.json())
                 .then(

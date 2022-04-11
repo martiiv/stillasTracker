@@ -40,7 +40,7 @@ class Scaffolding extends React.Component {
                 }
                 )
 
-        const urlStorage ="http://10.212.138.205:8080/stillastracking/v1/api/storage/";
+        const urlStorage ="http://10.212.138.205:8080/stillastracking/v1/api/storage";
         fetch(urlStorage)
             .then(res => res.json())
             .then(
@@ -122,7 +122,6 @@ class Scaffolding extends React.Component {
   render() {
       const {scaffolding, storage, isLoaded1,isLoaded2 } = this.state;
 
-      //todo add session storage
       let scaffoldingArray
       if (sessionStorage.getItem('allScaffolding') != null){
           const scaffold = sessionStorage.getItem('allScaffolding')
@@ -156,6 +155,7 @@ class Scaffolding extends React.Component {
           return <h1>Is Loading Data....</h1>
       } else {
           return (
+              //todo only scroll the scaffolding not the map
               <div className={"grid-container"}>
                   {result[0].map((e) => {
                       console.log(e)
