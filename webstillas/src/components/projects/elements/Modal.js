@@ -5,8 +5,6 @@ import Form from 'react-bootstrap/Form'
 import img from "../../scaffolding/images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 
 //https://ordinarycoders.com/blog/article/react-bootstrap-modal
-
-
 const scaffoldingMove =
     [
         {
@@ -52,10 +50,23 @@ const scaffoldingMove =
         ]
 
 
+function addScaffolding(body){
+    const requestOptions = {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body })
+    };
 
-//todo rydd opp i kode
-function ScaffoldingSelection(){
+    fetch('http://10.212.138.205:8080/stillastracking/v1/api/project/scaffolding', requestOptions)
+        .then(response => response.json())
+        .then(data => console.log(data.id ))
+}
 
+
+export default function InfoModal() {
+    const [show, setShow] = useState(false);
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
     //https://codesandbox.io/s/react-week-date-view-forked-ruxjr9?file=/src/App.js:857-868
     //todo gjør om variablenavn
     const projects = sessionStorage.getItem('allProjects')
@@ -63,6 +74,8 @@ function ScaffoldingSelection(){
     const project = sessionStorage.getItem('project')
     const jsonProject = JSON.parse(project)
     const [roomRent, setRoomRent] = useState(scaffoldingMove);
+    const [ToProject, setToProject] = useState("");
+    const [FromProject, setFromProject] = useState("");
 
 
     const handleroom = (e, id) => {
@@ -78,71 +91,11 @@ function ScaffoldingSelection(){
 
 
 
-
-
-
-    const [ToProject, setToProject] = useState("");
-    const [FromProject, setFromProject] = useState("");
-
-
     const move = {
         "toProjectID": ToProject,
         "fromProjectID": FromProject,
         "scaffold": roomRent
     }
-
-    console.log(move)
-
-    //todo get input and make a body for put request.
-    return(
-        <div className={"scaffoldingElement"}>
-            <div>
-                <span>Overfør til prosjekt:</span>
-                <Form.Select value={ToProject} onChange={(e) => setToProject(e.target.value)}>
-                    {jsonProjects.map(e =>{
-                        return(
-                            <option value={e.projectID}>{e.projectID}</option>
-                        )
-                    })}
-                </Form.Select>
-            </div>
-            <div>
-                <span>Overfør fra prosjekt:</span>
-                <Form.Select value={FromProject} onChange={(e) => setFromProject(e.target.value)}>
-                    {jsonProjects.map(e =>{
-                        return(
-                            <option value={e.projectID}>{e.projectID}</option>
-                        )
-                    })}
-                </Form.Select>
-            </div>
-          {jsonProject.scaffolding.map(e => {
-                return(
-                        <article className={"card"}>
-                            <section className={"header"}>
-                                <h3>{e.type.toUpperCase()}</h3>
-                            </section>
-                <section className={"image"}>
-                        <img className={"img"} src={img} alt={""}/>
-                    </section>
-                            <input type="number" key={"input" + e.type} onChange={(j) => handleroom(j, e.type)}/>
-                    </article>
-                        )
-            }
-            )}
-
-        </div>
-    )
-}
-
-
-
-export default function InfoModal() {
-    const [show, setShow] = useState(false);
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
-
-
     return (
         <>
             <Button className="nextButton" onClick={handleShow}>
@@ -159,13 +112,49 @@ export default function InfoModal() {
                     <Modal.Title>Stillas Overføring</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {ScaffoldingSelection()}
+                    <div className={"scaffoldingElement"}>
+                        <div>
+                            <span>Overfør til prosjekt:</span>
+                            <Form.Select value={ToProject} onChange={(e) => setToProject(e.target.value)}>
+                                {jsonProjects.map(e =>{
+                                    return(
+                                        <option value={e.projectID}>{e.projectID}</option>
+                                    )
+                                })}
+                            </Form.Select>
+                        </div>
+                        <div>
+                            <span>Overfør fra prosjekt:</span>
+                            <Form.Select value={FromProject} onChange={(e) => setFromProject(e.target.value)}>
+                                {jsonProjects.map(e =>{
+                                    return(
+                                        <option value={e.projectID}>{e.projectID}</option>
+                                    )
+                                })}
+                            </Form.Select>
+                        </div>
+                        {jsonProject.scaffolding.map(e => {
+                                return(
+                                    <article className={"card"}>
+                                        <section className={"header"}>
+                                            <h3>{e.type.toUpperCase()}</h3>
+                                        </section>
+                                        <section className={"image"}>
+                                            <img className={"img"} src={img} alt={""}/>
+                                        </section>
+                                        <input type="number" key={"input" + e.type} onChange={(j) => handleroom(j, e.type)}/>
+                                    </article>
+                                )
+                            }
+                        )}
+
+                    </div>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleClose}>
                         Close
                     </Button>
-                    <Button variant="primary" onClick={handleClose}>
+                    <Button variant="primary" onClick={e => addScaffolding(move)}>
                         Save Changes
                     </Button>
                 </Modal.Footer>
