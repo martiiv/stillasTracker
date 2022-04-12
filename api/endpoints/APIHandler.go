@@ -46,6 +46,8 @@ func Handle() {
 	router.HandleFunc(baseURL+"/user", ProfileRequest).Queries("role", "{role}")
 	router.HandleFunc(baseURL+"/user", ProfileRequest)
 
+	router.HandleFunc(baseURL+"/gateway/input", GatewayRequest)
+
 	http.Handle("/", router)
 	log.Println(http.ListenAndServe(getPort(), nil))
 }
