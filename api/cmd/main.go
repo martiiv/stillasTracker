@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"stillasTracker/api/apiTools"
 	"stillasTracker/api/database"
 	"stillasTracker/api/endpoints"
 )
@@ -13,10 +14,13 @@ Version 0.1
 Last update 08.03.2022 Martin Iversen
 */
 func main() {
+	fmt.Println("Starting API")
 
 	database.DatabaseConnection()
-	fmt.Println("Starting API")
-	//startTime = time.Now()
-	fmt.Println("initialized handler")
+	fmt.Println("Started database")
+
+	fmt.Println("Initializing MQTT Server")
+	apiTools.InitializeMQTTClient()
+
 	endpoints.Handle()
 }

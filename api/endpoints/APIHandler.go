@@ -49,19 +49,7 @@ func Handle() {
 	router.HandleFunc(baseURL+"/gateway/input", GatewayRequest)
 
 	http.Handle("/", router)
-	log.Println(http.ListenAndServe(getPort(), nil))
-}
-
-func oldHandle() {
-	fmt.Println("Listening on port" + getPort())
-	//Scaffolding endpoint
-	http.HandleFunc(baseURL+"/unit/", ScaffoldingRequest) //GET POST PUT DELETE
-	//Project endpoint
-	http.HandleFunc(baseURL+"/project/", ProjectRequest) //DELETE, POST, GET
-	//Storage endpoint
-	http.HandleFunc(baseURL+"/storage/", storageRequest)
-	//Profile endpoint
-	http.HandleFunc(baseURL+"/user/", ProfileRequest)
+	fmt.Println("MQTT Server initializing...")
 	log.Println(http.ListenAndServe(getPort(), nil))
 }
 
