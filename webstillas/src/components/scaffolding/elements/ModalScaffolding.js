@@ -90,7 +90,6 @@ export default function InfoModal(props) {
             <Modal show={show}
                    onHide={handleClose}
                    centered
-                   backdrop="static"
                    dialogClassName="modal-dialog modal-xl"
             >
                 <Modal.Header closeButton>
@@ -104,10 +103,6 @@ export default function InfoModal(props) {
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleClose}>
                         Close
-                    </Button>
-                    <Button variant="primary">
-                        Save Changes
-
                     </Button>
                 </Modal.Footer>
             </Modal>
