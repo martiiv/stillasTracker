@@ -15,7 +15,7 @@ function App() {
           <div className={"maintodo"}>
               <TopBar/>
                   <Routes>
-                      <Route path="/prosjekt" element={<Projects />} />
+                      <Route path="/prosjekt/*" element={<Projects />} />
                       <Route path="/kart" element={ <MapPage />} />
                       <Route path="/stillas" element={ <Scaffolding />} />
                       <Route path="/project/:id" element={<PreView />} />

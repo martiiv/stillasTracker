@@ -3,9 +3,8 @@ import mapboxgl from "mapbox-gl";
 import "./preView.css"
 import Tabs from "../tabView/Tabs"
 import ScaffoldingCardProject from "../../scaffolding/elements/scaffoldingCardProject";
-import {Button, Offcanvas, Overlay} from "react-bootstrap";
 import InfoModal from "./Modal";
-import Modal from "./Modal";
+
 
 
 
@@ -149,7 +148,6 @@ class PreView extends React.Component{
         return(
             <div className={"grid-container-project-scaffolding"}>
                 {project.scaffolding.map((e) => {
-                    console.log(e)
                     return (
                         <ScaffoldingCardProject
                             key={e.type}
