@@ -72,6 +72,24 @@ struct ProjectView: View {
                 }
             }
             .listStyle(.grouped)
+            .toolbar {
+                ToolbarItemGroup(placement: .navigationBarLeading) {
+                    Button("Filter") {
+                        print("Filter tapped!")
+                    }
+                }
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        print("Add project tapped!")
+                    }) {
+                        /*HStack {
+                            Image(systemName: "plus.circle")
+                            Text("Add")
+                        }*/
+                        Label("Add", systemImage: "plus.circle")
+                    }
+                }
+            }
         }
         .task {
             await ProjectData().loadData { (projects) in
