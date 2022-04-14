@@ -9,7 +9,7 @@ import SwiftUI
 
 struct NavigationBarBottom: View {
     @State private var selection: Tab = .map
-    
+    @State var projects = [Project]()
     enum Tab {
         case project
         case map
@@ -38,10 +38,10 @@ struct NavigationBarBottom: View {
                     Label("Profile", systemImage: "person.crop.circle")
                 }
                 .tag(Tab.profile)
-            /*ProjectViewN()
+            FilterProjectData(filter: .county)
                 .tabItem {
                     Label("Project API", systemImage: "map")
-                }*/
+                }
         }
         .onAppear() {
             /// https://www.bigmountainstudio.com/community/public/posts/86559-how-to-customize-the-background-of-the-tabview-in-swiftui
