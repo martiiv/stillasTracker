@@ -79,7 +79,7 @@ struct ProjectView: View {
             }
         }
         .navigationViewStyle(.stack)
-        .searchable(text: $searchQuery)
+        .searchable(text: $searchQuery, placement: .navigationBarDrawer(displayMode: .always))
     }
     var searchResults: [Project] {
         if searchQuery.isEmpty {
