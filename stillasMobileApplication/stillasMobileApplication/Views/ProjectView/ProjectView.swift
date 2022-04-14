@@ -74,18 +74,17 @@ struct ProjectView: View {
             .listStyle(.grouped)
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
-                    Button("Filter") {
+                    Button(action: {
                         print("Filter tapped!")
+                    }) {
+                        Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
                     }
                 }
+                
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Button(action: {
                         print("Add project tapped!")
                     }) {
-                        /*HStack {
-                            Image(systemName: "plus.circle")
-                            Text("Add")
-                        }*/
                         Label("Add", systemImage: "plus.circle")
                     }
                 }
