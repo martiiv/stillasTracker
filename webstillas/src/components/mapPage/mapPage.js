@@ -10,7 +10,6 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3O
 Class that will create the map-page of the application
  */
 //Kode hentet fra https://docs.mapbox.com/help/tutorials/use-mapbox-gl-js-with-react/
-
 class MapPage extends React.Component {
     constructor(props) {
         super(props);

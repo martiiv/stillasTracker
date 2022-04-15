@@ -1,6 +1,8 @@
-import React from 'react'
+import React, {useState} from 'react'
 import img from "../images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 import './scaffoldingCard.css'
+import {Modal, Button} from 'react-bootstrap';
+import InfoModal from "./ModalScaffolding";
 
 
 function CardElement(props){
@@ -37,10 +39,14 @@ function CardElement(props){
                 </section>
                 <section className={"card-btn"}>
                     <div className={"card-btns"}>
-                        <button className={"btn"} type={"button"} >Mer informasjon</button>
+                        <InfoModal type ={props.type}
+                                    total = {props.total}
+                                    storage = {props.storage}/>
                     </div>
                 </section>
             </article>
+            <>
+            </>
         </div>
     )
 }

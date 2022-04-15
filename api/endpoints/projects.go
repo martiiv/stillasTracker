@@ -413,7 +413,7 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	correctBody := CheckStateBody(request)
+	correctBody := checkProjectBody(request)
 	if !correctBody {
 		tool.HandleError(tool.INVALIDBODY, w)
 		return

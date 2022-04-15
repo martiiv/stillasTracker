@@ -1,6 +1,7 @@
 import React from "react";
 import "./scaffolding.css"
 import CardElement from "./elements/scaffoldingCard";
+import Modal from "./elements/ModalScaffolding";
 
 /**
  Class that will create an overview of the scaffolding parts
@@ -165,9 +166,9 @@ class Scaffolding extends React.Component {
                                        total={e.scaffolding}
                                        storage={e.storage}
                           />
-
                       )
                   })}
+
               </div>
           )
       }
