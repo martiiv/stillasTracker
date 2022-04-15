@@ -49,12 +49,16 @@ class AddProject extends React.Component{
     }
 
 
+    dateFormat(date){
+        const dateArray = date.split('-')
+        return dateArray[2] + '-' + dateArray[1] + '-' + dateArray[0]
+    }
+
+    addProjectRequest(){
+
+    }
 
     generalInformation(){
-
-
-
-
         //todo integrere med api, slik at brukeren ikke trenger å skrive inn hele addressen.
         return(
             <div className={"general-information"}>
@@ -100,19 +104,19 @@ class AddProject extends React.Component{
                     <div>
                         <input type={"date"}  className={"input-date-add"} onChange={event =>
                         {const period = {...this.state.period};
-                            period.startDate = event.target.value;
+                            period.startDate = this.dateFormat(event.target.value);
                             this.setState({period})}}/>
                         <p>Enter Start date</p>
                     </div>
                     <div>
-                        <input type={"date"}  className={"input-date-add"} onChange={event =>
+                        <input type={"date"}   className={"input-date-add"} onChange={event =>
                         {const period = {...this.state.period};
-                            period.endDate = event.target.value;
+                            period.endDate = this.dateFormat(event.target.value);
                             this.setState({period})}}/>
                         <p>Enter endDate</p>
                     </div>
                     <div>
-                        <input type={"text"}  className={"input-text-add"} onChange={event =>
+                        <input type={"text"} className={"input-text-add"} onChange={event =>
                         {const customer = {...this.state.customer};
                             customer.name = event.target.value;
                             this.setState({customer})}}/>
