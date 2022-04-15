@@ -1,5 +1,5 @@
 import React from "react";
-import Addproject from "./project/addProject";
+import AddProject from "./project/addProject";
 
 
 class Logistic extends React.Component{
@@ -10,7 +10,7 @@ class Logistic extends React.Component{
 
     render() {
         return(
-            <Addproject />
+            <AddProject />
         )
     }
 
