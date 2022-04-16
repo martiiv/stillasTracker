@@ -25,7 +25,7 @@ class TopBar extends React.Component {
                     <Link className="link" to="/kart">
                         <Button className="button">Kart</Button>
                     </Link>
-                    <Link className="link" to="/Logistikk">
+                    <Link className="link" to="/logistics">
                         <Button className="button">Logistikk</Button>
                     </Link>
                 </Toolbar>

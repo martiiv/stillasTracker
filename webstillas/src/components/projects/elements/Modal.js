@@ -50,18 +50,6 @@ const scaffoldingMove =
         ]
 
 
-function addScaffolding(body){
-    const requestOptions = {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-    };
-
-    fetch('http://localhost:8080/stillastracking/v1/api/project/scaffolding', requestOptions)
-        .then(response => response.json())
-        .then(data => console.log(data.id ))
-        .catch(error => console.log(error))
-}
 
 
 export default function InfoModal() {
@@ -92,6 +80,19 @@ export default function InfoModal() {
         setRoomRent(result)
     };
 
+    //todo add a note to the user if the transaction was a success or a fail.
+    const addScaffolding = (body) =>{
+        const requestOptions = {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        };
+
+        fetch('http://localhost:8080/stillastracking/v1/api/project/scaffolding', requestOptions)
+            .then(response => response.json())
+            .catch(error => console.log(error))
+        handleClose()
+    }
 
 
     const move = {
@@ -100,19 +101,7 @@ export default function InfoModal() {
         "scaffold": roomRent
     }
 
-    const test = {
-        "toProjectID": 9,
-        "fromProjectID": 4,
-        "scaffold":
-            [{
-                "type": "Spire",
-                "quantity": 4
-            },
-                {
-                    "type": "Bunnskrue",
-                    "quantity": 3
-                }]
-    }
+
 
     console.log(move)
 
@@ -175,7 +164,7 @@ export default function InfoModal() {
                     <Button variant="secondary" onClick={handleClose}>
                         Close
                     </Button>
-                    <Button variant="primary" onClick={e => addScaffolding(move)}>
+                    <Button variant="primary" onClick={() => addScaffolding(move)}>
                         Save Changes
                     </Button>
                 </Modal.Footer>
