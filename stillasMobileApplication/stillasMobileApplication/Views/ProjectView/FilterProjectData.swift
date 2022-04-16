@@ -23,6 +23,8 @@ struct FilterProjectData: View {
     }
 
     @State var projects = [Project]()
+    @State private var showFilterModalView: Bool = false
+    @State private var showAddProjectModalView: Bool = false
     
     let filter: FilterType
     
@@ -46,10 +48,33 @@ struct FilterProjectData: View {
                     }
                 }
                 .listStyle(.grouped)
-            }
-            VStack {
-                Text("Nice")
-                Text("\(projects.count)")
+                .toolbar {
+                    ToolbarItemGroup(placement: .navigationBarLeading) {
+                        Button(action: {
+                            print("Filter tapped!")
+                            self.showFilterModalView.toggle()
+                            
+                        }) {
+                            Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
+                        }
+                    }
+                    
+                    ToolbarItemGroup(placement: .navigationBarTrailing) {
+                        Button(action: {
+                            print("Add project tapped!")
+                            self.showAddProjectModalView.toggle()
+                        }) {
+                            Label("Add", systemImage: "plus.circle")
+                        }
+                    }
+                }
+                .sheet(isPresented: $showFilterModalView,
+                       onDismiss: didDismiss) {
+                    FilterView()
+                }
+               .sheet(isPresented: $showAddProjectModalView, onDismiss: didDismiss) {
+                   AddProjectView()
+               }
             }
         }
         .task {
@@ -57,6 +82,11 @@ struct FilterProjectData: View {
                  self.projects = projects
             }
         }
+    }
+    
+    func didDismiss() {
+        
+        // Handle the dismissing action.
     }
     
     var filteredProjects: [Project] {
@@ -83,6 +113,22 @@ struct FilterProjectData: View {
             return projects.filter { $0.state == projectState }
         case .county:
             return projects.filter { $0.address.county == projectCounty }
+        }
+    }
+}
+
+struct FilterView: View {
+    var body: some View {
+        VStack {
+            Text("Filter SheetView")
+        }
+    }
+}
+
+struct AddProjectView: View {
+    var body: some View {
+        VStack {
+            Text("Add Project SheetView")
         }
     }
 }
