@@ -1,9 +1,19 @@
 version: "3.5"
 
 services:
+  broker:
+    image: eclipse-mosquitto:2.0
+    ports:
+      - ${MQTT_PORT}:1883
+    volumes:
+      - ./broker/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./broker/mosquitto.passwd:/mosquitto/config/mosquitto.passwd
+
   web:
     container_name: go
     build: ./
     ports:
       - "80:8080"
     restart: always
+
+
