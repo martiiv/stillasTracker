@@ -1,6 +1,7 @@
 import React from "react";
 import AddProject from "./project/addProject";
-
+import AddScaffolding from './scaffold/addScaffolding'
+import AddUser from "./user/addUser";
 
 class Logistic extends React.Component{
     constructor(props) {
@@ -10,7 +11,7 @@ class Logistic extends React.Component{
 
     render() {
         return(
-            <AddProject />
+            <AddUser />
         )
     }
 
