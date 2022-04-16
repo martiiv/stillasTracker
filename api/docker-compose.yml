@@ -6,8 +6,9 @@ services:
     ports:
       - ${MQTT_PORT}:1883
     volumes:
-      - ./broker/mosquitto.conf:/mosquitto/config/mosquitto.conf
-      - ./broker/mosquitto.passwd:/mosquitto/config/mosquitto.passwd
+      - ./mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mqtt/mosquitto.passwd:/mosquitto/config/mosquitto.passwd
+    restart: always
 
   web:
     container_name: go

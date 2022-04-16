@@ -59,8 +59,8 @@ func InitializeMQTTClient() {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", broker, port))
 	opts.SetClientID("BLE-Parser")
-	opts.SetUsername("admin")
-	opts.SetPassword("admin")
+	opts.SetUsername("stillasTracker")
+	opts.SetPassword("stillasTracker")
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
 	client := mqtt.NewClient(opts)
