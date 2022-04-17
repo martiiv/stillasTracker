@@ -1,7 +1,5 @@
 import React from 'react'
 import MapClass from "./map";
-import DrawControl from "react-mapbox-gl-draw";
-import ReactMapboxGl from "react-mapbox-gl";
 
 
 class AddProject extends React.Component{
@@ -10,6 +8,19 @@ class AddProject extends React.Component{
         this.state = {
             mapInfo: [],
             mapPage : false,
+            formsErrors:
+                {
+                    projectName: '',
+                    street: '',
+                    zipcode: "",
+                    municipality: "",
+                    county: "",
+                    name: "",
+                    number: 0,
+                    email: "",
+                    size: 0
+                },
+
 
             projectID: 94328328,
                 projectName: "",
@@ -46,29 +57,42 @@ class AddProject extends React.Component{
 
 
     generalInformation(){
+
+
+
         //todo integrere med api, slik at brukeren ikke trenger å skrive inn hele addressen.
         return(
             <div className={"general-information"}>
                 <h1>Add project</h1>
                 <hr/>
-                <div className={"input-fields"}>
+                <form>
+                    <div className={"input-fields"}>
                     <div>
-                        <input type={"text"}  className={"input-text-add"} onChange={event => {this.setState({projectName: event.target.value} )}}/>
+                        <input type={"text"}
+                               className={"input-text-add"}
+                               onChange={event => {this.setState({projectName: event.target.value})}}
+
+                        />
                         <p>Enter Project Name</p>
                     </div>
                     <div>
-                        <input type={"text"}  className={"input-text-add"} onChange={event =>
-                        {
-                            const address = {...this.state.address};
-                            address.street = event.target.value;
-                            this.setState({address})}}/>
+                        <input type={"text"}
+                               className={"input-text-add"}
+                               onChange={event => {
+                                const address = {...this.state.address};
+                                address.street = event.target.value;
+                                this.setState({address})}}
+                        />
                         <p>Enter Address</p>
                     </div>
                     <div>
-                        <input type={"number"}  className={"input-text-add"} onChange={event =>
-                        {const address = {...this.state.address};
-                            address.zipcode = (event.target.value);
-                            this.setState({address})}}/>
+                        <input type={"number"}
+                               className={"input-text-add"}
+                               onChange={event => {
+                                   const address = {...this.state.address};
+                                    address.zipcode = (event.target.value);
+                                    this.setState({address})}}
+                        />
                         <p>Enter Zip Code</p>
                     </div>
                     <div>
@@ -126,7 +150,7 @@ class AddProject extends React.Component{
                     </div>
                 </div>
                 <button onClick={e => this.setState({mapPage: true})}>Next</button>
-
+                </form>
             </div>
         )
 
