@@ -59,7 +59,10 @@ class AddProject extends React.Component{
     }
 
     handleUserInput = (e) => {
+
         const name = e.target.name;
+        console.log(name)
+
         const value = e.target.value;
         this.setState({[name]: value},
             () => { this.validateField(name, value) });
@@ -74,6 +77,9 @@ class AddProject extends React.Component{
     validateField(fieldName, value) {
         let fieldValidationErrors = this.state.formsErrors;
         let projectNameValidVar = this.state.projectNameValid;
+        let streetValid = this.state.streetValid;
+
+        console.log(fieldName)
 
         console.log(fieldValidationErrors)
 
@@ -81,6 +87,10 @@ class AddProject extends React.Component{
             case 'projectName':
                 projectNameValidVar = value.length >= 2;
                 fieldValidationErrors.projectName = projectNameValidVar ? '': ' is too short';
+                break;
+            case 'street':
+                streetValid = value.length >=2
+                fieldValidationErrors.street = streetValid ? '': ' is too short';
                 break;
             default:
                 break;
@@ -128,8 +138,7 @@ class AddProject extends React.Component{
                                placeholder={"Project Name"}
                                className={"input-text-add"}
                                value={this.state.projectName}
-                               //onChange={event => {this.setState({projectName: event.target.value})}}
-                                onChange={this.handleUserInput}
+                               onChange={this.handleUserInput}
 
                         />
                         <p>Enter Project Name</p>
@@ -137,10 +146,16 @@ class AddProject extends React.Component{
                     <div>
                         <input type={"text"}
                                className={"input-text-add"}
-                               onChange={event => {
-                                const address = {...this.state.address};
-                                address.street = event.target.value;
-                                this.setState({address})}}
+                               onChange={(event) => {
+                                   const address = {...this.state.address};
+                                   address.street = event.target.value;
+                                   this.setState({address})}
+                        }
+
+                          /*  value={event => {
+                             const address = {...this.state.address};
+                             address.street = event.target.value;
+                             this.setState({address})}}*/
                         />
                         <p>Enter Address</p>
                     </div>
