@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"stillasTracker/api/database"
 	"stillasTracker/api/endpoints"
-	"stillasTracker/api/mqtt"
 )
 
 /**
@@ -20,7 +19,7 @@ func main() {
 	fmt.Println("Started database")
 
 	fmt.Println("Initializing MQTT Server")
-	mqtt.InitializeMQTTClient()
+	//mqtt.InitializeMQTTClient()
 
 	endpoints.Handle()
 }
