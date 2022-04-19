@@ -15,7 +15,8 @@ class Scaffolding extends React.Component {
             isLoaded2: false,
             scaffolding: [],
             storage:[],
-            items: []
+            items: [],
+            selectedOption: ""
         }
     }
 
@@ -157,19 +158,33 @@ class Scaffolding extends React.Component {
       } else {
           return (
               //todo only scroll the scaffolding not the map
-              <div className={"grid-container"}>
-                  {result[0].map((e) => {
-                      console.log(e)
-                      return (
-                          <CardElement key={e.type}
-                                       type={e.type}
-                                       total={e.scaffolding}
-                                       storage={e.storage}
-                          />
-                      )
-                  })}
 
+              <div>
+                  <div>
+                      <select onChange={(e) =>
+                          this.setState({selectedOption: e.target.value})}>
+                          <option value={"alphabetic"}>Alfabetisk(A-Å)</option>
+                          <option value={"ascending"}>Stigende</option>
+                          <option value={"descending"}>Synkende</option>
+                      </select>
+                      <p>Sorter</p>
+                  </div>
+
+
+
+                  <div className={"grid-container"}>
+                      {result[0].map((e) => {
+                          return (
+                              <CardElement key={e.type}
+                                           type={e.type}
+                                           total={e.scaffolding}
+                                           storage={e.storage}
+                              />
+                          )
+                      })}
+                  </div>
               </div>
+
           )
       }
   }

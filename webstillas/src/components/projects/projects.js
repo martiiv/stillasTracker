@@ -16,9 +16,9 @@ class Projects extends React.Component {
             projectData: [],
             fromSize: 0,
             toSize: 1000000,
-            fromDate: new Date().toLocaleString(),
-            toDate: new Date().toLocaleString(),
-            selectedOption: '',
+            fromDate: "",
+            toDate: "",
+            selectedOption: "",
             searchName: ""
         }
     }
@@ -38,9 +38,7 @@ class Projects extends React.Component {
                             projectData: result,
                         });
                     },
-                    // Note: it's important to handle errors here
-                    // instead of a catch() block so that we don't swallow
-                    // exceptions from actual bugs in components.
+
                     (error) => {
                         this.setState({
                             isLoaded: true,
@@ -62,21 +60,27 @@ class Projects extends React.Component {
     SideBarFunction(){
         const {isLoaded, fromSize, toSize, fromDate, toDate, searchName ,selectedOption} = this.state;
 
+
+
         if (!isLoaded){
             return <h1>Is Loading data....</h1>
         }else {
             return (
                 <div className={"main-sidebar"}>
+                    <div>
+                        <select onChange={(e) =>
+                            this.setState({selectedOption: e.target.value})}>
+                            <option defaultValue="" >Velg her</option>
+                            <option value={"Active"}>Aktiv</option>
+                            <option value={"Inactive"}>Inaktiv</option>
+                            <option value={"Upcoming"}>Kommende</option>
+                        </select>
+                        <p>Status</p>
 
-                    <form className={"filter-content"}>
-                        <input type="radio" value="active"
-                               onChange={(e) => this.setState({selectedOption: e.target.value})}/> Aktiv
-                        <input type="radio" value="inactive"
-                               onChange={(e) => this.setState({selectedOption: e.target.value})}/> Inaktiv
-                        <input type="radio" value="upcoming"
-                               onChange={(e) => this.setState({selectedOption: e.target.value})}/> Kommende
-                    </form>
+                    </div>
                     <form className={"filter-content-search"}>
+                        <p>Prosjekt Navn</p>
+
                         <input type="text" value={searchName}
                                onChange={(e) => this.setState({searchName: e.target.value})}/>
                     </form>
@@ -100,9 +104,12 @@ class Projects extends React.Component {
 
     }
 
-    isAfter(date1, date2) {
-        return date1 > date2;
+
+    reverseDate(inputDate){
+        const dateArray = inputDate.split('-')
+        return dateArray[2] + '-' + dateArray[1] + '-' + dateArray[0]
     }
+
 
 
     render() {
@@ -118,17 +125,36 @@ class Projects extends React.Component {
            allProjects = projectData
         }
 
+       console.log(selectedOption)
+
         return(
             <div className={"main-project-window"}>
-                {this.SideBarFunction()}
+                <div className={"main-sidebar"}>
+                    {this.SideBarFunction()}
+                </div>
                 <div className={"grid-container"}>
-
-
-
                     {allProjects.filter(data => (data.projectName.toLowerCase()).includes(searchName.toLowerCase()))
                         .filter(data => data.size > fromSize)
-                        //todo add date filter
+                        .filter(data => {
+                            if (fromDate !== ""){
+                                return this.reverseDate(data.period.startDate) >= fromDate
+                            }else {
+                                return true
+                            }
+                        })
+                        .filter(data => {
+                            if (toDate !== ""){
+                                return this.reverseDate(data.period.endDate) <= toDate
+                            }else {
+                                return true
+                            }
+                        })
                         .filter(data => data.size < toSize)
+                        .filter(data => {
+                            if (!(selectedOption.length === 0 ) && !(selectedOption === "Velg her")){
+                                return data.state === selectedOption
+                            }else {return true}
+                        })
                         .map((e) =>{
 
                     return(
