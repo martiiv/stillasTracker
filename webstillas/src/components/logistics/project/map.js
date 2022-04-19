@@ -2,8 +2,6 @@ import React  from "react";
 import ReactMapboxGl from "react-mapbox-gl";
 import DrawControl from "react-mapbox-gl-draw";
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
-import addProject from "./addProject";
-import AddProject from "./addProject";
 
 const Map = ReactMapboxGl({
     accessToken:
@@ -32,7 +30,7 @@ class MapClass extends React.Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(inputBody)
         };
-        fetch('http://localhost:8080/stillastracking/v1/api/project', requestOptions)
+        fetch('http://10.212.138.205:8080/stillastracking/v1/api/project', requestOptions)
             .then(response => response.json())
             .then(data => console.log("Added new Project"))
             .catch(err => console.log(err));

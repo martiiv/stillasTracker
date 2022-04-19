@@ -125,23 +125,27 @@ export default function InfoModal() {
                     <div className={"scaffoldingElement"}>
                         <div>
                             <span>Overfør til prosjekt:</span>
-                            <Form.Select value={ToProject} onChange={(e) => setToProject(e.target.value)}>
+                            <select value={ToProject} onChange={(e) => setToProject(e.target.value)}>
+                                <option selected defaultValue="" >Choose here</option>
+
                                 {jsonProjects.map(e =>{
                                     return(
                                         <option value={e.projectID}>{e.projectID}</option>
                                     )
                                 })}
-                            </Form.Select>
+                            </select>
                         </div>
                         <div>
                             <span>Overfør fra prosjekt:</span>
-                            <Form.Select value={FromProject} onChange={(e) => setFromProject(e.target.value)}>
+                            <select value={FromProject} onChange={(e) => setFromProject(e.target.value)}>
+                                <option selected defaultValue="" >Choose here</option>
                                 {jsonProjects.map(e =>{
                                     return(
                                         <option value={e.projectID}>{e.projectID}</option>
                                     )
                                 })}
-                            </Form.Select>
+
+                            </select>
                         </div>
                         {jsonProject.scaffolding.map(e => {
                                 return(
