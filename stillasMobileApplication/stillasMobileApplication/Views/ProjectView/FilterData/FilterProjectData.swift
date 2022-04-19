@@ -118,14 +118,31 @@ struct FilterProjectData: View {
 }
 
 struct FilterView: View {
-    @State private var filterItems = ["Område", "Periode", "Prosjekt periode", "Størrelse", "Status"]
-    
+    @State private var filterItems = ["Område", "Prosjekt periode", "Størrelse", "Status"]
+        
     var body: some View {
         NavigationView {
             List {
                 ForEach(filterItems, id: \.self) { filterItem in
                     NavigationLink {
-                        CountyFilter()
+                        switch filterItem {
+                        case "Område":
+                            CountyFilter()
+                        /*case "Prosjekt periode":
+                            print("Add period view")
+                            // ADD period view
+                        case "Størrelse":
+                            print("Add size view")
+                            // ADD size view
+                        case "Status":
+                            print("Add status view")
+                            // ADD status view
+                        default:
+                            print("Did not find any")
+                        */
+                        default:
+                            AddProjectView()
+                        }
                     } label: {
                         Text(filterItem)
                     }
