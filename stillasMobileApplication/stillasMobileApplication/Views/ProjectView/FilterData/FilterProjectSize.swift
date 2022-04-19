@@ -20,6 +20,10 @@ struct IntSlider: View {
     
     @ObservedObject var input = NumbersOnly()
     
+    private var sliderSizeMin = 100.0
+    private var sliderSizeMax = 1000.0
+    private var stepLength = 50.0
+    
     @State var score: Int = 0
     @FocusState private var focusedField: Field?
 
@@ -67,7 +71,7 @@ struct IntSlider: View {
             .font(.headline)
             .font(Font.system(size: 60, design: .default))
             
-            Slider(value: intProxy , in: 100.0...1000.0, step: 50.0, onEditingChanged: {_ in
+            Slider(value: intProxy , in: sliderSizeMin...sliderSizeMax, step: stepLength, onEditingChanged: {_ in
                 print(score.description)
             })
             .frame(width: 350, alignment: .center)
