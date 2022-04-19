@@ -118,9 +118,85 @@ struct FilterProjectData: View {
 }
 
 struct FilterView: View {
+    @State private var filterItems = ["Område", "Periode", "Prosjekt periode", "Størrelse", "Status"]
+    
     var body: some View {
-        VStack {
-            Text("Filter SheetView")
+        NavigationView {
+            List {
+                ForEach(filterItems, id: \.self) { filterItem in
+                    NavigationLink {
+                        CountyFilter()
+                    } label: {
+                        Text(filterItem)
+                    }
+                }
+            }
+            .navigationTitle(Text("Filter"))
+            .navigationViewStyle(StackNavigationViewStyle())
+        }
+    }
+}
+
+struct CountyFilter: View {
+    @State private var checked: [Bool]
+   
+    let counties = ["Agder", "Innlandet", "Møre og Romsdal", "Nordland", "Oslo", "Rogaland", "Vestfold og Telemark", "Troms og Finnmark", "Trøndelag", "Vestlandet", "Viken"]
+
+    // selectedItems gets updated by the CheckBoxRow as it changes
+    @State var selectedItems: Set<String> = [] // Use a Set to keep track of multiple check boxes
+
+    init() {
+        _checked = State(initialValue: [Bool](repeating: false, count: counties.count))
+    }
+    
+    var body: some View {
+        List {
+            ForEach(counties, id: \.self) { county in
+                HStack {
+                    CheckBoxRow(title: county, selectedItems: $selectedItems, isSelected: selectedItems.contains(county))
+                        .padding(.top)
+                        .padding(.bottom)
+                }
+            }
+        }
+        .navigationTitle(Text("Område"))
+    }
+}
+struct CheckBoxRow: View {
+    var title: String
+    @Binding var selectedItems: Set<String>
+    @State var isSelected: Bool
+    
+    var body: some View {
+        GeometryReader { geometry in
+            HStack {
+                CheckBoxView(checked: $isSelected, title: title)
+                    .onChange(of: isSelected) { _ in
+                        if isSelected {
+                            selectedItems.insert(title)
+                            
+                        } else {
+                            selectedItems.remove(title)// or
+                        }
+                    }
+            }
+        }
+    }
+}
+
+struct CheckBoxView: View {
+    @Binding var checked: Bool
+    @State var title: String
+    
+    var body: some View {
+        HStack {
+            Image(systemName: checked ? "checkmark.square.fill" : "square")
+                .foregroundColor(checked ? Color(UIColor.systemBlue) : Color.secondary)
+            Text(title)
+                .padding(.leading)
+        }
+        .onTapGesture {
+            self.checked.toggle()
         }
     }
 }
