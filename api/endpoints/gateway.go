@@ -1,10 +1,8 @@
 package endpoints
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/ingics/ingics-parser-go/ibs"
 	"net/http"
 )
 
@@ -29,12 +27,18 @@ func GatewayRequest(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Got payload")
 	payload, _ := json.Marshal(r.Body)
 	payloadString := string(payload[:])
-
-	if payloadBytes, err := hex.DecodeString(payloadString); err == nil {
-		payload := ibs.Parse(payloadBytes)
-		fmt.Println(payload)
-	} else {
-		fmt.Printf("Invalid hex string: %v", payloadString)
-		fmt.Println(err)
-	}
+	print("Payload:\n")
+	print(payload)
+	print("\n")
+	print("Converted payload:\n")
+	print(payloadString)
+	/*
+		if payloadBytes, err := hex.DecodeString(payloadString); err == nil {
+			payload := ibs.Parse(payloadBytes)
+			fmt.Println(payload)
+		} else {
+			fmt.Printf("Invalid hex string: %v", payloadString)
+			fmt.Println(err)
+		}
+	*/
 }
