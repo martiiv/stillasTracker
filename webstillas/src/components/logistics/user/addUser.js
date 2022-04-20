@@ -1,5 +1,7 @@
 import React from "react";
 import {FormErrors} from "../project/FormErrors";
+import postModel from "../../../modelData/postModel";
+import {USER_URL} from "../../../modelData/constantsFile";
 
 class AddUser extends React.Component{
     constructor(props) {
@@ -55,18 +57,8 @@ class AddUser extends React.Component{
 
     addPostRequest(){
         this.state.employee.name = this.state.name
-
-        console.log(this.state.employee)
-
-        const requestOptions = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(this.state.employee)
-        };
-        fetch('http://10.212.138.205:8080/stillastracking/v1/api/user', requestOptions)
-            .then(response => response.json())
-            .then(data => console.log("Added new Project"))
-            .catch(err => console.log(err));
+        const result = postModel(USER_URL, JSON.stringify(this.state.employee))
+        console.log(result)
     }
 
 

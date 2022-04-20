@@ -1,7 +1,6 @@
-import React, {useState} from 'react'
+import React from 'react'
 import img from "../images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 import './scaffoldingCard.css'
-import {Modal, Button} from 'react-bootstrap';
 import InfoModal from "./ModalScaffolding";
 
 

@@ -4,12 +4,12 @@ import CardElement from './elements/card'
 import {Route, Routes} from "react-router-dom";
 import fetchData from "../../modelData/fetchData";
 import {PROJECTS_WITH_SCAFFOLDING_URL} from "../../modelData/constantsFile";
+
+
 /**
  Class that will create an overview of the projects
  */
-
 //Todo refactor the fetching components from all classes.
-
 class Projects extends React.Component {
     constructor(props) {
         super(props);
@@ -52,9 +52,6 @@ class Projects extends React.Component {
 
     SideBarFunction(){
         const {isLoaded, fromDate, toDate, searchName} = this.state;
-
-
-        //Todo autocomplete
         if (!isLoaded){
             return <h1>Is Loading data....</h1>
         }else {

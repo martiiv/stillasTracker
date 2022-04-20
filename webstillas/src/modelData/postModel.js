@@ -1,8 +1,10 @@
-import {BASE_URL} from "./constantsFile"
+import {BASE_URL} from "./constantsFile";
 
-export default function fetchModel(url) {
+export default function postModel(url, body) {
     return new Promise(function (resolve, reject) {
         const xhr = new XMLHttpRequest();
+        xhr.open("POST", BASE_URL + url);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         /*
             load event is also ok to use here,
             but readystatechange was giving me more descriptive errors
@@ -11,20 +13,17 @@ export default function fetchModel(url) {
             if (xhr.readyState !== 4) {
                 return;
             }
-            if (xhr.status !== 200) {
+            if (xhr.status !== 201) {
                 reject(new Error(JSON.stringify({
                     status: xhr.status,
                     statusText: xhr.statusText,
                     text: xhr.responseText
                 })));
             } else {
-                resolve(JSON.parse(xhr.responseText));
+                resolve((xhr.responseText));
             }
         });
-        xhr.open('GET',  BASE_URL + url);
-        xhr.send();
+
+        xhr.send(body);
     });
 }
-
-
-
