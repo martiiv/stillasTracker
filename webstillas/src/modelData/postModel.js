@@ -4,7 +4,7 @@ export default function postModel(url, body) {
     return new Promise(function (resolve, reject) {
         const xhr = new XMLHttpRequest();
         xhr.open("POST", BASE_URL + url);
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.setRequestHeader("Content-Type", "application/json");
         /*
             load event is also ok to use here,
             but readystatechange was giving me more descriptive errors

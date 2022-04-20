@@ -35,7 +35,7 @@ class AddProject extends React.Component{
             formValid: false,
             dateValid: false,
 
-            projectID: 94328328,
+            projectID: 0,
             projectName: '',
             latitude: 60.79077759591496,
             longitude: 10.683249543160402,
@@ -61,9 +61,7 @@ class AddProject extends React.Component{
     }
 
     handleUserInput = (e) => {
-
         const name = e.target.name;
-
         const value = e.target.value;
         this.setState({[name]: value},
             () => { this.validateField(name, value) });
@@ -134,7 +132,6 @@ class AddProject extends React.Component{
                 break;
             case 'endDate':
                 dateValid = value.endDate !== ""
-                const date = Date.parse(this.dateFormatReturn(value.endDate))
                 console.log(this.dateFormatReturn(value.endDate))
                 if (Date.parse(value.endDate) < Date.parse(value.startDate)) {
                     dateValid = false
@@ -195,10 +192,8 @@ class AddProject extends React.Component{
     }
 
     generalInformation(){
-
         //todo integrere med api, slik at brukeren ikke trenger å skrive inn hele addressen.
         return(
-
         <div className={"general-information"}>
                 <h1>Add project</h1>
                 <hr/>
@@ -343,7 +338,7 @@ class AddProject extends React.Component{
     render() {
         //todo check projectID number
         const project = ({
-                projectID: Math.random(),
+                projectID: Math.round(Math.random() * 1000),
                 projectName: this.state.projectName,
                 latitude: 60.79077759591496,
                 longitude: 10.683249543160402,
@@ -377,9 +372,7 @@ class AddProject extends React.Component{
                 <MapClass project = {(project)}/>
             )
         }
-
     }
-
 }
 
 export default AddProject

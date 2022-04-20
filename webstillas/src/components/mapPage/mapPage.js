@@ -1,13 +1,10 @@
 import React from "react";
 import "./mapPage.css"
 import mapboxgl from 'mapbox-gl';
-import postModel from "../../modelData/postModel";
-import {PROJECT_URL, PROJECTS_URL} from "../../modelData/constantsFile";
+import {MAP_STYLE_V11, PROJECTS_URL} from "../../modelData/constantsFile";
 import fetchModel from "../../modelData/fetchData";
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ';
-
-
 
 /**
 Class that will create the map-page of the application
@@ -26,20 +23,18 @@ class MapPage extends React.Component {
         this.mapContainer = React.createRef();
     }
 
-
     async componentDidMount() {
         const { lng, lat, zoom} = this.state;
         try {
             const projectResult = await fetchModel(PROJECTS_URL)
             const map = new mapboxgl.Map({
                 container: this.mapContainer.current,
-                style: 'mapbox://styles/mapbox/streets-v11',
+                style: MAP_STYLE_V11,
                 center: [lng, lat],
                 zoom: zoom
             });
             for (const marker of projectResult) {
-                // Create a DOM element for each marker.
-                const el = document.createElement('div');
+                 const el = document.createElement('div');
                 const width = projectResult.size;
                 const height = projectResult.size;
                 el.className = 'marker';
@@ -61,8 +56,6 @@ class MapPage extends React.Component {
             console.log(e)
         }
     }
-
-
 
     render() {
         return(

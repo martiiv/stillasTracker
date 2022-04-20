@@ -19,7 +19,6 @@ class AddUser extends React.Component{
                     admin: ""
                 },
 
-
             firstNameValid: false,
             lastNameValid: false,
             numberValid: false,
@@ -27,10 +26,6 @@ class AddUser extends React.Component{
             dateValid: false,
             roleValid: false,
             adminValid: false,
-
-
-
-
             employee : {
                 employeeID: Math.round(Math.random() * 1000),
                 dateOfBirth: null,
@@ -40,12 +35,10 @@ class AddUser extends React.Component{
                 admin: false,
                 name: null
             },
-
             name: {
                 firstName: "",
                 lastName: ""
             },
-
         }
     }
 
@@ -57,10 +50,12 @@ class AddUser extends React.Component{
 
     addPostRequest(){
         this.state.employee.name = this.state.name
-        const result = postModel(USER_URL, JSON.stringify(this.state.employee))
-        console.log(result)
+        try {
+            postModel(USER_URL, JSON.stringify(this.state.employee))
+        }catch (e){
+            console.log(e)
+        }
     }
-
 
 
     validateField(fieldName, value) {
@@ -68,7 +63,6 @@ class AddUser extends React.Component{
         let dateValid = this.state.dateValid;
         let firstNameValid = this.state.firstNameValid;
         let lastNameValid = this.state.lastNameValid;
-
         let numberValid = this.state.numberValid
         let emailValid = this.state.emailValid
         let roleValid = this.state.roleValid
@@ -149,9 +143,6 @@ class AddUser extends React.Component{
     }
 
     inputInformation(){
-        //todo bytt fra forms.select til kun select på alle select i appen.
-
-        console.log(this.state)
         return(
 
             <div className={"input-fields"}>
@@ -237,15 +228,13 @@ class AddUser extends React.Component{
                     </select>
                     <p>Skal brukeren ha admin tillatelser?</p>
                 </div>
-                <button disabled={!this.state.formValid} onClick={e => this.addPostRequest()}>Add User</button>
+                <button disabled={!this.state.formValid} onClick={() => this.addPostRequest()}>Add User</button>
             </div>
 
         )
     }
 
-
     render() {
-
         return(
             this.inputInformation()
         )

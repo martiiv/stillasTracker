@@ -99,18 +99,8 @@ export default function InfoModal() {
         "scaffold": roomRent
     }
 
-
-
-
     const validFormat = ToProject !== FromProject
-
-    console.log(ToProject)
-    console.log(FromProject)
-
-    console.log(validFormat)
-
-
-    return (
+    return(
         <>
             <Button className="nextButton" onClick={handleShow}>
                 Overfør deler til Prosjekt

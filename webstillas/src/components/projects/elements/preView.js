@@ -5,7 +5,8 @@ import Tabs from "../tabView/Tabs"
 import ScaffoldingCardProject from "../../scaffolding/elements/scaffoldingCardProject";
 import InfoModal from "./Modal";
 import fetchModel from "../../../modelData/fetchData";
-import {PROJECTS_URL_WITH_ID, WITH_SCAFFOLDING_URL} from "../../../modelData/constantsFile";
+import {MAP_STYLE_V11, PROJECTS_URL_WITH_ID, WITH_SCAFFOLDING_URL} from "../../../modelData/constantsFile";
+import img from "./../../mapPage/mapbox-marker-icon-20px-orange.png"
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ';
 
@@ -27,7 +28,6 @@ class PreView extends React.Component{
 
     async componentDidMount() {
         const path = this.getProjectID()
-        console.log(path)
         try {
             const projectResult = await fetchModel(PROJECTS_URL_WITH_ID + path + WITH_SCAFFOLDING_URL)
             sessionStorage.setItem('project', (JSON.stringify(projectResult[0])))
@@ -37,25 +37,23 @@ class PreView extends React.Component{
             })
             const map = new mapboxgl.Map({
                 container: this.mapContainer.current,
-                style: 'mapbox://styles/mapbox/streets-v11',
+                style: MAP_STYLE_V11,
                 center: [projectResult[0].longitude, projectResult[0].latitude],
                 zoom: 15
             });
-
-            // Add markers to the map.
-            for (const marker of projectResult[0]) {
+            for (const marker of projectResult) {
                 // Create a DOM element for each marker.
                 const el = document.createElement('div');
-                const width = projectResult.size;
-                const height = projectResult.size;
+                const width = projectResult[0].size/100;
+                const height = projectResult[0].size/100;
                 el.className = 'marker';
-                el.style.backgroundImage = ("src/components/mapPage/mapbox-marker-icon-20px-orange.png");
+                el.style.backgroundImage = (img);
                 el.style.width = `${width}px`;
                 el.style.height = `${height}px`;
                 el.style.backgroundSize = '100%';
 
                 el.addEventListener('click', () => {
-                    window.alert(marker.properties.message);
+                    window.alert("Project: " + marker.projectName)
                 });
 
                 // Add markers to the map.
@@ -72,7 +70,6 @@ class PreView extends React.Component{
 
 
     contactInformation(){
-        const {data} = this.state
         let project
         if (sessionStorage.getItem('project') != null){
             const scaffold = sessionStorage.getItem('project')
@@ -80,7 +77,7 @@ class PreView extends React.Component{
             project = (JSON.parse(scaffold))
         }else {
             console.log('From API')
-            project = data
+            project = this.state.data
         }
 
 
@@ -117,7 +114,6 @@ class PreView extends React.Component{
 
 
     scaffoldingComponents(){
-        const {data} = this.state
         let project
         if (sessionStorage.getItem('project') != null){
             const scaffold = sessionStorage.getItem('project')
@@ -125,7 +121,7 @@ class PreView extends React.Component{
             project = (JSON.parse(scaffold))
         }else {
             console.log('From API')
-            project = data
+            project = this.state.data
         }
 
         return(

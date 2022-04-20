@@ -14,7 +14,6 @@ export default function MapModal() {
     const jsonProjects = JSON.parse(projects)
     const project = sessionStorage.getItem('project')
     const jsonProject = JSON.parse(project)
-    const [roomRent, setRoomRent] = useState(scaffoldingMove);
     const [ToProject, setToProject] = useState("");
     const [FromProject, setFromProject] = useState("");
 

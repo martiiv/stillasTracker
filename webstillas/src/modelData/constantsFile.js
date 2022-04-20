@@ -6,5 +6,5 @@ export const USER_URL = "user"
 export const PROJECTS_URL = "project"
 export const PROJECTS_URL_WITH_ID = "project?id="
 export const WITH_SCAFFOLDING_URL = "&scaffolding=true"
-
+export const MAP_STYLE_V11 = "mapbox://styles/mapbox/streets-v11"
 
