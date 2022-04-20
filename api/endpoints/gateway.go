@@ -40,7 +40,7 @@ func GatewayRequest(w http.ResponseWriter, r *http.Request) {
 	var beaconList []*ibs.Payload
 
 	for i := 0; i < len(payloadList)-1; i++ {
-		if m := igs.Parse(payloadList[0]); m != nil {
+		if m := igs.Parse(payloadList[i]); m != nil {
 			gatewayList = append(gatewayList, m)
 			if bytes, err := hex.DecodeString(m.Payload()); err == nil {
 				p := ibs.Parse(bytes)
@@ -62,10 +62,10 @@ func addIDtoPart(m *igs.Message) {
 
 }
 
-func printFilteredGatewayInfo(beaconList []*igs.Message, tagList []*ibs.Payload) {
+func printFilteredGatewayInfo(gatewayList []*igs.Message, tagList []*ibs.Payload) {
 	var printList []string
 	for i := 0; i < len(tagList); i++ {
-		tagInfo := beaconList[i].Beacon()
+		tagInfo := gatewayList[i].Beacon()
 		battery, _ := tagList[i].BatteryVoltage()
 		printList = append(printList, "Tag ID:"+tagInfo+" battery voltage:"+strconv.FormatFloat(float64(battery), 'E', -1, 32)+"\n")
 	}
@@ -73,7 +73,7 @@ func printFilteredGatewayInfo(beaconList []*igs.Message, tagList []*ibs.Payload)
 	fmt.Printf("\n------------------------------------------")
 	fmt.Println("\nBeacon payload:")
 	fmt.Printf("Time of POST: %v \n", time.Now())
-	fmt.Printf("Gateway: %v\n", beaconList[0].Gateway())
+	fmt.Printf("Gateway: %v\n", gatewayList[0].Gateway())
 	fmt.Printf("Amount of tags registered: %v \n", len(tagList))
 	fmt.Printf("List of tags: %v", printList)
 	fmt.Printf("------------------------------------------\n")
