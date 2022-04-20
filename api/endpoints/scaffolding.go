@@ -109,6 +109,8 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			tool.HandleError(tool.DATABASEADDERROR, w)
 			return
+		} else {
+			tool.HandleError(tool.ADDED, w)
 		}
 
 		storagePath := database.Client.Collection(constants.P_LocationCollection).Doc(constants.P_StorageDocument).Collection(constants.P_Inventory).Doc(scaffoldList[i].Type)
