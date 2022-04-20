@@ -2,8 +2,8 @@ import React from "react";
 import "./projects.css"
 import CardElement from './elements/card'
 import {Route, Routes} from "react-router-dom";
-
-
+import fetchData from "../../modelData/fetchData";
+import {PROJECTS_WITH_SCAFFOLDING_URL} from "../../modelData/constantsFile";
 /**
  Class that will create an overview of the projects
  */
@@ -27,28 +27,19 @@ class Projects extends React.Component {
 
 
     async componentDidMount() {
-        if (sessionStorage.getItem('allProjects') == null){
-            const url ="http://10.212.138.205:8080/stillastracking/v1/api/project?scaffolding=true";
-            fetch(url)
-                .then(res => res.json())
-                .then(
-                    (result) => {
-                        sessionStorage.setItem('allProjects',JSON.stringify(result))
-                        console.log('API Kjores')
-                        this.setState({
-                            isLoaded: true,
-                            projectData: result,
-                        });
-                    },
-
-                    (error) => {
-                        this.setState({
-                            isLoaded: true,
-
-                        });
-                    }
-                )
-        }else{
+    if (sessionStorage.getItem('allProjects') == null) {
+        try {
+            const project = await fetchData(PROJECTS_WITH_SCAFFOLDING_URL)
+            sessionStorage.setItem('allProjects', JSON.stringify(project))
+            console.log(project)
+            this.setState({
+                isLoaded: true,
+                projectData: project,
+            });
+        } catch (error) {
+            console.log(error)
+        }
+    } else{
            console.log('API Kjøres ikke')
             this.setState({
                 isLoaded: true,
@@ -60,7 +51,7 @@ class Projects extends React.Component {
 
 
     SideBarFunction(){
-        const {isLoaded, fromSize, toSize, fromDate, toDate, searchName} = this.state;
+        const {isLoaded, fromDate, toDate, searchName} = this.state;
 
 
         //Todo autocomplete
@@ -83,14 +74,16 @@ class Projects extends React.Component {
                     <form className={"filter-content-search"}>
                         <p>Prosjekt Navn</p>
 
-                        <input type="text" value={searchName}
+                        <input type="text"
+                               placeholder={"Søk prosjekt navn"}
+                               value={searchName}
                                onChange={(e) => this.setState({searchName: e.target.value})}/>
                     </form>
                     <form className={"filter-content-input"}>
                         <p>Stillsmengde: </p>
-                        <input type="number"  onChange={e => this.setState({fromSize: Number(e.target.value)})}
+                        <input type="number"  placeholder={"Fra"} onChange={e => this.setState({fromSize: Number(e.target.value)})}
                                className={"input-field-filter"}/>
-                        <input type="number" onChange={e => this.setState({toSize: Number(e.target.value)})}
+                        <input type="number" placeholder={"Til"} onChange={e => this.setState({toSize: Number(e.target.value)})}
                                className={"input-field-filter"}/>
                     </form>
                     <form className={"filter-content-input"}>
@@ -171,7 +164,7 @@ class Projects extends React.Component {
                         .map((e) =>{
 
                     return(
-                        <div>
+                        <div  key = {e.projectID}>
                             <Routes>
                                 <Route path="/project/:id" element={<CardElement data={e} />} />
                             </Routes>

@@ -78,8 +78,8 @@ class MapPage extends React.Component {
                         el.style.backgroundSize = '100%';
 
                         el.addEventListener('click', () => {
-                            window.alert('Prosjekt ' + marker.projectName);
-                        });
+                            window.alert("Project: " + marker.projectName)
+                            });
 
                         // Add markers to the map.
                         new mapboxgl.Marker(el)
