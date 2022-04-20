@@ -8,6 +8,8 @@ import {Route, Routes} from "react-router-dom";
  Class that will create an overview of the projects
  */
 
+//Todo refactor the fetching components from all classes.
+
 class Projects extends React.Component {
     constructor(props) {
         super(props);
@@ -15,7 +17,7 @@ class Projects extends React.Component {
             isLoaded: false,
             projectData: [],
             fromSize: 0,
-            toSize: 1000000,
+            toSize: 0,
             fromDate: "",
             toDate: "",
             selectedOption: "",
@@ -58,10 +60,10 @@ class Projects extends React.Component {
 
 
     SideBarFunction(){
-        const {isLoaded, fromSize, toSize, fromDate, toDate, searchName ,selectedOption} = this.state;
+        const {isLoaded, fromSize, toSize, fromDate, toDate, searchName} = this.state;
 
 
-
+        //Todo autocomplete
         if (!isLoaded){
             return <h1>Is Loading data....</h1>
         }else {
@@ -86,9 +88,9 @@ class Projects extends React.Component {
                     </form>
                     <form className={"filter-content-input"}>
                         <p>Stillsmengde: </p>
-                        <input type="number" value={fromSize} onChange={e => this.setState({fromSize: e.target.value})}
+                        <input type="number"  onChange={e => this.setState({fromSize: Number(e.target.value)})}
                                className={"input-field-filter"}/>
-                        <input type="number" value={toSize} onChange={e => this.setState({toSize: e.target.value})}
+                        <input type="number" onChange={e => this.setState({toSize: Number(e.target.value)})}
                                className={"input-field-filter"}/>
                     </form>
                     <form className={"filter-content-input"}>
@@ -111,7 +113,6 @@ class Projects extends React.Component {
     }
 
 
-
     render() {
         const {projectData, fromSize, toSize, fromDate, toDate, searchName ,selectedOption } = this.state;
 
@@ -125,7 +126,6 @@ class Projects extends React.Component {
            allProjects = projectData
         }
 
-       console.log(selectedOption)
 
         return(
             <div className={"main-project-window"}>
@@ -134,7 +134,14 @@ class Projects extends React.Component {
                 </div>
                 <div className={"grid-container"}>
                     {allProjects.filter(data => (data.projectName.toLowerCase()).includes(searchName.toLowerCase()))
-                        .filter(data => data.size > fromSize)
+                        .filter(data => {
+                            if (fromSize !== 0){
+                                console.log(fromSize)
+                                return data.size > fromSize
+                            }else {
+                                return true
+                            }
+                        })
                         .filter(data => {
                             if (fromDate !== ""){
                                 return this.reverseDate(data.period.startDate) >= fromDate
@@ -149,7 +156,13 @@ class Projects extends React.Component {
                                 return true
                             }
                         })
-                        .filter(data => data.size < toSize)
+                        .filter(data => {
+                            if (toSize !== 0) {
+                                return data.size < toSize
+                            } else {
+                                return true
+                            }
+                        })
                         .filter(data => {
                             if (!(selectedOption.length === 0 ) && !(selectedOption === "Velg her")){
                                 return data.state === selectedOption

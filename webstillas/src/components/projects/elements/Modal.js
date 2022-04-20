@@ -1,7 +1,6 @@
 import React, {useState} from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {Modal, Button, Dropdown} from 'react-bootstrap';
-import Form from 'react-bootstrap/Form'
+import {Button, Modal} from 'react-bootstrap';
 import img from "../../scaffolding/images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 
 //https://ordinarycoders.com/blog/article/react-bootstrap-modal
@@ -72,8 +71,7 @@ export default function InfoModal() {
         result = result.map((x) => {
             if (x.type.toLowerCase() === id.toLowerCase()) {
                 const inputvalue = (e.target.value)
-                const intValue = parseInt(inputvalue, 10)
-                x.quantity = intValue
+                x.quantity = parseInt(inputvalue, 10)
                 return x;
             } else return x;
         });
@@ -81,7 +79,7 @@ export default function InfoModal() {
     };
 
     //todo add a note to the user if the transaction was a success or a fail.
-    const addScaffolding = (body) =>{
+    const AddScaffolding = (body) =>{
         const requestOptions = {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -103,7 +101,13 @@ export default function InfoModal() {
 
 
 
-    console.log(move)
+
+    const validFormat = ToProject !== FromProject
+
+    console.log(ToProject)
+    console.log(FromProject)
+
+    console.log(validFormat)
 
 
     return (
@@ -126,8 +130,7 @@ export default function InfoModal() {
                         <div>
                             <span>Overfør til prosjekt:</span>
                             <select value={ToProject} onChange={(e) => setToProject(e.target.value)}>
-                                <option selected defaultValue="" >Choose here</option>
-
+                                <option selected defaultValue="">Choose here</option>
                                 {jsonProjects.map(e =>{
                                     return(
                                         <option value={e.projectID}>{e.projectID}</option>
@@ -137,14 +140,14 @@ export default function InfoModal() {
                         </div>
                         <div>
                             <span>Overfør fra prosjekt:</span>
-                            <select value={FromProject} onChange={(e) => setFromProject(e.target.value)}>
-                                <option selected defaultValue="" >Choose here</option>
+                            <select value={FromProject}
+                                    onChange={(e) => setFromProject(e.target.value)}>
+                                <option selected defaultValue="">Choose here</option>
                                 {jsonProjects.map(e =>{
                                     return(
                                         <option value={e.projectID}>{e.projectID}</option>
                                     )
                                 })}
-
                             </select>
                         </div>
                         {jsonProject.scaffolding.map(e => {
@@ -156,7 +159,7 @@ export default function InfoModal() {
                                         <section className={"image"}>
                                             <img className={"img"} src={img} alt={""}/>
                                         </section>
-                                        <input type="number" key={"input" + e.type} onChange={(j) => handleroom(j, e.type)}/>
+                                        <input type="number" min={0} key={"input" + e.type} onChange={(j) => handleroom(j, e.type)}/>
                                     </article>
                                 )
                             }
@@ -168,7 +171,7 @@ export default function InfoModal() {
                     <Button variant="secondary" onClick={handleClose}>
                         Close
                     </Button>
-                    <Button variant="primary" onClick={() => addScaffolding(move)}>
+                    <Button variant="primary" disabled={!validFormat} onClick={() => AddScaffolding(move)}>
                         Save Changes
                     </Button>
                 </Modal.Footer>
