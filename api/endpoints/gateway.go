@@ -8,7 +8,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 )
 
 /**
@@ -30,28 +32,58 @@ func GatewayRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
-	fmt.Println("\nString converted payload")
 	payload, _ := ioutil.ReadAll(r.Body)
 	convertedPayload := string(payload)
 	payloadList := strings.Split(convertedPayload, "\n")
 
-	for i := 0; i < len(payloadList)-1; i++ {
-		print(payloadList[i])
-		fmt.Println("\nBeacon payload:")
-		if m := igs.Parse(payloadList[0]); m != nil {
-			fmt.Printf("Type:    %v\n", m.MsgType())
-			fmt.Printf("Beacon:  %v\n", m.Beacon())
-			fmt.Printf("Gateway: %v\n", m.Gateway())
-			fmt.Printf("RSSI:    %v\n", m.RSSI())
-			fmt.Printf("Payload: %v\n", m.Payload())
+	var gatewayList []*igs.Message
+	var beaconList []*ibs.Payload
 
+	for i := 0; i < len(payloadList)-1; i++ {
+		if m := igs.Parse(payloadList[0]); m != nil {
+			gatewayList = append(gatewayList, m)
 			if bytes, err := hex.DecodeString(m.Payload()); err == nil {
 				p := ibs.Parse(bytes)
-				fmt.Printf("Payload(parsed): %v\n", p)
+				beaconList = append(beaconList, p)
 			}
+			printFilteredGatewayInfo(gatewayList, beaconList)
 		} else {
 			fmt.Println("Error: Invalid input message")
 			fmt.Println(os.Args[1])
 		}
 	}
+
+}
+func addGateway() {
+
+}
+
+func addIDtoPart(m *igs.Message) {
+
+}
+
+func printFilteredGatewayInfo(beaconList []*igs.Message, tagList []*ibs.Payload) {
+	var printList []string
+	for i := 0; i < len(tagList); i++ {
+		tagInfo := beaconList[i].Beacon()
+		battery, _ := tagList[i].BatteryVoltage()
+		printList = append(printList, "Tag ID:"+tagInfo+" battery voltage:"+strconv.FormatFloat(float64(battery), 'E', -1, 32)+"\n")
+	}
+
+	fmt.Printf("\n------------------------------------------")
+	fmt.Println("\nBeacon payload:")
+	fmt.Printf("Time of POST: %v \n", time.Now())
+	fmt.Printf("Gateway: %v\n", beaconList[0].Gateway())
+	fmt.Printf("Amount of tags registered: %v \n", len(tagList))
+	fmt.Printf("List of tags: %v", printList)
+	fmt.Printf("------------------------------------------\n")
+}
+
+func printGatewayInfo(m *igs.Message) {
+	fmt.Println("\nBeacon payload:")
+	fmt.Printf("Type:    %v\n", m.MsgType())
+	fmt.Printf("Beacon:  %v\n", m.Beacon())
+	fmt.Printf("Gateway: %v\n", m.Gateway())
+	fmt.Printf("RSSI:    %v\n", m.RSSI())
+	fmt.Printf("Payload: %v\n", m.Payload())
 }
