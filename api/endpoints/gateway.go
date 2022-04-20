@@ -1,8 +1,9 @@
 package endpoints
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/ingics/ingics-parser-go/ibs"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -24,21 +25,12 @@ func GatewayRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
-	fmt.Println("Got payload")
-	payload, _ := json.Marshal(r.Body)
-	payloadString := string(payload[:])
-	print("Payload:\n")
-	print(payload)
-	print("\n")
-	print("Converted payload:\n")
-	print(payloadString)
-	/*
-		if payloadBytes, err := hex.DecodeString(payloadString); err == nil {
-			payload := ibs.Parse(payloadBytes)
-			fmt.Println(payload)
-		} else {
-			fmt.Printf("Invalid hex string: %v", payloadString)
-			fmt.Println(err)
-		}
-	*/
+	fmt.Println("\nGot payload:")
+	payload, _ := ioutil.ReadAll(r.Body)
+	fmt.Println(payload)
+
+	decodedPayload := ibs.Parse(payload)
+	fmt.Printf("\nDecoded Payload:\n")
+	fmt.Println(decodedPayload)
+	fmt.Printf("\n")
 }
