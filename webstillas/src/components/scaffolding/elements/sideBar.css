@@ -1,0 +1,22 @@
+.filter-content {
+    display: grid;
+    grid-template-columns: 1em auto;
+    gap: 0.5em;
+    padding-left: 20px;
+    padding-top: 30px;
+}
+
+
+input[type=number] {
+    width: 33%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+input[type=date]{
+
+}

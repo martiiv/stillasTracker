@@ -2,28 +2,55 @@ package endpoints
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"os"
 )
 
+/**
+Class APIHandler.go
+Class forwards requests to the appropriate endpoint and assigns the port of the program
+Last modified by martiiv@stud.ntnu.no
+Date: 06.04.2022
+Version 0.8
+*/
+
 const baseURL = "/stillastracking/v1/api"
 
-// Handle /**
+//Handle Function starts when launching program, function forwards the request to the appropriate endpoint
 func Handle() {
+	router := mux.NewRouter()
 
-	fmt.Println("Listening on port" + getPort())
+	//router.HandleFunc(baseURL+"/unit", ScaffoldingRequest) //DELETE, POST, GET
 
-	//Scaffolding endpoints
-	http.HandleFunc(baseURL+"/unit/", ScaffoldingRequest) //GET POST PUT DELETE
+	//Scaffolding endpoint
+	router.Path(baseURL+"/unit").HandlerFunc(ScaffoldingRequest).Queries("type", "{type}").Queries("id", "{id}") //GET POST PUT DELETE
+	router.Path(baseURL+"/unit").HandlerFunc(ScaffoldingRequest).Queries("type", "{type}")                       //GET POST PUT DELETE
+	router.Path(baseURL + "/unit").HandlerFunc(ScaffoldingRequest)                                               //GET POST PUT DELETE
+
 	//Project endpoint
-	http.HandleFunc(baseURL+"/project/", ProjectRequest) //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project", ProjectRequest).Queries("id", "{id}").Queries("scaffolding", "{scaffolding}")     //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project", ProjectRequest).Queries("name", "{name}").Queries("scaffolding", "{scaffolding}") //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project", ProjectRequest).Queries("id", "{id}")                                             //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project", ProjectRequest).Queries("name", "{name}")
+	router.HandleFunc(baseURL+"/project", ProjectRequest).Queries("scaffolding", "{scaffolding}") //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project/scaffolding", ProjectRequest)                             //DELETE, POST, GET
+	router.HandleFunc(baseURL+"/project", ProjectRequest)                                         //DELETE, POST, GET
 
-	http.HandleFunc(baseURL+"/storage/", storageRequest)
+	//Storage endpoint
+	router.HandleFunc(baseURL+"/storage", storageRequest)
+
 	//Profile endpoint
-	http.HandleFunc(baseURL+"/user/", ProfileRequest)
-	log.Println(http.ListenAndServe(getPort(), nil))
+	router.HandleFunc(baseURL+"/user", ProfileRequest).Queries("id", "{id}")
+	router.HandleFunc(baseURL+"/user", ProfileRequest).Queries("role", "{role}")
+	router.HandleFunc(baseURL+"/user", ProfileRequest)
 
+	router.HandleFunc(baseURL+"/gateway/input", GatewayRequest)
+
+	http.Handle("/", router)
+	fmt.Println("MQTT Server initializing...")
+	log.Println(http.ListenAndServe(getPort(), nil))
 }
 
 /*

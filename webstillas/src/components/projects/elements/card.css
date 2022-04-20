@@ -1,0 +1,103 @@
+.main{
+    border-radius: 8px;
+    height: 10%;
+    position: static;
+
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    padding: 24px;
+}
+
+.image {
+    -webkit-padding-after: 16px;
+    display: flex;
+    flex-direction: column;
+    padding-block-end: 16px;
+    position: relative;
+}
+
+.information-list {
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+
+.horizontal-list {
+    list-style-type: none;
+    padding: 20px;
+    overflow: hidden;
+
+}
+.horizontal-list-contact{
+    list-style-type: none;
+    padding: 10px;
+    overflow: hidden;
+}
+
+.horizontal-list{
+    padding-left: 15px;
+    padding-right: 15px;
+
+}
+
+.horizontal-list+.horizontal-list {
+    border-left: 1px solid;
+    border-left-color: gray;
+}
+
+
+
+
+.card-btn{
+    padding: 0 24px 24px;
+}
+.btn{
+    background-color: #F28A04;
+    border-radius: 10px;
+    width: 250px;
+    height: 50px;
+}
+
+.btn:hover{
+    background-color: #d07506;
+}
+
+.card-btns{
+    display: flex;
+    padding-top: 24px;
+    align-items: center;
+    justify-content: center;
+}
+
+.left-contact-text{
+    float: left;
+    color: gray;
+}
+
+.right-contact-text{
+    float: right;
+}
+
+.highlightText-caption{
+    text-align: center;
+    color: gray;
+}
+
+.highlightText{
+    alignment: center;
+}
+
+
+.horizontal-list-contact {
+    border-bottom: 1px solid;
+    border-bottom-color: gray;
+}
+
+
+.information-highlights{
+    padding-right: 35px;
+}
