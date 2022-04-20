@@ -2,7 +2,7 @@ package endpoints
 
 import (
 	"fmt"
-	"github.com/ingics/ingics-parser-go/ibs"
+	"github.com/ingics/ingics-parser-go/igs"
 	"io/ioutil"
 	"net/http"
 )
@@ -25,12 +25,17 @@ func GatewayRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
-	fmt.Println("\nGot payload:")
-	payload, _ := ioutil.ReadAll(r.Body)
-	fmt.Println(payload)
 
-	decodedPayload := ibs.Parse(payload)
-	fmt.Printf("\nDecoded Payload:\n")
-	fmt.Println(decodedPayload)
-	fmt.Printf("\n")
+	fmt.Println("\nString converted payload")
+	payload, _ := ioutil.ReadAll(r.Body)
+	convertedPayload := string(payload)
+	fmt.Println(convertedPayload)
+
+	fmt.Println("\nBeacon payload:")
+	m := igs.Parse(convertedPayload)
+	fmt.Printf("Type:    %v\n", m.MsgType())
+	fmt.Printf("Beacon:  %v\n", m.Beacon())
+	fmt.Printf("Gateway: %v\n", m.Gateway())
+	fmt.Printf("RSSI:    %v\n", m.RSSI())
+	fmt.Printf("Payload: %v\n", m.Payload())
 }
