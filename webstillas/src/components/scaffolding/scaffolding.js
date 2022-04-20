@@ -1,7 +1,8 @@
 import React from "react";
 import "./scaffolding.css"
 import CardElement from "./elements/scaffoldingCard";
-import Modal from "./elements/ModalScaffolding";
+import fetchModel from "../../modelData/fetchData";
+import {SCAFFOLDING_URL, STORAGE_URL} from "../../modelData/constantsFile";
 
 /**
  Class that will create an overview of the scaffolding parts
@@ -21,47 +22,24 @@ class Scaffolding extends React.Component {
     }
 
     async componentDidMount() {
-        const urlScaffolding ="http://10.212.138.205:8080/stillastracking/v1/api/unit";
-        fetch(urlScaffolding)
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    sessionStorage.setItem('allScaffolding',JSON.stringify(result))
-                    this.setState({
-                        isLoaded1: true,
-                        scaffolding: result
-                    });
-                },
-                // Note: it's important to handle errors here
-                // instead of a catch() block so that we don't swallow
-                // exceptions from actual bugs in components.
-                (error) => {
-                    this.setState({
-                        isLoaded1: true,
-                    });
-                }
-                )
+        try {
+            const scaffoldingResult = await fetchModel(SCAFFOLDING_URL)
+            sessionStorage.setItem('allScaffolding',JSON.stringify(scaffoldingResult))
+            this.setState({
+                isLoaded1: true,
+                scaffolding: scaffoldingResult
+            });
 
-        const urlStorage ="http://10.212.138.205:8080/stillastracking/v1/api/storage";
-        fetch(urlStorage)
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    sessionStorage.setItem('fromStorage',JSON.stringify(result))
-                    this.setState({
-                        isLoaded2: true,
-                        storage: result
-                    });
-                },
-                // Note: it's important to handle errors here
-                // instead of a catch() block so that we don't swallow
-                // exceptions from actual bugs in components.
-                (error) => {
-                    this.setState({
-                        isLoaded2: true,
-                    });
-                }
-            )
+            const storageResult = await fetchModel(STORAGE_URL)
+            sessionStorage.setItem('fromStorage',JSON.stringify(storageResult))
+            this.setState({
+                isLoaded2: true,
+                storage: storageResult
+            });
+
+        }catch (error){
+            console.log(error)
+        }
     }
 
 
@@ -122,7 +100,7 @@ class Scaffolding extends React.Component {
 
 
   render() {
-      const {scaffolding, storage, isLoaded1,isLoaded2 } = this.state;
+      const {scaffolding, storage, isLoaded1,isLoaded2, selectedOption } = this.state;
 
       let scaffoldingArray
       if (sessionStorage.getItem('allScaffolding') != null){
@@ -142,7 +120,6 @@ class Scaffolding extends React.Component {
       let storageArray
       if (sessionStorage.getItem('fromStorage') != null){
           const storage = sessionStorage.getItem('fromStorage')
-          //console.log('From Storage')
           storageArray = (JSON.parse(storage))
       }else {
           console.log('From API')
@@ -156,9 +133,15 @@ class Scaffolding extends React.Component {
       if (!isLoaded1 && !isLoaded2) {
           return <h1>Is Loading Data....</h1>
       } else {
+          if (selectedOption === "ascending") {
+              result[0].sort((a, b) => (a.scaffolding < b.scaffolding) ? 1 : -1)
+          }else if (selectedOption === "descending") {
+              result[0].sort((a, b) => (a.scaffolding > b.scaffolding) ? 1 : -1)
+          }else {
+              result[0].sort((a, b) => (a.type > b.type))
+          }
           return (
               //todo only scroll the scaffolding not the map
-
               <div>
                   <div>
                       <select onChange={(e) =>
@@ -172,7 +155,7 @@ class Scaffolding extends React.Component {
 
 
 
-                  <div className={"grid-container"}>
+                 <div className={"grid-container"}>
                       {result[0].map((e) => {
                           return (
                               <CardElement key={e.type}
