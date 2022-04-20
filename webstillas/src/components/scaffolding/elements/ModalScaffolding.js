@@ -15,19 +15,16 @@ function scaffoldingInProject(type, props){
 
     //todo mulig legge til sortering??
     const results = result.filter(element => Object.keys(element.scaffolding).length !== 0)
-
-    console.log(results)
-
     return(
         results.map(e =>{
             return(
-                <article className={"project-card-long"}>
+                <article key={e.projectID} className={"project-card-long"}>
                         <section className={"header"}>
                             <h3>{e.projectName.toUpperCase()}</h3>
                         </section>
                         <div className={"main-body-project-card"}>
-                            <section className={"information-highlights-cta"}>
-                                <div className={"information-highlights"}>
+                            <section  className={"information-highlights-cta"}>
+                                <div  className={"information-highlights"}>
                                     <ul className={"information-list"}>
                                         <li className={"horizontal-list"}>
                                             <div className={"highlightText"}>
@@ -80,7 +77,6 @@ export default function InfoModal(props) {
     const handleShow = () => setShow(true);
     //https://codesandbox.io/s/react-week-date-view-forked-ruxjr9?file=/src/App.js:857-868
     //todo gjør om variablenavn
-
     return (
         <>
             <Button className="nextButton" onClick={handleShow}>

@@ -23,16 +23,14 @@ class Scaffolding extends React.Component {
 
     async componentDidMount() {
         try {
-            const scaffoldingResult = fetchModel(SCAFFOLDING_URL)
-            console.log(scaffoldingResult)
+            const scaffoldingResult = await fetchModel(SCAFFOLDING_URL)
             sessionStorage.setItem('allScaffolding',JSON.stringify(scaffoldingResult))
             this.setState({
                 isLoaded1: true,
                 scaffolding: scaffoldingResult
             });
 
-            const storageResult = fetchModel(STORAGE_URL)
-            console.log(storageResult)
+            const storageResult = await fetchModel(STORAGE_URL)
             sessionStorage.setItem('fromStorage',JSON.stringify(storageResult))
             this.setState({
                 isLoaded2: true,
@@ -42,49 +40,6 @@ class Scaffolding extends React.Component {
         }catch (error){
             console.log(error)
         }
-
-
-        /*const urlScaffolding ="http://10.212.138.205:8080/stillastracking/v1/api/unit";
-        fetch(urlScaffolding)
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    sessionStorage.setItem('allScaffolding',JSON.stringify(result))
-                    this.setState({
-                        isLoaded1: true,
-                        scaffolding: result
-                    });
-                },
-                // Note: it's important to handle errors here
-                // instead of a catch() block so that we don't swallow
-                // exceptions from actual bugs in components.
-                (error) => {
-                    this.setState({
-                        isLoaded1: true,
-                    });
-                }
-                )
-
-        const urlStorage ="http://10.212.138.205:8080/stillastracking/v1/api/storage";
-        fetch(urlStorage)
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    sessionStorage.setItem('fromStorage',JSON.stringify(result))
-                    this.setState({
-                        isLoaded2: true,
-                        storage: result
-                    });
-                },
-                // Note: it's important to handle errors here
-                // instead of a catch() block so that we don't swallow
-                // exceptions from actual bugs in components.
-                (error) => {
-                    this.setState({
-                        isLoaded2: true,
-                    });
-                }
-            )*/
     }
 
 
@@ -165,7 +120,6 @@ class Scaffolding extends React.Component {
       let storageArray
       if (sessionStorage.getItem('fromStorage') != null){
           const storage = sessionStorage.getItem('fromStorage')
-          //console.log('From Storage')
           storageArray = (JSON.parse(storage))
       }else {
           console.log('From API')
