@@ -5,6 +5,7 @@ import (
 	"github.com/ingics/ingics-parser-go/igs"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 /**
@@ -30,12 +31,15 @@ func GatewayRequest(w http.ResponseWriter, r *http.Request) {
 	payload, _ := ioutil.ReadAll(r.Body)
 	convertedPayload := string(payload)
 	fmt.Println(convertedPayload)
+	payloadList := strings.Split(convertedPayload, "$")
 
-	fmt.Println("\nBeacon payload:")
-	m := igs.Parse(convertedPayload)
-	fmt.Printf("Type:    %v\n", m.MsgType())
-	fmt.Printf("Beacon:  %v\n", m.Beacon())
-	fmt.Printf("Gateway: %v\n", m.Gateway())
-	fmt.Printf("RSSI:    %v\n", m.RSSI())
-	fmt.Printf("Payload: %v\n", m.Payload())
+	for _, v := range payloadList {
+		fmt.Println("\nBeacon payload:")
+		m := igs.Parse(v)
+		fmt.Printf("Type:    %v\n", m.MsgType())
+		fmt.Printf("Beacon:  %v\n", m.Beacon())
+		fmt.Printf("Gateway: %v\n", m.Gateway())
+		fmt.Printf("RSSI:    %v\n", m.RSSI())
+		fmt.Printf("Payload: %v\n", m.Payload())
+	}
 }
