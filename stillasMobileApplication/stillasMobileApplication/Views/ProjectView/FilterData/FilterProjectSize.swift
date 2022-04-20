@@ -9,7 +9,10 @@ import SwiftUI
 
 struct FilterProjectSize: View {
     var body: some View {
-        IntSlider()
+        VStack {
+            IntSlider()
+            IntSlider()
+        }
     }
 }
 
@@ -41,22 +44,16 @@ struct IntSlider: View {
     }
     
     var body: some View {
-        VStack{
-            /*if(input.value != "\(0)" && Int(input.value) != score) {
-                input.value = "\(score)"
-                AddProjectView()
-            } else {
-                AddProjectView()
-            }*/
-            
-            VStack {
-                TextField("Input", text: $input.value)
-                    .onChange(of: input.value) { value in
-                        score = Int(value) ?? 0
-                    }
-                    .padding()
-                    .keyboardType(.numberPad)
-                    .focused($focusedField, equals: .input)
+        VStack {
+            TextField("Input", text: $input.value)
+                .font(Font.system(size: 35, design: .default))
+                .onChange(of: input.value) { value in
+                    score = Int(value) ?? 0
+                }
+                .frame(height: 100)
+                .padding()
+                .keyboardType(.numberPad)
+                .focused($focusedField, equals: .input)
 
                 Text(score.description)
                 Text("Størrelse")
@@ -75,7 +72,6 @@ struct IntSlider: View {
                 print(score.description)
             })
             .frame(width: 350, alignment: .center)
-        }
     }
 }
 
