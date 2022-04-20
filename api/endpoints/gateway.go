@@ -33,12 +33,12 @@ func GatewayRequest(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("\nString converted payload")
 	payload, _ := ioutil.ReadAll(r.Body)
 	convertedPayload := string(payload)
-	payloadList := strings.Split(convertedPayload, "$")
+	payloadList := strings.Split(convertedPayload, "\n")
 
-	for _, v := range payloadList {
-		print(v)
+	for i := 0; i < len(payloadList)-1; i++ {
+		print(payloadList[i])
 		fmt.Println("\nBeacon payload:")
-		if m := igs.Parse(v); m != nil {
+		if m := igs.Parse(payloadList[0]); m != nil {
 			fmt.Printf("Type:    %v\n", m.MsgType())
 			fmt.Printf("Beacon:  %v\n", m.Beacon())
 			fmt.Printf("Gateway: %v\n", m.Gateway())
