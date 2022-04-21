@@ -69,8 +69,8 @@ struct IntSlider: View {
                         Text("Minimum")
                     }
                     HStack {
-                        TextField("Input", text: $input.value)
-                            .font(Font.system(size: 35, design: .default))
+                        TextField("\(Int(sliderSizeMin))", text: $input.value)
+                            .font(Font.system(size: 30, design: .default))
                             .onChange(of: input.value) { value in
                                 scoreFrom = Int(value) ?? Int(sliderSizeMax + sliderSizeMin) / 2
                             }
@@ -84,7 +84,7 @@ struct IntSlider: View {
                             Text("m")
                                 .font(Font.system(size: 30, design: .default))
                             Text("2")
-                                .baselineOffset(5.0)
+                                .baselineOffset(6.0)
                         }
                     }
                     
@@ -96,6 +96,7 @@ struct IntSlider: View {
                 
                 Text(" - ")
                     .font(Font.system(size: 35, design: .default))
+                    .offset(y: 10)
                 
                 VStack {
                     if (Int(input2.value) == Int(sliderSizeMax)) {
@@ -103,17 +104,33 @@ struct IntSlider: View {
                     } else {
                         Text("Maksimum")
                     }
-                    
-                    TextField("Input", text: $input2.value)
-                        .font(Font.system(size: 35, design: .default))
-                        .onChange(of: input2.value) { value in
-                            scoreTo = Int(value) ?? Int(sliderSizeMax + sliderSizeMin) / 2
+                    HStack {
+                        TextField("\(Int(sliderSizeMax))", text: $input2.value)
+                            .font(Font.system(size: 30, design: .default))
+                            .onChange(of: input2.value) { value in
+                                if (Int(value) ?? Int(sliderSizeMax)) >= Int(sliderSizeMax) {
+                                    scoreTo = Int(sliderSizeMax)
+                                    
+                                    // TODO: Update textfield value to slider value or max value
+                                } else if (Int(value) ?? Int(sliderSizeMin)) <= Int(sliderSizeMin) {
+                                    scoreTo = Int(sliderSizeMin)
+                                    // TODO: Update textfield value to slider value or min value
+                                } else {
+                                    scoreTo = Int(value) ?? Int(sliderSizeMax + sliderSizeMin) / 2
+                                }
+                            }
+                        //.frame(height: 100)
+                            .keyboardType(.numberPad)
+                            .focused($focusedField, equals: .input)
+                            .multilineTextAlignment(.center)
+                        
+                        HStack {
+                            Text("m")
+                                .font(Font.system(size: 30, design: .default))
+                            Text("2")
+                                .baselineOffset(6.0)
                         }
-                    //.frame(height: 100)
-                        .keyboardType(.numberPad)
-                        .focused($focusedField, equals: .input)
-                        .multilineTextAlignment(.center)
-                    
+                    }
                     Divider()
                         .frame(height: 1)
                         .padding(.horizontal, 20)
