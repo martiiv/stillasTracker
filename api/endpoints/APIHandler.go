@@ -49,7 +49,7 @@ func Handle() {
 	//Gateway endpoint
 	router.HandleFunc(baseURL+"/gateway", GatewayRequest).Queries("id", "{id}")
 	router.HandleFunc(baseURL+"/gateway", GatewayRequest).Queries("projectName", "{projectName}")
-	router.HandleFunc(baseURL+"/gateway", GatewayRequest).Queries("projectId", "{projectID}")
+	router.HandleFunc(baseURL+"/gateway", GatewayRequest).Queries("projectID", "{projectID}")
 	router.HandleFunc(baseURL+"/gateway", GatewayRequest)
 
 	//Gateway POST request endpoint (Only used for registering tags)

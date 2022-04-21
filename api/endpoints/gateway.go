@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"github.com/gorilla/mux"
 	"net/http"
 	tool "stillasTracker/api/apiTools"
 	"stillasTracker/api/constants"
@@ -35,7 +36,28 @@ func GatewayRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func getGateway(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	query := mux.Vars(r) //Gets queries
 
+	switch true { //Forwards the request to the appropriate function based on the passed in query
+	case query[constants.G_idURL] != "":
+		getGatewayByID(w, r)
+	case query[constants.G_ProjectID] != "" || query[constants.G_ProjectName] != "":
+		getGatewayByProject(w, r)
+	default:
+		getAllGateways(w)
+	}
+}
+
+/*
+getAllGateways function gets all the gateways
+*/
+func getAllGateways(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	var gateways []_struct.Gateways
 }
 
 func updateGateway(w http.ResponseWriter, r *http.Request) {
@@ -47,5 +69,13 @@ func createGateway(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteGateway(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func getGatewayByProject(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func getGatewayByID(w http.ResponseWriter, r *http.Request) {
 
 }
