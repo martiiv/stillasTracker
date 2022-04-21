@@ -57,7 +57,51 @@ func getGateway(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateGateway(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		tool.HandleError(tool.READALLERROR, w)
+		return
+	}
+
+	batch := database.Client.Batch()
+
+	var gatewayStruct map[string]interface{}
+	err = json.Unmarshal(data, &gatewayStruct)
+	if err != nil {
+		tool.HandleError(tool.UNMARSHALLERROR, w)
+		return
+	}
+
+	gateway := gatewayStruct[constants.G_GatewayID].(string)
+
+	documentReference, err := iterateGateways(gateway)
+	if err != nil {
+		tool.HandleError(tool.COULDNOTFINDDATA, w)
+		return
+	}
+
+	var updates []firestore.Update
+
+	for s, i := range gatewayStruct {
+		update := firestore.Update{
+			Path:  s,
+			Value: i,
+		}
+
+		updates = append(updates, update)
+	}
+
+	for _, ref := range documentReference {
+		batch.Update(ref, updates)
+	}
+	_, err = batch.Commit(database.Ctx) //Commits the database changes if all changes pass
+	if err != nil {
+		tool.HandleError(tool.COULDNOTADDDOCUMENT, w)
+		return
+	}
 }
 
 func createGateway(w http.ResponseWriter, r *http.Request) {

@@ -135,6 +135,7 @@ const (
 	G_GatewayCollection = "Gateways"
 	G_ProjectName       = "projectName"
 	G_ProjectID         = "projectID"
+	G_GatewayID         = "gatewayID"
 )
 
 var ScaffoldingTypes = []string{S_Spir, S_Lengdebjelke, S_Enrorsbjelke, S_Lengdebjelke,
