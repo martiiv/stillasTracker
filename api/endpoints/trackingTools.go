@@ -27,7 +27,7 @@ Version 0.1
 Last modified Martin Iversen
 */
 
-func GatewayRequest(w http.ResponseWriter, r *http.Request) {
+func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")

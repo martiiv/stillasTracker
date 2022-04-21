@@ -46,7 +46,14 @@ func Handle() {
 	router.HandleFunc(baseURL+"/user", ProfileRequest).Queries("role", "{role}")
 	router.HandleFunc(baseURL+"/user", ProfileRequest)
 
-	router.HandleFunc(baseURL+"/gateway/input", GatewayRequest)
+	//Gateway endpoint
+	router.HandleFunc(baseURL+"/gateway", GatewayRequest).Queries("id", "{id}")
+	router.HandleFunc(baseURL+"/gateway", GatewayRequest).Queries("projectName", "{projectName}")
+	router.HandleFunc(baseURL+"/gateway", GatewayRequest).Queries("projectId", "{projectID}")
+	router.HandleFunc(baseURL+"/gateway", GatewayRequest)
+
+	//Gateway POST request endpoint (Only used for registering tags)
+	router.HandleFunc(baseURL+"/gateway/input", UpdatePosition)
 
 	http.Handle("/", router)
 	fmt.Println("MQTT Server initializing...")
