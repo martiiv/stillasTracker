@@ -106,7 +106,50 @@ func deleteGateway(w http.ResponseWriter, r *http.Request) {
 }
 
 func getGatewayByProject(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
+	queries := mux.Vars(r)
+	query := ""
+	if queries[constants.G_ProjectID] != "" {
+		query = queries[constants.G_ProjectID]
+	} else if queries[constants.G_ProjectName] != "" {
+		query = queries[constants.G_ProjectName]
+	} else {
+		tool.HandleError(tool.INVALIDREQUEST, w)
+		return
+	}
+
+	documentPath := baseCollection.Collection(query).Documents(database.Ctx)
+	var gateways []_struct.Gateway
+
+	for {
+		documentRef, err := documentPath.Next()
+		if err == iterator.Done {
+			break
+		}
+
+		var gateway _struct.Gateway
+		doc, _ := database.GetDocumentData(documentRef.Ref)
+		gatewayByte, err := json.Marshal(doc)
+		err = json.Unmarshal(gatewayByte, &gateway)
+		if err != nil {
+			tool.HandleError(tool.UNMARSHALLERROR, w)
+			return
+		}
+
+		gateways = append(gateways, gateway)
+	}
+	if gateways == nil {
+		tool.HandleError(tool.COULDNOTFINDDATA, w)
+		return
+	}
+
+	err := json.NewEncoder(w).Encode(gateways)
+	if err != nil {
+		tool.HandleError(tool.NEWENCODERERROR, w)
+		return
+	}
 }
 
 func getGatewayByID(w http.ResponseWriter, r *http.Request) {
