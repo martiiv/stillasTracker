@@ -6,12 +6,12 @@ import (
 	"errors"
 	"github.com/gorilla/mux"
 	"google.golang.org/api/iterator"
+	"io/ioutil"
 	"net/http"
 	tool "stillasTracker/api/apiTools"
 	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
 	_struct "stillasTracker/api/struct"
-	"strconv"
 )
 
 func GatewayRequest(w http.ResponseWriter, r *http.Request) {
@@ -56,52 +56,44 @@ func getGateway(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*
-getAllGateways function gets all the gateways
-*/
-func getAllGateways(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	var gateways []_struct.Gateway
-
-	collection := baseCollection.Collections(database.Ctx)
-	for {
-		collRef, err := collection.Next()
-		if err == iterator.Done || err != nil {
-			break
-		}
-
-		document := baseCollection.Collection(collRef.ID).Documents(database.Ctx)
-		for {
-			documentRef, err := document.Next()
-			if err == iterator.Done {
-				break
-			}
-
-			var gateway _struct.Gateway
-			doc, _ := database.GetDocumentData(documentRef.Ref)
-			gatewayByte, err := json.Marshal(doc)
-			err = json.Unmarshal(gatewayByte, &gateway)
-			if err != nil {
-				tool.HandleError(tool.UNMARSHALLERROR, w)
-				return
-			}
-			gateways = append(gateways, gateway)
-		}
-	}
-	err := json.NewEncoder(w).Encode(gateways)
-	if err != nil {
-		return
-	}
-}
-
 func updateGateway(w http.ResponseWriter, r *http.Request) {
 
 }
 
 func createGateway(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
+	requestBody, err := ioutil.ReadAll(r.Body)
+	var gateway _struct.Gateway
+
+	err = json.Unmarshal(requestBody, &gateway)
+	if err != nil {
+		tool.HandleError(tool.UNMARSHALLERROR, w)
+		return
+	}
+
+	_, err = iterateGateways(gateway.GatewayID)
+	if err != nil {
+		tool.HandleError(tool.CouldNotAddSameID, w)
+		return
+	}
+
+	documentPath := baseCollection
+	var firebaseInput map[string]interface{}
+
+	err = json.Unmarshal(requestBody, &firebaseInput)
+	if err != nil {
+		tool.HandleError(tool.UNMARSHALLERROR, w)
+	}
+
+	err = database.AddDocument(documentPath, firebaseInput)
+	if err != nil {
+		tool.HandleError(tool.COULDNOTADDDOCUMENT, w)
+		return
+	} else {
+		tool.HandleError(tool.ADDED, w)
+	}
 }
 
 func deleteGateway(w http.ResponseWriter, r *http.Request) {
@@ -160,12 +152,8 @@ func getGatewayByID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	queries := mux.Vars(r)
-	ID, err := strconv.Atoi(queries[constants.G_idURL])
-	if err != nil {
-		tool.HandleError(tool.INVALIDREQUEST, w)
-	}
 
-	documentReference, err := iterateGateways(ID)
+	documentReference, err := iterateGateways(queries[constants.G_idURL])
 	if err != nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
@@ -195,7 +183,7 @@ func getGatewayByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func iterateGateways(id int) ([]*firestore.DocumentRef, error) {
+func iterateGateways(id string) ([]*firestore.DocumentRef, error) {
 	var documentReferences []*firestore.DocumentRef
 
 	collection := baseCollection.Collections(database.Ctx)
@@ -224,4 +212,44 @@ func iterateGateways(id int) ([]*firestore.DocumentRef, error) {
 		return nil, errors.New("could not find document")
 	}
 
+}
+
+/*
+getAllGateways function gets all the gateways
+*/
+func getAllGateways(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	var gateways []_struct.Gateway
+
+	collection := baseCollection.Collections(database.Ctx)
+	for {
+		collRef, err := collection.Next()
+		if err == iterator.Done || err != nil {
+			break
+		}
+
+		document := baseCollection.Collection(collRef.ID).Documents(database.Ctx)
+		for {
+			documentRef, err := document.Next()
+			if err == iterator.Done {
+				break
+			}
+
+			var gateway _struct.Gateway
+			doc, _ := database.GetDocumentData(documentRef.Ref)
+			gatewayByte, err := json.Marshal(doc)
+			err = json.Unmarshal(gatewayByte, &gateway)
+			if err != nil {
+				tool.HandleError(tool.UNMARSHALLERROR, w)
+				return
+			}
+			gateways = append(gateways, gateway)
+		}
+	}
+	err := json.NewEncoder(w).Encode(gateways)
+	if err != nil {
+		return
+	}
 }
