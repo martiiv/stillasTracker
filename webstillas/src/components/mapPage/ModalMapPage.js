@@ -3,55 +3,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import {Button, Modal} from 'react-bootstrap';
 import img from "../../scaffolding/images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 
-//https://ordinarycoders.com/blog/article/react-bootstrap-modal
-const scaffoldingMove =
-    [
-        {
-            "type": "Bunnskrue",
-            "quantity": 0
-        },
-        {
-            "type": "Diagonalstang",
-            "quantity": 0
-        },
-        {
-            "type": "Enrørsbjelke",
-            "quantity": 0
-        },
-        {
-            "type": "Gelender",
-            "quantity": 0
-        },
-        {
-            "type": "Lengdebjelke",
-            "quantity": 0
-        },
-        {
-            "type": "Plank",
-            "quantity": 0
-        },
-        {
-            "type": "Rekkverksramme",
-            "quantity": 0
-        },
-        {
-            "type": "Spire",
-            "quantity": 0
-        },
-        {
-            "type": "Stillaslem",
-            "quantity": 0
-        },
-        {
-            "type": "Trapp",
-            "quantity": 0
-        }
-        ]
 
-
-
-
-export default function InfoModal() {
+export default function MapModal() {
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
@@ -61,46 +14,10 @@ export default function InfoModal() {
     const jsonProjects = JSON.parse(projects)
     const project = sessionStorage.getItem('project')
     const jsonProject = JSON.parse(project)
-    const [roomRent, setRoomRent] = useState(scaffoldingMove);
     const [ToProject, setToProject] = useState("");
     const [FromProject, setFromProject] = useState("");
 
-
-    const handleroom = (e, id) => {
-        let result = [...roomRent];
-        result = result.map((x) => {
-            if (x.type.toLowerCase() === id.toLowerCase()) {
-                const inputvalue = (e.target.value)
-                x.quantity = parseInt(inputvalue, 10)
-                return x;
-            } else return x;
-        });
-        setRoomRent(result)
-    };
-
-    //todo add a note to the user if the transaction was a success or a fail.
-    const AddScaffolding = (body) =>{
-        const requestOptions = {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        };
-
-        fetch('http://localhost:8080/stillastracking/v1/api/project/scaffolding', requestOptions)
-            .then(response => response.json())
-            .catch(error => console.log(error))
-        handleClose()
-    }
-
-
-    const move = {
-        "toProjectID": Number(ToProject),
-        "fromProjectID": Number(FromProject),
-        "scaffold": roomRent
-    }
-
-    const validFormat = ToProject !== FromProject
-    return(
+    return (
         <>
             <Button className="nextButton" onClick={handleShow}>
                 Overfør deler til Prosjekt

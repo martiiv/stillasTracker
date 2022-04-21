@@ -1,6 +1,6 @@
 import React from 'react'
-import {FormSelect} from "react-bootstrap";
-import Form from "react-bootstrap/Form";
+import postModel from "../../../modelData/postModel";
+import {SCAFFOLDING_URL} from "../../../modelData/constantsFile";
 
 class AddScaffolding extends React.Component{
     constructor(props) {
@@ -12,9 +12,7 @@ class AddScaffolding extends React.Component{
                     type: "",
                     batteryLevel: 100,
                     location: null
-                }
-            ,
-
+                },
             location: {
                 longitude: 0,
                 latitude: 0,
@@ -35,7 +33,7 @@ class AddScaffolding extends React.Component{
                 </div>
                 <div>
                     <span>Overfør til prosjekt:</span>
-                        <Form.Select value={"Test"} onChange={(e) =>
+                        <select value={"Test"} onChange={(e) =>
                         {const scaffolding = {...this.state.scaffolding};
                             scaffolding.type = e.target.value;
                             this.setState({scaffolding})}}>
@@ -48,7 +46,7 @@ class AddScaffolding extends React.Component{
                             <option value={"Rekkverksramme"}>Rekkverksramme</option>
                             <option value={"Stillaslem"}>Stillaslem</option>
                             <option value={"Trapp"}>Trapp</option>
-                        </Form.Select>
+                        </select>
                 </div>
             </div>
         )
@@ -60,23 +58,20 @@ class AddScaffolding extends React.Component{
             this.state.scaffolding
         ]
 
-        console.log(body)
-        const requestOptions = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        };
-        fetch('http://localhost:8080/stillastracking/v1/api/unit', requestOptions)
-            .then(response => response.json())
-            .then(data => console.log("Added new Project"))
-            .catch(err => console.log(err));    }
+        try {
+            postModel(SCAFFOLDING_URL, JSON.stringify(body))
+        }catch (e){
+            console.log(e)
+        }
+
+    }
 
 
     render() {
         return(
             <div>
                 {this.scaffoldingInformation()}
-                <button onClick={e => this.postRequest()}>Next</button>
+                <button onClick={() => this.postRequest()}>Next</button>
             </div>
 
 

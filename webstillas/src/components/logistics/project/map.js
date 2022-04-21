@@ -2,8 +2,8 @@ import React  from "react";
 import ReactMapboxGl from "react-mapbox-gl";
 import DrawControl from "react-mapbox-gl-draw";
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
-import addProject from "./addProject";
-import AddProject from "./addProject";
+import postModel from "../../../modelData/postModel";
+import {PROJECTS_URL} from "../../../modelData/constantsFile";
 
 const Map = ReactMapboxGl({
     accessToken:
@@ -25,17 +25,24 @@ class MapClass extends React.Component {
         console.log({ features });
     };
 
+
     addProjectRequest = (inputBody) => {
-        console.log(inputBody)
+        try {
+            postModel(PROJECTS_URL, JSON.stringify(inputBody))
+        }catch (e){
+            console.log(e)
+        }
+
+       /* console.log(inputBody)
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(inputBody)
         };
-        fetch('http://localhost:8080/stillastracking/v1/api/project', requestOptions)
+        fetch('http://10.212.138.205:8080/stillastracking/v1/api/project', requestOptions)
             .then(response => response.json())
             .then(data => console.log("Added new Project"))
-            .catch(err => console.log(err));
+            .catch(err => console.log(err));*/
     }
 
 
@@ -91,7 +98,7 @@ class MapClass extends React.Component {
                         onDrawUpdate={this.onDrawUpdate}
                     />
                 </Map>
-                <button onClick={e => this.addProjectRequest(project)}>Add Project</button>
+                <button onClick={() => this.addProjectRequest(project)}>Add Project</button>
             </div>
         );
     }

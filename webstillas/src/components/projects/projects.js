@@ -2,12 +2,14 @@ import React from "react";
 import "./projects.css"
 import CardElement from './elements/card'
 import {Route, Routes} from "react-router-dom";
+import fetchData from "../../modelData/fetchData";
+import {PROJECTS_WITH_SCAFFOLDING_URL} from "../../modelData/constantsFile";
 
 
 /**
  Class that will create an overview of the projects
  */
-
+//Todo refactor the fetching components from all classes.
 class Projects extends React.Component {
     constructor(props) {
         super(props);
@@ -15,7 +17,7 @@ class Projects extends React.Component {
             isLoaded: false,
             projectData: [],
             fromSize: 0,
-            toSize: 1000000,
+            toSize: 0,
             fromDate: "",
             toDate: "",
             selectedOption: "",
@@ -25,28 +27,19 @@ class Projects extends React.Component {
 
 
     async componentDidMount() {
-        if (sessionStorage.getItem('allProjects') == null){
-            const url ="http://10.212.138.205:8080/stillastracking/v1/api/project?scaffolding=true";
-            fetch(url)
-                .then(res => res.json())
-                .then(
-                    (result) => {
-                        sessionStorage.setItem('allProjects',JSON.stringify(result))
-                        console.log('API Kjores')
-                        this.setState({
-                            isLoaded: true,
-                            projectData: result,
-                        });
-                    },
-
-                    (error) => {
-                        this.setState({
-                            isLoaded: true,
-
-                        });
-                    }
-                )
-        }else{
+    if (sessionStorage.getItem('allProjects') == null) {
+        try {
+            const project = await fetchData(PROJECTS_WITH_SCAFFOLDING_URL)
+            sessionStorage.setItem('allProjects', JSON.stringify(project))
+            console.log(project)
+            this.setState({
+                isLoaded: true,
+                projectData: project,
+            });
+        } catch (error) {
+            console.log(error)
+        }
+    } else{
            console.log('API Kjøres ikke')
             this.setState({
                 isLoaded: true,
@@ -58,10 +51,7 @@ class Projects extends React.Component {
 
 
     SideBarFunction(){
-        const {isLoaded, fromSize, toSize, fromDate, toDate, searchName ,selectedOption} = this.state;
-
-
-
+        const {isLoaded, fromDate, toDate, searchName} = this.state;
         if (!isLoaded){
             return <h1>Is Loading data....</h1>
         }else {
@@ -81,14 +71,16 @@ class Projects extends React.Component {
                     <form className={"filter-content-search"}>
                         <p>Prosjekt Navn</p>
 
-                        <input type="text" value={searchName}
+                        <input type="text"
+                               placeholder={"Søk prosjekt navn"}
+                               value={searchName}
                                onChange={(e) => this.setState({searchName: e.target.value})}/>
                     </form>
                     <form className={"filter-content-input"}>
                         <p>Stillsmengde: </p>
-                        <input type="number" value={fromSize} onChange={e => this.setState({fromSize: e.target.value})}
+                        <input type="number"  placeholder={"Fra"} onChange={e => this.setState({fromSize: Number(e.target.value)})}
                                className={"input-field-filter"}/>
-                        <input type="number" value={toSize} onChange={e => this.setState({toSize: e.target.value})}
+                        <input type="number" placeholder={"Til"} onChange={e => this.setState({toSize: Number(e.target.value)})}
                                className={"input-field-filter"}/>
                     </form>
                     <form className={"filter-content-input"}>
@@ -111,7 +103,6 @@ class Projects extends React.Component {
     }
 
 
-
     render() {
         const {projectData, fromSize, toSize, fromDate, toDate, searchName ,selectedOption } = this.state;
 
@@ -125,7 +116,6 @@ class Projects extends React.Component {
            allProjects = projectData
         }
 
-       console.log(selectedOption)
 
         return(
             <div className={"main-project-window"}>
@@ -134,7 +124,14 @@ class Projects extends React.Component {
                 </div>
                 <div className={"grid-container"}>
                     {allProjects.filter(data => (data.projectName.toLowerCase()).includes(searchName.toLowerCase()))
-                        .filter(data => data.size > fromSize)
+                        .filter(data => {
+                            if (fromSize !== 0){
+                                console.log(fromSize)
+                                return data.size > fromSize
+                            }else {
+                                return true
+                            }
+                        })
                         .filter(data => {
                             if (fromDate !== ""){
                                 return this.reverseDate(data.period.startDate) >= fromDate
@@ -149,7 +146,13 @@ class Projects extends React.Component {
                                 return true
                             }
                         })
-                        .filter(data => data.size < toSize)
+                        .filter(data => {
+                            if (toSize !== 0) {
+                                return data.size < toSize
+                            } else {
+                                return true
+                            }
+                        })
                         .filter(data => {
                             if (!(selectedOption.length === 0 ) && !(selectedOption === "Velg her")){
                                 return data.state === selectedOption
@@ -158,7 +161,7 @@ class Projects extends React.Component {
                         .map((e) =>{
 
                     return(
-                        <div>
+                        <div  key = {e.projectID}>
                             <Routes>
                                 <Route path="/project/:id" element={<CardElement data={e} />} />
                             </Routes>
