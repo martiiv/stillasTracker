@@ -1,11 +1,14 @@
 package endpoints
 
 import (
+	"encoding/json"
 	"github.com/gorilla/mux"
+	"google.golang.org/api/iterator"
 	"net/http"
 	tool "stillasTracker/api/apiTools"
 	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
+	_struct "stillasTracker/api/struct"
 )
 
 func GatewayRequest(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +60,37 @@ func getAllGateways(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	var gateways []_struct.Gateways
+	var gateways []_struct.Gateway
+
+	collection := baseCollection.Collections(database.Ctx)
+	for {
+		collRef, err := collection.Next()
+		if err == iterator.Done || err != nil {
+			break
+		}
+
+		document := baseCollection.Collection(collRef.ID).Documents(database.Ctx)
+		for {
+			documentRef, err := document.Next()
+			if err == iterator.Done {
+				break
+			}
+
+			var gateway _struct.Gateway
+			doc, _ := database.GetDocumentData(documentRef.Ref)
+			gatewayByte, err := json.Marshal(doc)
+			err = json.Unmarshal(gatewayByte, &gateway)
+			if err != nil {
+				tool.HandleError(tool.UNMARSHALLERROR, w)
+				return
+			}
+			gateways = append(gateways, gateway)
+		}
+	}
+	err := json.NewEncoder(w).Encode(gateways)
+	if err != nil {
+		return
+	}
 }
 
 func updateGateway(w http.ResponseWriter, r *http.Request) {
