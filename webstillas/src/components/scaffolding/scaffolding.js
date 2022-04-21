@@ -2,7 +2,7 @@ import React from "react";
 import "./scaffolding.css"
 import CardElement from "./elements/scaffoldingCard";
 import fetchModel from "../../modelData/fetchData";
-import {SCAFFOLDING_URL, STORAGE_URL} from "../../modelData/constantsFile";
+import {PROJECTS_URL_WITH_SCAFFOLDING, SCAFFOLDING_URL, STORAGE_URL} from "../../modelData/constantsFile";
 
 /**
  Class that will create an overview of the scaffolding parts
@@ -23,6 +23,21 @@ class Scaffolding extends React.Component {
 
     async componentDidMount() {
         try {
+            let projects
+            if (sessionStorage.getItem('allProjects') !== null) {
+                projects = sessionStorage.getItem('allProjects')
+            }else {
+                console.log('From api')
+                try {
+                    projects = await fetchModel(PROJECTS_URL_WITH_SCAFFOLDING)
+                    projects = JSON.stringify(projects)
+                    sessionStorage.setItem('allProjects', projects)
+                }catch (e) {
+                    console.log(e)
+                }
+
+            }
+
             const scaffoldingResult = await fetchModel(SCAFFOLDING_URL)
             sessionStorage.setItem('allScaffolding',JSON.stringify(scaffoldingResult))
             this.setState({
@@ -76,8 +91,6 @@ class Scaffolding extends React.Component {
         const scaffoldVar = {
             scaffolding: []
         };
-
-
         for(var i in scaffold) {
             var scaff = scaffold[i];
             for (var j in storage){
@@ -116,7 +129,6 @@ class Scaffolding extends React.Component {
       const objectArr = this.countObjects(scaffoldingArray, "type")
 
 
-      //todo add session storage
       let storageArray
       if (sessionStorage.getItem('fromStorage') != null){
           const storage = sessionStorage.getItem('fromStorage')
@@ -126,8 +138,6 @@ class Scaffolding extends React.Component {
           storageArray = storage
       }
       const scaffoldingObject = this.scaffoldingAndStorage(objectArr, storageArray)
-
-
 
       const result = Object.keys(scaffoldingObject).map((key) => scaffoldingObject[key]);
       if (!isLoaded1 && !isLoaded2) {

@@ -49,7 +49,6 @@ class Projects extends React.Component {
 
 
 
-
     SideBarFunction(){
         const {isLoaded, fromDate, toDate, searchName} = this.state;
         if (!isLoaded){
@@ -97,6 +96,8 @@ class Projects extends React.Component {
     }
 
 
+
+
     reverseDate(inputDate){
         const dateArray = inputDate.split('-')
         return dateArray[2] + '-' + dateArray[1] + '-' + dateArray[0]
@@ -107,14 +108,14 @@ class Projects extends React.Component {
         const {projectData, fromSize, toSize, fromDate, toDate, searchName ,selectedOption } = this.state;
 
         let allProjects
-       if (sessionStorage.getItem('allProjects') != null){
+        if (sessionStorage.getItem('allProjects') != null){
              allProjects = sessionStorage.getItem('allProjects')
             console.log('From Storage')
            allProjects = (JSON.parse(allProjects))
-        }else {
+         }else {
             console.log('From API')
-           allProjects = projectData
-        }
+            allProjects = projectData
+         }
 
 
         return(
@@ -159,7 +160,6 @@ class Projects extends React.Component {
                             }else {return true}
                         })
                         .map((e) =>{
-
                     return(
                         <div  key = {e.projectID}>
                             <Routes>
@@ -178,11 +178,8 @@ class Projects extends React.Component {
                                          address_zip = {e.address.zipcode}
                             />
                         </div>
-
                     );
                     })}
-
-
                 </div>
             </div>
 

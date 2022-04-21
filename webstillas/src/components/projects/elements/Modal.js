@@ -2,6 +2,9 @@ import React, {useState} from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {Button, Modal} from 'react-bootstrap';
 import img from "../../scaffolding/images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
+import putModel from "../../../modelData/putData";
+import {PROJECTS_URL, TRANSFER_SCAFFOLDING} from "../../../modelData/constantsFile";
+import fetchModel from "../../../modelData/fetchData";
 
 //https://ordinarycoders.com/blog/article/react-bootstrap-modal
 const scaffoldingMove =
@@ -57,7 +60,19 @@ export default function InfoModal() {
     const handleShow = () => setShow(true);
     //https://codesandbox.io/s/react-week-date-view-forked-ruxjr9?file=/src/App.js:857-868
     //todo gjør om variablenavn
-    const projects = sessionStorage.getItem('allProjects')
+
+
+
+    let projects
+    if (sessionStorage.getItem('allProjects') !== null) {
+         projects = sessionStorage.getItem('allProjects')
+    }else {
+         projects = fetchModel(PROJECTS_URL)
+        sessionStorage.setItem('allProjects', projects)
+    }
+
+
+
     const jsonProjects = JSON.parse(projects)
     const project = sessionStorage.getItem('project')
     const jsonProject = JSON.parse(project)
@@ -66,6 +81,7 @@ export default function InfoModal() {
     const [FromProject, setFromProject] = useState("");
 
 
+    //Todo change variable
     const handleroom = (e, id) => {
         let result = [...roomRent];
         result = result.map((x) => {
@@ -80,15 +96,7 @@ export default function InfoModal() {
 
     //todo add a note to the user if the transaction was a success or a fail.
     const AddScaffolding = (body) =>{
-        const requestOptions = {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        };
-
-        fetch('http://localhost:8080/stillastracking/v1/api/project/scaffolding', requestOptions)
-            .then(response => response.json())
-            .catch(error => console.log(error))
+        putModel(TRANSFER_SCAFFOLDING, JSON.stringify(body))
         handleClose()
     }
 
