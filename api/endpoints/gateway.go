@@ -1,7 +1,9 @@
 package endpoints
 
 import (
+	"cloud.google.com/go/firestore"
 	"encoding/json"
+	"errors"
 	"github.com/gorilla/mux"
 	"google.golang.org/api/iterator"
 	"net/http"
@@ -9,6 +11,7 @@ import (
 	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
 	_struct "stillasTracker/api/struct"
+	"strconv"
 )
 
 func GatewayRequest(w http.ResponseWriter, r *http.Request) {
@@ -153,5 +156,72 @@ func getGatewayByProject(w http.ResponseWriter, r *http.Request) {
 }
 
 func getGatewayByID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	queries := mux.Vars(r)
+	ID, err := strconv.Atoi(queries[constants.G_idURL])
+	if err != nil {
+		tool.HandleError(tool.INVALIDREQUEST, w)
+	}
+
+	documentReference, err := iterateGateways(ID)
+	if err != nil {
+		tool.HandleError(tool.COULDNOTFINDDATA, w)
+		return
+	}
+
+	data, _ := database.GetDocumentData(documentReference[0])
+	marshalled, err := json.Marshal(data)
+	if err != nil {
+		tool.HandleError(tool.MARSHALLERROR, w)
+		return
+	}
+
+	var gateway _struct.Gateway
+	err = json.Unmarshal(marshalled, &gateway)
+	if err != nil {
+		tool.HandleError(tool.UNMARSHALLERROR, w)
+		return
+	}
+
+	if gateway.GatewayID == "" {
+		tool.HandleError(tool.COULDNOTFINDDATA, w)
+	}
+
+	err = json.NewEncoder(w).Encode(gateway)
+	if err != nil {
+		return
+	}
+}
+
+func iterateGateways(id int) ([]*firestore.DocumentRef, error) {
+	var documentReferences []*firestore.DocumentRef
+
+	collection := baseCollection.Collections(database.Ctx)
+	for {
+		collref, err := collection.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			break
+		}
+
+		var document *firestore.DocumentIterator
+		document = baseCollection.Collection(collref.ID).Where(constants.G_idURL, "==", id).Documents(database.Ctx)
+		for {
+			documentRef, err := document.Next()
+			if err == iterator.Done {
+				break
+			}
+			documentReferences = append(documentReferences, documentRef.Ref)
+		}
+	}
+	if documentReferences != nil {
+		return documentReferences, nil
+	} else {
+		return nil, errors.New("could not find document")
+	}
 
 }

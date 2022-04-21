@@ -5,4 +5,5 @@ type Gateway struct {
 	Projectname string `json:"Project name"`
 	ProjectID   string `json:"ProjectID"`
 	Status      bool   `json:"Status"`
+	GatewayID   string `json:"gatewayID"`
 }
