@@ -128,6 +128,13 @@ const (
 	U_idURL   = "id"
 	U_nameURL = "name"
 	U_User    = "user"
+
+	//Gateway url
+	G_idURL             = "id"
+	G_Gateway           = "Gateway"
+	G_GatewayCollection = "Gateways"
+	G_ProjectName       = "projectName"
+	G_ProjectID         = "projectID"
 )
 
 var ScaffoldingTypes = []string{S_Spir, S_Lengdebjelke, S_Enrorsbjelke, S_Lengdebjelke,
