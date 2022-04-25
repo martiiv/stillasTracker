@@ -27,7 +27,7 @@ struct FilterProjectData: View {
     @State private var showFilterModalView: Bool = false
     @State private var showAddProjectModalView: Bool = false
     
-    let filter: FilterType
+    @State var filter: FilterType = .none
     
     // TODO: Make these values operable
     @State var projectStartDate = Date.distantPast
@@ -72,6 +72,9 @@ struct FilterProjectData: View {
                 .sheet(isPresented: $showFilterModalView,
                        onDismiss: didDismiss) {
                     FilterView(selStartDateBind: $projectStartDate, selEndDateBind: $projectEndDate, projectArea: $projectCounty, projectSize: $projectSize, projectStatus: $projectState)
+                        .onChange(of: projectStartDate) { value in
+                            filter = .period
+                        }
                 }
                .sheet(isPresented: $showAddProjectModalView, onDismiss: didDismiss) {
                    AddProjectView()
@@ -126,63 +129,6 @@ struct FilterProjectData: View {
     }
 }
 
-struct FilterView: View {
-    @State private var filterItems = ["Område", "Prosjekt periode", "Størrelse", "Status"]
-    
-    @Binding var selStartDateBind: Date
-    @Binding var selEndDateBind: Date
-    @Binding var projectArea: String
-    @Binding var projectSize: Int
-    @Binding var projectStatus: String
-    
-    @State var selStartDate = Date()
-    @State var selEndDate = Date()
-        
-    var body: some View {
-        NavigationView {
-            List {
-                ForEach(filterItems, id: \.self) { filterItem in
-                    NavigationLink {
-                        switch filterItem {
-                        case "Område":
-                            FilterProjectArea()
-                        case "Prosjekt periode":
-                            FilterProjectPeriod(selStartDateBind: $selStartDate, selEndDateBind: $selEndDate)
-                                .onChange(of: selStartDate) { value in
-                                    selStartDateBind = $selStartDate.wrappedValue
-                                    print("______")
-                                    print(value)
-                                    print("______")
-                                }
-                                .onChange(of: selEndDate) { value in
-                                    selEndDateBind = $selEndDate.wrappedValue
-                                    print("______")
-                                    print(value)
-                                    print("______")
-                                }
-                        case "Størrelse":
-                            FilterProjectSize()
-                            /*
-                        case "Status":
-                            print("Add status view")
-                            // ADD status view
-                        default:
-                            print("Did not find any")
-                        */
-                        default:
-                            AddProjectView()
-                        }
-                    } label: {
-                        Text(filterItem)
-                    }
-                }
-            }
-            .navigationTitle(Text("Filter"))
-            .navigationViewStyle(StackNavigationViewStyle())
-        }
-    }
-}
-
 struct AddProjectView: View {
     var body: some View {
         VStack {
@@ -193,6 +139,6 @@ struct AddProjectView: View {
 
 struct FilterProjectData_Previews: PreviewProvider {
     static var previews: some View {
-        FilterProjectData(filter: .none)
+        FilterProjectData()
     }
 }
