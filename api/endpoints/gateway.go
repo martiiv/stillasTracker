@@ -212,13 +212,10 @@ func getGatewayByID(w http.ResponseWriter, r *http.Request) {
 
 	queries := mux.Vars(r)
 
-	documentReference, err := iterateGateways(queries[constants.G_idURL])
-	if err != nil {
-		tool.HandleError(tool.COULDNOTFINDDATA, w)
-		return
-	}
+	documentReference := gatewayCollection.Doc(queries[constants.G_idURL])
 
-	data, _ := database.GetDocumentData(documentReference[0])
+	data, _ := database.GetDocumentData(documentReference)
+
 	marshalled, err := json.Marshal(data)
 	if err != nil {
 		tool.HandleError(tool.MARSHALLERROR, w)
@@ -245,18 +242,9 @@ func getGatewayByID(w http.ResponseWriter, r *http.Request) {
 func iterateGateways(id string) ([]*firestore.DocumentRef, error) {
 	var documentReferences []*firestore.DocumentRef
 
-	collection := baseCollection.Collections(database.Ctx)
 	for {
-		collref, err := collection.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			break
-		}
-
 		var document *firestore.DocumentIterator
-		document = baseCollection.Collection(collref.ID).Where(constants.G_idURL, "==", id).Documents(database.Ctx)
+		document = gatewayCollection.Where(constants.G_gidURL, "==", id).Documents(database.Ctx)
 		for {
 			documentRef, err := document.Next()
 			if err == iterator.Done {
@@ -264,11 +252,11 @@ func iterateGateways(id string) ([]*firestore.DocumentRef, error) {
 			}
 			documentReferences = append(documentReferences, documentRef.Ref)
 		}
-	}
-	if documentReferences != nil {
-		return documentReferences, nil
-	} else {
-		return nil, errors.New("could not find document")
+		if documentReferences != nil {
+			return documentReferences, nil
+		} else {
+			return nil, errors.New("could not find document")
+		}
 	}
 }
 
