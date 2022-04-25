@@ -9,10 +9,32 @@ import SwiftUI
 
 struct FilterProjectPeriod: View {
     //@State private var date = Date()
+    @Binding var selStartDateBind: Date
+    @Binding var selEndDateBind: Date
+    
+    @State private var selStartDate = Date()
+    @State private var selEndDate = Date()
+    
     
     var body: some View {
         VStack {
-            CalendarView()
+            CalendarView(selStartDate: $selStartDate, selEndDate: $selEndDate)
+                .onAppear {
+                    selStartDateBind = selStartDate
+                    selEndDateBind = selEndDate
+                }
+                .onChange(of: selStartDate) { value in
+                    selStartDateBind = $selStartDate.wrappedValue
+                    print("______")
+                    print(value)
+                    print("______")
+                }
+                .onChange(of: selEndDate) { value in
+                    selEndDateBind = $selEndDate.wrappedValue
+                    print("______")
+                    print(value)
+                    print("______")
+                }
         }
         .navigationTitle(Text("Prosjekt periode"))
         //.ignoresSafeArea(edges: .top)
@@ -20,6 +42,9 @@ struct FilterProjectPeriod: View {
 }
 
 struct CalendarView: View {
+    @Binding var selStartDate: Date
+    @Binding var selEndDate: Date
+    
     @State private var startDate = Date()
     @State private var endDate = Date()
     
@@ -35,9 +60,9 @@ struct CalendarView: View {
                                 in: ...$endDate.wrappedValue,
                                 displayedComponents: [.date]
                             )
-                            //.background(RoundedRectangle(cornerRadius: 4.0).stroke(Color.blue).padding(-3))
-                        //.datePickerStyle(.graphical)
-                        Divider()
+                            
+                            Divider()
+                            
                             DatePicker(
                                 "Slutt dato",
                                 selection: $endDate,
@@ -51,12 +76,18 @@ struct CalendarView: View {
                 .padding(.top, 40)
             }
             Spacer()
-            Button(action: { print("Bruk") }) {
+            Button(action: {
+                selStartDate = $startDate.wrappedValue
+                selEndDate = $endDate.wrappedValue
+                print("______")
+                print(selStartDate)
+                print(selEndDate)
+                print("______")
+            }) {
                 Text("Bruk")
                     .frame(width: 300, height: 50, alignment: .center)
             }
             .foregroundColor(.white)
-            //.padding(.vertical, 10)
             .background(Color.blue)
             .cornerRadius(10)
             
@@ -66,8 +97,13 @@ struct CalendarView: View {
     }
 }
 
+/*
 struct FilterProjectPeriod_Previews: PreviewProvider {
+    @State private var selStartDate = Date()
+    @State private var selEndDate = Date()
+    
     static var previews: some View {
-        FilterProjectPeriod()
+        FilterProjectPeriod(selStartDateBind: selStartDate, selEndDateBind: selEndDate)
     }
-}
+}*/
+
