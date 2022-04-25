@@ -131,6 +131,7 @@ const (
 
 	//Gateway url
 	G_idURL             = "id"
+	G_GatewayURL        = "gateway"
 	G_Gateway           = "Gateway"
 	G_GatewayCollection = "Gateways"
 	G_ProjectName       = "projectName"

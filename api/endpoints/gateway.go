@@ -12,7 +12,10 @@ import (
 	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
 	_struct "stillasTracker/api/struct"
+	"strconv"
 )
+
+var gatewayCollection *firestore.CollectionRef
 
 func GatewayRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json") //Defines data type
@@ -21,9 +24,10 @@ func GatewayRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
 	lastElement := tool.GetLastUrlElement(r)
-	baseCollection = database.Client.Doc(constants.G_GatewayCollection)
 
-	if lastElement != constants.G_Gateway {
+	gatewayCollection = database.Client.Collection(constants.G_GatewayCollection)
+
+	if lastElement != constants.G_GatewayURL {
 		tool.HandleError(tool.INVALIDREQUEST, w)
 		return
 	}
@@ -150,16 +154,27 @@ func getGatewayByProject(w http.ResponseWriter, r *http.Request) {
 
 	queries := mux.Vars(r)
 	query := ""
+	queryParam := ""
+	documentPath := gatewayCollection.Where(queryParam, "==", query).Documents(database.Ctx)
+
 	if queries[constants.G_ProjectID] != "" {
-		query = queries[constants.G_ProjectID]
+		query, err := strconv.Atoi(queries[constants.G_ProjectID])
+		if err != nil {
+			tool.HandleError(tool.INVALIDREQUEST, w)
+		}
+		queryParam = "ProjectID"
+		documentPath = gatewayCollection.Where(queryParam, "==", query).Documents(database.Ctx)
+
 	} else if queries[constants.G_ProjectName] != "" {
 		query = queries[constants.G_ProjectName]
+		queryParam = "ProjectName"
+		documentPath = gatewayCollection.Where(queryParam, "==", query).Documents(database.Ctx)
+
 	} else {
 		tool.HandleError(tool.INVALIDREQUEST, w)
 		return
 	}
 
-	documentPath := baseCollection.Collection(query).Documents(database.Ctx)
 	var gateways []_struct.Gateway
 
 	for {
@@ -255,7 +270,6 @@ func iterateGateways(id string) ([]*firestore.DocumentRef, error) {
 	} else {
 		return nil, errors.New("could not find document")
 	}
-
 }
 
 /*
@@ -267,30 +281,22 @@ func getAllGateways(w http.ResponseWriter) {
 
 	var gateways []_struct.Gateway
 
-	collection := baseCollection.Collections(database.Ctx)
+	collection := gatewayCollection.Documents(database.Ctx)
 	for {
 		collRef, err := collection.Next()
 		if err == iterator.Done || err != nil {
 			break
 		}
+		var gateway _struct.Gateway
+		doc, _ := database.GetDocumentData(collRef.Ref)
+		gatewayByte, err := json.Marshal(doc)
 
-		document := baseCollection.Collection(collRef.ID).Documents(database.Ctx)
-		for {
-			documentRef, err := document.Next()
-			if err == iterator.Done {
-				break
-			}
-
-			var gateway _struct.Gateway
-			doc, _ := database.GetDocumentData(documentRef.Ref)
-			gatewayByte, err := json.Marshal(doc)
-			err = json.Unmarshal(gatewayByte, &gateway)
-			if err != nil {
-				tool.HandleError(tool.UNMARSHALLERROR, w)
-				return
-			}
-			gateways = append(gateways, gateway)
+		err = json.Unmarshal(gatewayByte, &gateway)
+		if err != nil {
+			tool.HandleError(tool.UNMARSHALLERROR, w)
+			return
 		}
+		gateways = append(gateways, gateway)
 	}
 	err := json.NewEncoder(w).Encode(gateways)
 	if err != nil {
