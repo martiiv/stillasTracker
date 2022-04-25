@@ -22,19 +22,13 @@ struct FilterProjectPeriod: View {
                 .onAppear {
                     selStartDateBind = selStartDate
                     selEndDateBind = selEndDate
-                }/*
-                .onChange(of: selStartDate) { value in
-                    //selStartDateBind = $selStartDate.wrappedValue
-                    print("______")
-                    print(value)
-                    print("______")
                 }
-                .onChange(of: selEndDate) { value in
-                    //selEndDateBind = $selEndDate.wrappedValue
-                    print("______")
-                    print(value)
-                    print("______")
-                }*/
+                .onChange(of: selStartDate) { selectedStartDate in
+                    selStartDateBind = selectedStartDate
+                }
+                .onChange(of: selEndDate) { selectedEndDate in
+                    selEndDateBind = selectedEndDate
+                }
         }
         .navigationTitle(Text("Prosjekt periode"))
         //.ignoresSafeArea(edges: .top)

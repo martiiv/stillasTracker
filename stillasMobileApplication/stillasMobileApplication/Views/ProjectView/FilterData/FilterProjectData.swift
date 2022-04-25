@@ -7,7 +7,7 @@
 
 import UIKit
 import SwiftUI
-
+/*
 enum FilterType {
     case none,
          period,
@@ -20,7 +20,7 @@ enum FilterType {
          sizeGreaterThan,
          state,
          county
-}
+}*/
 
 struct FilterProjectData: View {
     @State var projects = [Project]()

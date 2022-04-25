@@ -49,6 +49,26 @@ struct FilterView: View {
             .navigationTitle(Text("Filter"))
             .navigationViewStyle(StackNavigationViewStyle())
         }
+        Spacer()
+        Button(action: {
+            selStartDateBind = $selStartDate.wrappedValue
+            selEndDateBind = $selEndDate.wrappedValue
+            print("______")
+            
+            print(selStartDateBind)
+            print(selEndDateBind)
+
+            
+        }) {
+            Text("Bruk")
+                .frame(width: 300, height: 50, alignment: .center)
+        }
+        .foregroundColor(.white)
+        .background(Color.blue)
+        .cornerRadius(10)
+        
+        Spacer()
+            .frame(height:50)  // limit spacer size by applying a frame
     }
 }
 /*
