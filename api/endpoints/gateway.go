@@ -195,6 +195,12 @@ func createGateway(w http.ResponseWriter, r *http.Request) {
 	} else {
 		tool.HandleError(tool.ADDED, w)
 	}
+
+	project, err := IterateProjects(gateway.ProjectID, gateway.Projectname, "")
+	if err != nil {
+		tool.HandleError(tool.NODOCUMENTWITHID, w)
+	}
+	updateProjectGateway(project[0], gateway.GatewayID)
 }
 
 func deleteGateway(w http.ResponseWriter, r *http.Request) {
