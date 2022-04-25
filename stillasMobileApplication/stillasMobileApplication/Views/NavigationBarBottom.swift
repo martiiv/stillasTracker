@@ -38,7 +38,7 @@ struct NavigationBarBottom: View {
                     Label("Profile", systemImage: "person.crop.circle")
                 }
                 .tag(Tab.profile)
-            FilterProjectData(filter: .county)
+            FilterProjectData(filter: .period)
                 .tabItem {
                     Label("Project API", systemImage: "map")
                 }
