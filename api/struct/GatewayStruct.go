@@ -8,3 +8,9 @@ type Gateway struct {
 	Latitude    float64 `json:"latitude"`
 	Longitude   float64 `json:"longitude"`
 }
+
+// IDStruct to insert id of each project.
+type GatewayIDStruct []struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}

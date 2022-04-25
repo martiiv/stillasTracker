@@ -204,6 +204,60 @@ func createGateway(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteGateway(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	request, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		tool.HandleError(tool.READALLERROR, w)
+	}
+
+	var requestStructure []map[string]interface{}    //Defines a data structure
+	err = json.Unmarshal(request, &requestStructure) //Unmarshall the request body into the defined structure
+	if err != nil {
+		tool.HandleError(tool.UNMARSHALLERROR, w)
+		return
+	}
+
+	//Defines a bool which we use in order to check that the project id is in the correct format
+	for _, m := range requestStructure {
+		_, correct := m[constants.G_GatewayID].(string)
+		if !correct {
+			tool.HandleError(tool.INVALIDBODY, w)
+			return
+		}
+	}
+
+	var deleteID _struct.GatewayIDStruct
+	batch := database.Client.Batch()
+
+	err = json.Unmarshal(request, &deleteID)
+	if err != nil {
+		tool.HandleError(tool.UNMARSHALLERROR, w)
+		return
+	}
+
+	for _, num := range deleteID { //Iterates through the list of ID's
+		var correctID []*firestore.DocumentRef
+
+		if num.ID != "" { //If the ID exists
+			correctID, err = iterateGateways(num.ID) //We find the ID with IterateProjects
+		}
+
+		if correctID == nil {
+			tool.HandleError(tool.CouldNotDelete, w)
+			return
+		}
+		project, _ := IterateProjects(0, num.Name, "")
+		updateProjectGateway(project[0], "")
+		batch.Delete(correctID[0])
+
+		_, err = batch.Commit(database.Ctx)
+		if err != nil {
+			tool.HandleError(tool.NODOCUMENTWITHID, w)
+			return
+		}
+	}
 
 }
 
