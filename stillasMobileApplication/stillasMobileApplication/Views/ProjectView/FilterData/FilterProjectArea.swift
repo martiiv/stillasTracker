@@ -20,16 +20,32 @@ struct FilterProjectArea: View {
     }
     
     var body: some View {
-        List {
-            ForEach(counties, id: \.self) { county in
-                HStack {
-                    CheckBoxRow(title: county, selectedItems: $selectedItems, isSelected: selectedItems.contains(county))
-                        .padding(.top)
-                        .padding(.bottom)
+        VStack {
+            List {
+                ForEach(counties, id: \.self) { county in
+                    HStack {
+                        CheckBoxRow(title: county, selectedItems: $selectedItems, isSelected: selectedItems.contains(county))
+                            .padding(.top)
+                            .padding(.bottom)
+                    }
                 }
-            }
         }
         .navigationTitle(Text("Område"))
+        
+        /// Maybe drop the button
+        Spacer()
+        Button(action: { print("Bruk") }) {
+            Text("Bruk")
+                .frame(width: 300, height: 50, alignment: .center)
+        }
+        .foregroundColor(.white)
+        //.padding(.vertical, 10)
+        .background(Color.blue)
+        .cornerRadius(10)
+        
+        Spacer()
+            .frame(height:50)  // limit spacer size by applying a frame
+    }
     }
 }
 struct CheckBoxRow: View {
