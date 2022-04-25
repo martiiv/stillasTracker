@@ -19,6 +19,10 @@ import (
 var gatewayCollection *firestore.CollectionRef
 var projectCollection *firestore.DocumentRef
 
+//TODO Implementer sånn at mann ikke kan legge inn en gateway på flere prosjekter samtidig
+//TODO Test delete ordentlig
+//TODO Optimaliser (Gud hjelp oss alle 3)
+
 func GatewayRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json") //Defines data type
 	w.Header().Set("Access-Control-Allow-Origin", "*") //Allows mobile and web application to access the api
