@@ -122,12 +122,12 @@ func createGateway(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, err = iterateGateways(gateway.GatewayID)
-	if err != nil {
+	if err == nil {
 		tool.HandleError(tool.CouldNotAddSameID, w)
 		return
 	}
 
-	documentPath := baseCollection
+	documentPath := gatewayCollection.Doc(gateway.GatewayID)
 	var firebaseInput map[string]interface{}
 
 	err = json.Unmarshal(requestBody, &firebaseInput)
