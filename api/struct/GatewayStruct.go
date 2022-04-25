@@ -1,9 +1,10 @@
 package _struct
 
 type Gateway struct {
-	Location    string `json:"Location"`
-	Projectname string `json:"Project name"`
-	ProjectID   string `json:"ProjectID"`
-	Status      bool   `json:"Status"`
-	GatewayID   string `json:"gatewayID"`
+	ProjectID   int     `json:"ProjectID"`
+	Projectname string  `json:"ProjectName"`
+	Status      bool    `json:"Status"`
+	GatewayID   string  `json:"gatewayID"`
+	Latitude    float64 `json:"latitude"`
+	Longitude   float64 `json:"longitude"`
 }

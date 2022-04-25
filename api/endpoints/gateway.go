@@ -7,12 +7,17 @@ import (
 	"github.com/gorilla/mux"
 	"google.golang.org/api/iterator"
 	"io/ioutil"
+	"log"
 	"net/http"
 	tool "stillasTracker/api/apiTools"
 	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
 	_struct "stillasTracker/api/struct"
+	"strconv"
 )
+
+var gatewayCollection *firestore.CollectionRef
+var projectCollection *firestore.DocumentRef
 
 func GatewayRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json") //Defines data type
@@ -21,9 +26,10 @@ func GatewayRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
 	lastElement := tool.GetLastUrlElement(r)
-	baseCollection = database.Client.Doc(constants.G_GatewayCollection)
 
-	if lastElement != constants.G_Gateway {
+	gatewayCollection = database.Client.Collection(constants.G_GatewayCollection)
+
+	if lastElement != constants.G_GatewayURL {
 		tool.HandleError(tool.INVALIDREQUEST, w)
 		return
 	}
@@ -57,7 +63,102 @@ func getGateway(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateGateway(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	ProjectCollection = database.Client.Doc(constants.P_LocationCollection + "/" + constants.P_ProjectDocument)
 
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		tool.HandleError(tool.READALLERROR, w)
+		return
+	}
+
+	batch := database.Client.Batch()
+
+	var gatewayStruct map[string]interface{}
+	err = json.Unmarshal(data, &gatewayStruct)
+	if err != nil {
+		tool.HandleError(tool.UNMARSHALLERROR, w)
+		return
+	}
+
+	gateway := gatewayStruct[constants.G_GatewayID].(string)
+	documentReference, err := iterateGateways(gateway)
+	if err != nil {
+		tool.HandleError(tool.COULDNOTFINDDATA, w)
+		return
+	}
+
+	var projectName string
+	var projectID float64
+
+	if gatewayStruct[constants.G_ProjectID] == nil && gatewayStruct[constants.G_ProjectName] != nil {
+
+		project, err := IterateProjects(0, gatewayStruct[constants.G_ProjectName].(string), "")
+		if err != nil {
+			tool.HandleError(tool.NODOCUMENTWITHID, w)
+		}
+
+		updateProjectGateway(project[0], gatewayStruct[constants.G_GatewayID].(string))
+
+		projectInfo, _ := database.GetDocumentData(project[0])
+		projectName = projectInfo[constants.G_ProjectName].(string)
+		projectID = projectInfo[constants.G_ProjectID].(float64)
+		gatewayStruct[constants.G_ProjectName] = projectName
+		gatewayStruct[constants.G_ProjectID] = projectID
+
+	} else if gatewayStruct[constants.G_ProjectID] != nil && gatewayStruct[constants.G_ProjectName] == nil {
+		project, err := IterateProjects(int(gatewayStruct[constants.G_ProjectID].(float64)), "", "")
+		if err != nil {
+			tool.HandleError(tool.NODOCUMENTWITHID, w)
+		}
+
+		updateProjectGateway(project[0], gatewayStruct[constants.G_GatewayID].(string))
+
+		projectInfo, _ := database.GetDocumentData(project[0])
+		projectName = projectInfo[constants.G_ProjectName].(string)
+		projectID = projectInfo[constants.G_ProjectID].(float64)
+		gatewayStruct[constants.G_ProjectName] = projectName
+		gatewayStruct[constants.G_ProjectID] = projectID
+
+	} else {
+		project, err := IterateProjects(0, "", "")
+		if err != nil {
+			tool.HandleError(tool.NODOCUMENTWITHID, w)
+			return
+		}
+		updateProjectGateway(project[0], gatewayStruct[constants.G_GatewayID].(string))
+
+		projectInfo, _ := database.GetDocumentData(project[0])
+		projectName = projectInfo[constants.G_ProjectName].(string)
+		projectID = projectInfo[constants.G_ProjectID].(float64)
+		gatewayStruct[constants.G_ProjectName] = projectName
+		gatewayStruct[constants.G_ProjectID] = projectID
+	}
+	var updates []firestore.Update
+
+	for s, i := range gatewayStruct {
+		update := firestore.Update{
+			Path:  s,
+			Value: i,
+		}
+
+		updates = append(updates, update)
+	}
+
+	for _, ref := range documentReference {
+		batch.Update(ref, updates)
+	}
+	_, err = batch.Commit(database.Ctx) //Commits the database changes if all changes pass
+	if err != nil {
+		tool.HandleError(tool.COULDNOTADDDOCUMENT, w)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode("Successfully updated data")
+	if err != nil {
+		tool.HandleError(tool.ENCODINGERROR, w)
+	}
 }
 
 func createGateway(w http.ResponseWriter, r *http.Request) {
@@ -74,12 +175,12 @@ func createGateway(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, err = iterateGateways(gateway.GatewayID)
-	if err != nil {
+	if err == nil {
 		tool.HandleError(tool.CouldNotAddSameID, w)
 		return
 	}
 
-	documentPath := baseCollection
+	documentPath := gatewayCollection.Doc(gateway.GatewayID)
 	var firebaseInput map[string]interface{}
 
 	err = json.Unmarshal(requestBody, &firebaseInput)
@@ -94,6 +195,12 @@ func createGateway(w http.ResponseWriter, r *http.Request) {
 	} else {
 		tool.HandleError(tool.ADDED, w)
 	}
+
+	project, err := IterateProjects(gateway.ProjectID, gateway.Projectname, "")
+	if err != nil {
+		tool.HandleError(tool.NODOCUMENTWITHID, w)
+	}
+	updateProjectGateway(project[0], gateway.GatewayID)
 }
 
 func deleteGateway(w http.ResponseWriter, r *http.Request) {
@@ -106,16 +213,27 @@ func getGatewayByProject(w http.ResponseWriter, r *http.Request) {
 
 	queries := mux.Vars(r)
 	query := ""
+	queryParam := ""
+	documentPath := gatewayCollection.Where(queryParam, "==", query).Documents(database.Ctx)
+
 	if queries[constants.G_ProjectID] != "" {
-		query = queries[constants.G_ProjectID]
+		query, err := strconv.Atoi(queries[constants.G_ProjectID])
+		if err != nil {
+			tool.HandleError(tool.INVALIDREQUEST, w)
+		}
+		queryParam = "ProjectID"
+		documentPath = gatewayCollection.Where(queryParam, "==", query).Documents(database.Ctx)
+
 	} else if queries[constants.G_ProjectName] != "" {
 		query = queries[constants.G_ProjectName]
+		queryParam = "ProjectName"
+		documentPath = gatewayCollection.Where(queryParam, "==", query).Documents(database.Ctx)
+
 	} else {
 		tool.HandleError(tool.INVALIDREQUEST, w)
 		return
 	}
 
-	documentPath := baseCollection.Collection(query).Documents(database.Ctx)
 	var gateways []_struct.Gateway
 
 	for {
@@ -153,13 +271,10 @@ func getGatewayByID(w http.ResponseWriter, r *http.Request) {
 
 	queries := mux.Vars(r)
 
-	documentReference, err := iterateGateways(queries[constants.G_idURL])
-	if err != nil {
-		tool.HandleError(tool.COULDNOTFINDDATA, w)
-		return
-	}
+	documentReference := gatewayCollection.Doc(queries[constants.G_idURL])
 
-	data, _ := database.GetDocumentData(documentReference[0])
+	data, _ := database.GetDocumentData(documentReference)
+
 	marshalled, err := json.Marshal(data)
 	if err != nil {
 		tool.HandleError(tool.MARSHALLERROR, w)
@@ -186,18 +301,9 @@ func getGatewayByID(w http.ResponseWriter, r *http.Request) {
 func iterateGateways(id string) ([]*firestore.DocumentRef, error) {
 	var documentReferences []*firestore.DocumentRef
 
-	collection := baseCollection.Collections(database.Ctx)
 	for {
-		collref, err := collection.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			break
-		}
-
 		var document *firestore.DocumentIterator
-		document = baseCollection.Collection(collref.ID).Where(constants.G_idURL, "==", id).Documents(database.Ctx)
+		document = gatewayCollection.Where(constants.G_gidURL, "==", id).Documents(database.Ctx)
 		for {
 			documentRef, err := document.Next()
 			if err == iterator.Done {
@@ -205,13 +311,12 @@ func iterateGateways(id string) ([]*firestore.DocumentRef, error) {
 			}
 			documentReferences = append(documentReferences, documentRef.Ref)
 		}
+		if documentReferences != nil {
+			return documentReferences, nil
+		} else {
+			return nil, errors.New("could not find document")
+		}
 	}
-	if documentReferences != nil {
-		return documentReferences, nil
-	} else {
-		return nil, errors.New("could not find document")
-	}
-
 }
 
 /*
@@ -223,33 +328,39 @@ func getAllGateways(w http.ResponseWriter) {
 
 	var gateways []_struct.Gateway
 
-	collection := baseCollection.Collections(database.Ctx)
+	collection := gatewayCollection.Documents(database.Ctx)
 	for {
 		collRef, err := collection.Next()
 		if err == iterator.Done || err != nil {
 			break
 		}
+		var gateway _struct.Gateway
+		doc, _ := database.GetDocumentData(collRef.Ref)
+		gatewayByte, err := json.Marshal(doc)
 
-		document := baseCollection.Collection(collRef.ID).Documents(database.Ctx)
-		for {
-			documentRef, err := document.Next()
-			if err == iterator.Done {
-				break
-			}
-
-			var gateway _struct.Gateway
-			doc, _ := database.GetDocumentData(documentRef.Ref)
-			gatewayByte, err := json.Marshal(doc)
-			err = json.Unmarshal(gatewayByte, &gateway)
-			if err != nil {
-				tool.HandleError(tool.UNMARSHALLERROR, w)
-				return
-			}
-			gateways = append(gateways, gateway)
+		err = json.Unmarshal(gatewayByte, &gateway)
+		if err != nil {
+			tool.HandleError(tool.UNMARSHALLERROR, w)
+			return
 		}
+		gateways = append(gateways, gateway)
 	}
 	err := json.NewEncoder(w).Encode(gateways)
 	if err != nil {
 		return
+	}
+}
+
+func updateProjectGateway(project *firestore.DocumentRef, gatewayID string) {
+	batch := database.Client.Batch()
+
+	batch.Set(project, map[string]interface{}{
+		"gatewayID": gatewayID,
+	}, firestore.MergeAll)
+
+	_, err := batch.Commit(database.Ctx)
+	if err != nil {
+		// Handle any errors in an appropriate way, such as returning them.
+		log.Printf("An error has occurred: %s", err)
 	}
 }

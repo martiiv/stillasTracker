@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"stillasTracker/api/constants"
 )
 
 /**
@@ -48,8 +49,8 @@ func Handle() {
 
 	//Gateway endpoint
 	router.HandleFunc(baseURL+"/gateway", GatewayRequest).Queries("id", "{id}")
-	router.HandleFunc(baseURL+"/gateway", GatewayRequest).Queries("projectName", "{projectName}")
-	router.HandleFunc(baseURL+"/gateway", GatewayRequest).Queries("projectID", "{projectID}")
+	router.HandleFunc(baseURL+"/gateway", GatewayRequest).Queries(constants.G_ProjectName, "{projectName}")
+	router.HandleFunc(baseURL+"/gateway", GatewayRequest).Queries(constants.G_ProjectID, "{projectID}")
 	router.HandleFunc(baseURL+"/gateway", GatewayRequest)
 
 	//Gateway POST request endpoint (Only used for registering tags)
