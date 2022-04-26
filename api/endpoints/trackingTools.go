@@ -136,17 +136,14 @@ func addIDtoPart(m *igs.Message) {
 }
 
 func printFilteredGatewayInfo(gatewayList []*igs.Message, tagList []*ibs.Payload) {
-
 	var printList []string
 	for i := 0; i < len(tagList); i++ {
-		payloadString := tagList[i].String()
-		runedPayload := []rune(payloadString) //TODO SPLIT STRINGEN ORDENTLIG OG PUTT TAGID I LISTE MÅ KANSKJE FLYTTES TIL LINJE 141 elns
+		tagInfo := gatewayList[i].Beacon()
+		runedPayload := []rune(tagInfo)
 		tagID := string(runedPayload[1:6])
-		//tagInfo := gatewayList[i].Beacon()
 		battery, _ := tagList[i].BatteryVoltage()
 
 		printList = append(printList, "Tag ID:"+tagID+" battery voltage:"+strconv.FormatFloat(float64(battery), 'E', -1, 32)+"\n")
-
 	}
 
 	fmt.Printf("\n-----------------------------------------------------")
