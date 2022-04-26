@@ -155,7 +155,7 @@ class PreView extends React.Component{
                                 {this.contactInformation()}
                             </div>
                             <div label="Stillas-komponenter">
-                                <InfoModal />
+                                <InfoModal id = {this.getProjectID()} />
                                 {this.scaffoldingComponents()}
                             </div>
                         </Tabs>

@@ -5,6 +5,7 @@ import img from "../../scaffolding/images/spirstillas_solideq_spir_klasse_5_stil
 import putModel from "../../../modelData/putData";
 import {PROJECTS_URL, TRANSFER_SCAFFOLDING} from "../../../modelData/constantsFile";
 import fetchModel from "../../../modelData/fetchData";
+import AddData from "../../../modelData/addData";
 
 //https://ordinarycoders.com/blog/article/react-bootstrap-modal
 const scaffoldingMove =
@@ -54,13 +55,13 @@ const scaffoldingMove =
 
 
 
-export default function InfoModal() {
+export default function InfoModal(props) {
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
+    const data = new AddData()
     //https://codesandbox.io/s/react-week-date-view-forked-ruxjr9?file=/src/App.js:857-868
     //todo gjør om variablenavn
-
 
 
     let projects
@@ -75,7 +76,7 @@ export default function InfoModal() {
 
     const jsonProjects = JSON.parse(projects)
     const project = sessionStorage.getItem('project')
-    const jsonProject = JSON.parse(project)
+    let jsonProject = JSON.parse(project)
     const [roomRent, setRoomRent] = useState(scaffoldingMove);
     const [ToProject, setToProject] = useState("");
     const [FromProject, setFromProject] = useState("");
@@ -95,7 +96,7 @@ export default function InfoModal() {
     };
 
     //todo add a note to the user if the transaction was a success or a fail.
-    const AddScaffolding = (body) =>{
+    const AddScaffolding = async (body, id) => {
         putModel(TRANSFER_SCAFFOLDING, JSON.stringify(body))
         handleClose()
     }
@@ -106,6 +107,7 @@ export default function InfoModal() {
         "fromProjectID": Number(FromProject),
         "scaffold": roomRent
     }
+
 
     const validFormat = ToProject !== FromProject
     return(
@@ -169,7 +171,7 @@ export default function InfoModal() {
                     <Button variant="secondary" onClick={handleClose}>
                         Close
                     </Button>
-                    <Button variant="primary" disabled={!validFormat} onClick={() => AddScaffolding(move)}>
+                    <Button variant="primary" disabled={!validFormat} onClick={AddScaffolding(move, props.id)}>
                         Save Changes
                     </Button>
                 </Modal.Footer>

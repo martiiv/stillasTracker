@@ -2,61 +2,32 @@ import React from "react";
 import "./scaffolding.css"
 import CardElement from "./elements/scaffoldingCard";
 import fetchModel from "../../modelData/fetchData";
-import {PROJECTS_URL_WITH_SCAFFOLDING, SCAFFOLDING_URL, STORAGE_URL} from "../../modelData/constantsFile";
+import {
+    PROJECTS_URL_WITH_SCAFFOLDING,
+    PROJECTS_WITH_SCAFFOLDING_URL,
+    SCAFFOLDING_URL,
+    STORAGE_URL
+} from "../../modelData/constantsFile";
+import {GetDummyData} from "../../modelData/addData";
 
 /**
  Class that will create an overview of the scaffolding parts
  */
 
-class Scaffolding extends React.Component {
+
+
+class ScaffoldingClass extends React.Component {
     constructor(props) {
         super(props);
         this.state={
             isLoaded1: false,
             isLoaded2: false,
-            scaffolding: [],
-            storage:[],
+            scaffolding: props.scaffolding,
+            storage:props.storage,
             items: [],
             selectedOption: ""
         }
     }
-
-    async componentDidMount() {
-        try {
-            let projects
-            if (sessionStorage.getItem('allProjects') !== null) {
-                projects = sessionStorage.getItem('allProjects')
-            }else {
-                console.log('From api')
-                try {
-                    projects = await fetchModel(PROJECTS_URL_WITH_SCAFFOLDING)
-                    projects = JSON.stringify(projects)
-                    sessionStorage.setItem('allProjects', projects)
-                }catch (e) {
-                    console.log(e)
-                }
-
-            }
-
-            const scaffoldingResult = await fetchModel(SCAFFOLDING_URL)
-            sessionStorage.setItem('allScaffolding',JSON.stringify(scaffoldingResult))
-            this.setState({
-                isLoaded1: true,
-                scaffolding: scaffoldingResult
-            });
-
-            const storageResult = await fetchModel(STORAGE_URL)
-            sessionStorage.setItem('fromStorage',JSON.stringify(storageResult))
-            this.setState({
-                isLoaded2: true,
-                storage: storageResult
-            });
-
-        }catch (error){
-            console.log(error)
-        }
-    }
-
 
     countObjects(arr, key){
         let arr2 = [];
@@ -121,13 +92,11 @@ class Scaffolding extends React.Component {
           console.log('From Storage')
           scaffoldingArray = (JSON.parse(scaffold))
       }else {
-
           console.log('From API')
           scaffoldingArray = scaffolding
       }
 
       const objectArr = this.countObjects(scaffoldingArray, "type")
-
 
       let storageArray
       if (sessionStorage.getItem('fromStorage') != null){
@@ -183,4 +152,14 @@ class Scaffolding extends React.Component {
   }
 }
 
-export default Scaffolding;
+export const Scaffolding = () => {
+    const {isLoading: LoadingScaffolding, data: Scaffolding} = GetDummyData("scaffolding", SCAFFOLDING_URL)
+    const {isLoading: LoadingStorage, data: Storage} = GetDummyData("storage", STORAGE_URL)
+
+    if (isLoading) {
+        return <h1>Loading</h1>
+    } else {
+        return <ScaffoldingClass scaffolding = {Scaffolding}
+                                 storage = {Storage} />
+    }
+}
