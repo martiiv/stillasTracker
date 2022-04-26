@@ -4,63 +4,51 @@ import "./preView.css"
 import Tabs from "../tabView/Tabs"
 import ScaffoldingCardProject from "../../scaffolding/elements/scaffoldingCardProject";
 import InfoModal from "./Modal";
-import fetchModel from "../../../modelData/fetchData";
 import {MAP_STYLE_V11, PROJECTS_URL_WITH_ID, WITH_SCAFFOLDING_URL} from "../../../modelData/constantsFile";
 import img from "./../../mapPage/mapbox-marker-icon-20px-orange.png"
+import {GetDummyData} from "../getDummyData";
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ';
 
-class PreView extends React.Component{
+class PreViewClass extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-            isLoaded: false,
-            data:null
+            data: props.data
         }
         this.mapContainer = React.createRef();
     }
 
-
-    getProjectID(){
-        const pathSplit = window.location.href.split("/")
-        return pathSplit[pathSplit.length - 1]
-    }
-
     async componentDidMount() {
-        const path = this.getProjectID()
+        const {data} = this.state
+        console.log(data)
         try {
-            const projectResult = await fetchModel(PROJECTS_URL_WITH_ID + path + WITH_SCAFFOLDING_URL)
-            sessionStorage.setItem('project', (JSON.stringify(projectResult[0])))
-            this.setState({
-                isLoaded: true,
-                data: projectResult[0],
-            })
             const map = new mapboxgl.Map({
                 container: this.mapContainer.current,
                 style: MAP_STYLE_V11,
-                center: [projectResult[0].longitude, projectResult[0].latitude],
+                center: [data.longitude, data.latitude],
                 zoom: 15
             });
-            for (const marker of projectResult) {
-                // Create a DOM element for each marker.
-                const el = document.createElement('div');
-                const width = projectResult[0].size/100;
-                const height = projectResult[0].size/100;
-                el.className = 'marker';
-                el.style.backgroundImage = (img);
-                el.style.width = `${width}px`;
-                el.style.height = `${height}px`;
-                el.style.backgroundSize = '100%';
 
-                el.addEventListener('click', () => {
-                    window.alert("Project: " + marker.projectName)
-                });
+            // Create a DOM element for each marker.
+            const el = document.createElement('div');
+            const width = 50;
+            const height = 50;
+            el.className = 'marker';
+            el.style.backgroundImage = (img);
+            el.style.width = `${width}px`;
+            el.style.height = `${height}px`;
+            el.style.backgroundSize = '100%';
 
-                // Add markers to the map.
-                new mapboxgl.Marker(el)
-                    .setLngLat([marker.longitude, marker.latitude])
-                    .addTo(map);
-            }
+            el.addEventListener('click', () => {
+                window.alert("Project: " + data.projectName)
+            });
+
+            // Add markers to the map.
+            new mapboxgl.Marker(el)
+                .setLngLat([data.longitude, data.latitude])
+                .addTo(map);
+
         }catch (e) {
             console.log(e)
         }
@@ -70,17 +58,8 @@ class PreView extends React.Component{
 
 
     contactInformation(){
-        let project
-        if (sessionStorage.getItem('project') != null){
-            const scaffold = sessionStorage.getItem('project')
-            console.log('From Storage')
-            project = (JSON.parse(scaffold))
-        }else {
-            console.log('From API')
-            project = this.state.data
-        }
-
-
+        const {data} = this.state
+        const project = data
         return(
             <section className={"contact-highlights-cta"}>
                 <div className={"information-highlights"}>
@@ -111,22 +90,16 @@ class PreView extends React.Component{
         )
     }
 
-
+    getProjectID(){
+        const pathSplit = window.location.href.split("/")
+        return pathSplit[pathSplit.length - 1]
+    }
 
     scaffoldingComponents(){
-        let project
-        if (sessionStorage.getItem('project') != null){
-            const scaffold = sessionStorage.getItem('project')
-            console.log('From Storage')
-            project = (JSON.parse(scaffold))
-        }else {
-            console.log('From API')
-            project = this.state.data
-        }
-
+        const {data} = this.state
         return(
             <div className={"grid-container-project-scaffolding"}>
-                {project.scaffolding.map((e) => {
+                {data.scaffolding.map((e) => {
                     return (
                         <ScaffoldingCardProject
                             key={e.type}
@@ -142,32 +115,40 @@ class PreView extends React.Component{
 
 
     render() {
-        const {isLoaded} = this.state
-        if (!isLoaded){
-            return <h1>Is Loading Data....</h1>
-        }else{
-            return (
-                <div className={"preView-Project-Main"}>
-                    <div ref={this.mapContainer} className="map-container-project"/>
-                    <div className={"tabs"}>
-                        <Tabs>
-                            <div label="Kontakt">
-                                {this.contactInformation()}
-                            </div>
-                            <div label="Stillas-komponenter">
-                                <InfoModal id = {this.getProjectID()} />
-                                {this.scaffoldingComponents()}
-                            </div>
-                        </Tabs>
-                    </div>
+
+        return (
+            <div className={"preView-Project-Main"}>
+                <div ref={this.mapContainer} className="map-container-project"/>
+                <div className={"tabs"}>
+                    <Tabs>
+                        <div label="Kontakt">
+                            {this.contactInformation()}
+                        </div>
+                        <div label="Stillas-komponenter">
+                            <InfoModal id={this.getProjectID()}/>
+                            {this.scaffoldingComponents()}
+                        </div>
+                    </Tabs>
                 </div>
-            )
-        }
+            </div>
+        )
     }
+
 }
 
-export default PreView
+function getProjectID(){
+    const pathSplit = window.location.href.split("/")
+    return pathSplit[pathSplit.length - 1]
+}
 
-
+export const PreView = () => {
+    const {isLoading, data} = GetDummyData(["project", getProjectID()], PROJECTS_URL_WITH_ID + getProjectID() + WITH_SCAFFOLDING_URL)
+    console.log(data)
+    if (isLoading) {
+        return <h1>Loading</h1>
+    } else {
+        return <PreViewClass data={data[0]}/>
+    }
+}
 
 
