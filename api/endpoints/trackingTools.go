@@ -135,8 +135,11 @@ func addIDtoPart(m *igs.Message) {
 
 }
 
-func printFilteredGatewayInfo(gatewayList []*igs.Message, tagList []*ibs.Payload) {
+func printFilteredGatewayInfo(gatewayList []*igs.Message, tagList []*ibs.Payload) ([]string, map[string]float32) {
 	var printList []string
+	var tagIDList []string
+	var batteryList map[string]float32
+
 	for i := 0; i < len(tagList); i++ {
 		tagInfo := gatewayList[i].Beacon()
 		runedPayload := []rune(tagInfo)
@@ -144,6 +147,8 @@ func printFilteredGatewayInfo(gatewayList []*igs.Message, tagList []*ibs.Payload
 		battery, _ := tagList[i].BatteryVoltage()
 
 		printList = append(printList, "Tag ID:"+tagID+" battery voltage:"+strconv.FormatFloat(float64(battery), 'E', -1, 32)+"\n")
+		tagIDList = append(tagIDList, tagID)
+		batteryList[tagID] = battery
 	}
 
 	fmt.Printf("\n-----------------------------------------------------")
@@ -153,4 +158,6 @@ func printFilteredGatewayInfo(gatewayList []*igs.Message, tagList []*ibs.Payload
 	fmt.Printf("Amount of tags registered: %v \n", len(tagList))
 	fmt.Printf("List of tags:\n %v", printList)
 	fmt.Printf("-----------------------------------------------------\n")
+
+	return tagIDList, batteryList
 }
