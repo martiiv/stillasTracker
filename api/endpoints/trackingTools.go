@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/ingics/ingics-parser-go/ibs"
 	"github.com/ingics/ingics-parser-go/igs"
@@ -9,6 +10,9 @@ import (
 	"net/http"
 	"os"
 	tool "stillasTracker/api/apiTools"
+	"stillasTracker/api/constants"
+	"stillasTracker/api/database"
+	_struct "stillasTracker/api/struct"
 	"strconv"
 	"strings"
 	"time"
@@ -61,17 +65,9 @@ func updateRegistered(gatewayList []*igs.Message, beaconID string, w http.Respon
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
-	project, err := http.NewRequest(http.MethodGet, "http://10.212.138.205:8080/stillastracking/v1/api/project?id="+beaconID, nil)
-	if err != nil {
-		tool.HandleError(tool.INVALIDREQUEST, w)
-	}
-	//TODO Hente ut prosjekt fra databasen og få tak i typen stillasdeler som skal oppdateres
-	response, err := ioutil.ReadAll(project.Body)
-	if err != nil {
-		tool.HandleError(tool.READALLERROR, w)
-	}
+	scaffoldingLIst := getTagList(w, beaconID)
 
-	print(response)
+	print(scaffoldingLIst)
 
 	for _, v := range gatewayList {
 		tagID := v.Beacon()
@@ -79,16 +75,78 @@ func updateRegistered(gatewayList []*igs.Message, beaconID string, w http.Respon
 	}
 }
 
+func getTags(w http.ResponseWriter) {
+
+}
+
+func getTagList(w http.ResponseWriter, beaconID string) _struct.ScaffoldingArray {
+	ProjectCollection = database.Client.Doc(constants.P_LocationCollection + "/" + constants.P_ProjectDocument)
+	project, err := http.NewRequest(http.MethodGet, "http://10.212.138.205:8080/stillastracking/v1/api/gateway?id="+beaconID, nil)
+	if err != nil {
+		tool.HandleError(tool.INVALIDREQUEST, w)
+	}
+	var responseStruct _struct.Gateway
+
+	response, err := ioutil.ReadAll(project.Body)
+	if err != nil {
+		tool.HandleError(tool.READALLERROR, w)
+	}
+
+	marshal, err := json.Marshal(response)
+	if err != nil {
+		tool.HandleError(tool.MARSHALLERROR, w)
+		return nil
+	}
+
+	err = json.Unmarshal(marshal, &responseStruct)
+	if err != nil {
+		tool.HandleError(tool.UNMARSHALLERROR, w)
+		return nil
+	}
+	projectRef, err := http.NewRequest(http.MethodGet, "http://10.212.138.205:8080/stillastracking/v1/api/project?id="+strconv.Itoa(responseStruct.ProjectID)+"&scaffolding=true", nil)
+	if err != nil {
+		tool.HandleError(tool.NODOCUMENTWITHID, w)
+		return nil
+	}
+	data, err := ioutil.ReadAll(projectRef.Body)
+	if err != nil {
+		tool.HandleError(tool.READALLERROR, w)
+		return nil
+	}
+
+	var projectStruct _struct.GetProject
+
+	marshal, err = json.Marshal(data)
+	if err != nil {
+		tool.HandleError(tool.MARSHALLERROR, w)
+		return nil
+	}
+	err = json.Unmarshal(marshal, &projectStruct)
+	if err != nil {
+		tool.HandleError(tool.UNMARSHALLERROR, w)
+		return nil
+	}
+
+	scaffoldingList := projectStruct.ScaffoldingArray
+	return scaffoldingList
+}
+
 func addIDtoPart(m *igs.Message) {
 
 }
 
 func printFilteredGatewayInfo(gatewayList []*igs.Message, tagList []*ibs.Payload) {
+
 	var printList []string
 	for i := 0; i < len(tagList); i++ {
-		tagInfo := gatewayList[i].Beacon()
+		payloadString := tagList[i].String()
+		runedPayload := []rune(payloadString) //TODO SPLIT STRINGEN ORDENTLIG OG PUTT TAGID I LISTE MÅ KANSKJE FLYTTES TIL LINJE 141 elns
+		tagID := string(runedPayload[1:6])
+		//tagInfo := gatewayList[i].Beacon()
 		battery, _ := tagList[i].BatteryVoltage()
-		printList = append(printList, "Tag ID:"+tagInfo+" battery voltage:"+strconv.FormatFloat(float64(battery), 'E', -1, 32)+"\n")
+
+		printList = append(printList, "Tag ID:"+tagID+" battery voltage:"+strconv.FormatFloat(float64(battery), 'E', -1, 32)+"\n")
+
 	}
 
 	fmt.Printf("\n-----------------------------------------------------")
