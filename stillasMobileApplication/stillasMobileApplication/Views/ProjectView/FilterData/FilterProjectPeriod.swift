@@ -11,23 +11,26 @@ struct FilterProjectPeriod: View {
     //@State private var date = Date()
     @Binding var selStartDateBind: Date
     @Binding var selEndDateBind: Date
-    
+    @Binding var periodFilterActiveBind: Bool
+    @State var periodFilterActive: Bool = true
     @State private var selStartDate = Date()
     @State private var selEndDate = Date()
     
     
     var body: some View {
         VStack {
-            CalendarView(selStartDate: $selStartDate, selEndDate: $selEndDate)
+            CalendarView(selStartDate: $selStartDate, selEndDate: $selEndDate, periodFilterActive: $periodFilterActive)
                 .onAppear {
                     selStartDateBind = selStartDate
                     selEndDateBind = selEndDate
                 }
                 .onChange(of: selStartDate) { selectedStartDate in
                     selStartDateBind = selectedStartDate
+                    periodFilterActiveBind = true
                 }
                 .onChange(of: selEndDate) { selectedEndDate in
                     selEndDateBind = selectedEndDate
+                    periodFilterActiveBind = true
                 }
         }
         .navigationTitle(Text("Prosjekt periode"))
@@ -38,7 +41,8 @@ struct FilterProjectPeriod: View {
 struct CalendarView: View {
     @Binding var selStartDate: Date
     @Binding var selEndDate: Date
-    
+    @Binding var periodFilterActive: Bool
+
     @State private var startDate = Date()
     @State private var endDate = Date()
     
@@ -73,6 +77,7 @@ struct CalendarView: View {
             Button(action: {
                 selStartDate = $startDate.wrappedValue
                 selEndDate = $endDate.wrappedValue
+                periodFilterActive = true
                 print("______")
                 print(selStartDate)
                 print(selEndDate)

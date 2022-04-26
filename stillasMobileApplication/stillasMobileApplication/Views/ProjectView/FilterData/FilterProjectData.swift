@@ -28,7 +28,8 @@ struct FilterProjectData: View {
     @State private var showAddProjectModalView: Bool = false
     
     @State var filter: FilterType = .none
-    
+    @State var filterArr: [String] = []
+
     // TODO: Make these values operable
     @State var projectStartDate = Date.distantPast
     @State var projectEndDate = Date.distantFuture
@@ -71,7 +72,7 @@ struct FilterProjectData: View {
                 }
                 .sheet(isPresented: $showFilterModalView,
                        onDismiss: didDismiss) {
-                    FilterView(selStartDateBind: $projectStartDate, selEndDateBind: $projectEndDate, projectArea: $projectCounty, projectSize: $projectSize, projectStatus: $projectState)
+                    FilterView(selStartDateBind: $projectStartDate, selEndDateBind: $projectEndDate, projectArea: $projectCounty, projectSize: $projectSize, projectStatus: $projectState, filterArr: $filterArr)
                         .onChange(of: projectStartDate) { value in
                             filter = .period
                         }
@@ -136,9 +137,9 @@ struct AddProjectView: View {
         }
     }
 }
-
+/*
 struct FilterProjectData_Previews: PreviewProvider {
     static var previews: some View {
         FilterProjectData()
     }
-}
+}*/

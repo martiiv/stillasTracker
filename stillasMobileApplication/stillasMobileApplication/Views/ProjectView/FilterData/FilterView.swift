@@ -18,6 +18,8 @@ struct FilterView: View {
     @Binding var projectSize: Int
     @Binding var projectStatus: String
     
+    @State var periodFilterActive: Bool = false
+
     @Binding var filterArr: [String]
     
     @State var selStartDate = Date()
@@ -32,7 +34,7 @@ struct FilterView: View {
                         case "Område":
                             FilterProjectArea()
                         case "Periode":
-                            FilterProjectPeriod(selStartDateBind: $selStartDate, selEndDateBind: $selEndDate)
+                            FilterProjectPeriod(selStartDateBind: $selStartDate, selEndDateBind: $selEndDate, periodFilterActiveBind: $periodFilterActive)
                                 .onChange(of: selStartDate) { selectedStartDate in
                                     selStartDateBind = selectedStartDate
                                 }
@@ -55,10 +57,21 @@ struct FilterView: View {
                         HStack {
                             Text(filterItem)
                             Spacer()
-                            HStack {
-                                ActiveFilterView(startDate: selStartDate, endDate: selEndDate)
+                            switch filterItem {
+                            case "Område":
+                                Text("")
+                            case "Periode":
+                                HStack {
+                                    ActiveFilterView(startDate: $selStartDateBind, endDate: $selEndDateBind, filterArr: $filterArr, periodFilterActive: $periodFilterActive)
+                                }
+                                .lineLimit(1)
+                            case "Størrelse":
+                                Text("")
+                            case "Status":
+                                Text("")
+                            default:
+                                Text("")
                             }
-                            .lineLimit(1)
                         }
                     }
                 }
@@ -94,38 +107,52 @@ struct FilterView: View {
 }
 
 struct ActiveFilterView: View {
-    @State var startDate: Date
-    @State var endDate: Date
+    @Binding var startDate: Date
+    @Binding var endDate: Date
+
+    @Binding var filterArr: [String]
     
+    @Binding var periodFilterActive: Bool
+
     var body: some View {
-        HStack {
-            Text("\(formatStringDate(date: startDate.description)) - \(formatStringDate(date: endDate.description))")
+
+        if periodFilterActive {
+            HStack {
+                HStack {
+                    Text(startDate, style: .date)
+                        .padding(.leading, 5)
+                        .padding(.trailing, -5)
+                    
+                    Text("-")
+
+                    Text(endDate, style: .date)
+                        .padding(.trailing, -5)
+                        .padding(.leading, -5)
+                }
                 .font(.system(size: 11).bold())
                 .padding(.vertical, 5)
-                .padding(.leading, 5)
-            
-            Button(action: {
-                print("It works")
-            }) {
-                Image(systemName: "x.circle.fill")
-                    .foregroundColor(Color.secondary)
+                
+                Button(action: {
+                    deleteFilterItem(filterItem: "period")
+                    self.periodFilterActive.toggle()
+                }) {
+                    Image(systemName: "x.circle.fill")
+                        .foregroundColor(Color.secondary)
+                }
+                .padding(.trailing, 5)
+                .buttonStyle(PlainButtonStyle())
             }
-            .padding(.trailing, 5)
-            .buttonStyle(PlainButtonStyle())
-
+            .foregroundColor(.white)
+            .background(Color.blue)
+            .cornerRadius(5)
+            .padding(.vertical, 5)
         }
-        .foregroundColor(.white)
-        .background(Color.blue)
-        .cornerRadius(5)
-        .padding(.vertical, 5)
     }
     
-    func formatStringDate(date: String) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yy-MM-dd'T'HH:mm:ss.SSSZ"
-        let newDate = dateFormatter.date(from: date)
-        dateFormatter.setLocalizedDateFormatFromTemplate("MMMM d, yy")
-        return dateFormatter.string(from: newDate ?? Date.now)
+    func deleteFilterItem(filterItem: String) {
+        if let i = filterArr.firstIndex(of: filterItem) {
+            filterArr.remove(at: i)
+        }
     }
 }
 
