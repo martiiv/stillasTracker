@@ -140,7 +140,7 @@ func printFilteredGatewayInfo(gatewayList []*igs.Message, tagList []*ibs.Payload
 	for i := 0; i < len(tagList); i++ {
 		tagInfo := gatewayList[i].Beacon()
 		runedPayload := []rune(tagInfo)
-		tagID := string(runedPayload[5:12])
+		tagID := string(runedPayload[6:12])
 		battery, _ := tagList[i].BatteryVoltage()
 
 		printList = append(printList, "Tag ID:"+tagID+" battery voltage:"+strconv.FormatFloat(float64(battery), 'E', -1, 32)+"\n")
