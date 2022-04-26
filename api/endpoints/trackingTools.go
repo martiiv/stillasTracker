@@ -65,12 +65,21 @@ func updateRegistered(gatewayList []*igs.Message, beaconID string, w http.Respon
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
+	scaffoldingLIst := getTagList(w, beaconID)
+
+	print(scaffoldingLIst)
+
 	for _, v := range gatewayList {
 		tagID := v.Beacon()
 		print(tagID)
 	}
 }
-func getTagList(w http.ResponseWriter, r *http.Request, beaconID string) _struct.ScaffoldingArray {
+
+func getTags(w http.ResponseWriter) {
+
+}
+
+func getTagList(w http.ResponseWriter, beaconID string) _struct.ScaffoldingArray {
 	ProjectCollection = database.Client.Doc(constants.P_LocationCollection + "/" + constants.P_ProjectDocument)
 	project, err := http.NewRequest(http.MethodGet, "http://10.212.138.205:8080/stillastracking/v1/api/gateway?id="+beaconID, nil)
 	if err != nil {
@@ -127,11 +136,17 @@ func addIDtoPart(m *igs.Message) {
 }
 
 func printFilteredGatewayInfo(gatewayList []*igs.Message, tagList []*ibs.Payload) {
+
 	var printList []string
 	for i := 0; i < len(tagList); i++ {
-		tagInfo := gatewayList[i].Beacon()
+		payloadString := tagList[i].String()
+		runedPayload := []rune(payloadString) //TODO SPLIT STRINGEN ORDENTLIG OG PUTT TAGID I LISTE MÅ KANSKJE FLYTTES TIL LINJE 141 elns
+		tagID := string(runedPayload[1:6])
+		//tagInfo := gatewayList[i].Beacon()
 		battery, _ := tagList[i].BatteryVoltage()
-		printList = append(printList, "Tag ID:"+tagInfo+" battery voltage:"+strconv.FormatFloat(float64(battery), 'E', -1, 32)+"\n")
+
+		printList = append(printList, "Tag ID:"+tagID+" battery voltage:"+strconv.FormatFloat(float64(battery), 'E', -1, 32)+"\n")
+
 	}
 
 	fmt.Printf("\n-----------------------------------------------------")
