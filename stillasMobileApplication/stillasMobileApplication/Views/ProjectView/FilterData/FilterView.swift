@@ -7,14 +7,18 @@
 
 import SwiftUI
 
+// TODO: Add enum for switch case instead of hard-coded values
+
 struct FilterView: View {
-    @State private var filterItems = ["Område", "Prosjekt periode", "Størrelse", "Status"]
+    @State private var filterItems = ["Område", "Periode", "Størrelse", "Status"]
     
     @Binding var selStartDateBind: Date
     @Binding var selEndDateBind: Date
     @Binding var projectArea: String
     @Binding var projectSize: Int
     @Binding var projectStatus: String
+    
+    @Binding var filterArr: [String]
     
     @State var selStartDate = Date()
     @State var selEndDate = Date()
@@ -27,8 +31,14 @@ struct FilterView: View {
                         switch filterItem {
                         case "Område":
                             FilterProjectArea()
-                        case "Prosjekt periode":
+                        case "Periode":
                             FilterProjectPeriod(selStartDateBind: $selStartDate, selEndDateBind: $selEndDate)
+                                .onChange(of: selStartDate) { selectedStartDate in
+                                    selStartDateBind = selectedStartDate
+                                }
+                                .onChange(of: selEndDate) { selectedEndDate in
+                                    selEndDateBind = selectedEndDate
+                                }
                         case "Størrelse":
                             FilterProjectSize()
                             /*
@@ -42,35 +52,83 @@ struct FilterView: View {
                             AddProjectView()
                         }
                     } label: {
-                        Text(filterItem)
+                        HStack {
+                            Text(filterItem)
+                            Spacer()
+                            HStack {
+                                ActiveFilterView(startDate: selStartDate, endDate: selEndDate)
+                            }
+                            .lineLimit(1)
+                        }
                     }
                 }
             }
             .navigationTitle(Text("Filter"))
             .navigationViewStyle(StackNavigationViewStyle())
+            .overlay(alignment: .bottom) {
+                Button(action: {
+                    addFilterItem(filterItem: "period")
+                }) {
+                    Text("Bruk")
+                        .frame(width: 300, height: 50, alignment: .center)
+                }
+                .foregroundColor(.white)
+                .background(Color.blue)
+                .cornerRadius(10)
+                .padding(.bottom, 50)
+            }
         }
-        Spacer()
-        Button(action: {
-            selStartDateBind = $selStartDate.wrappedValue
-            selEndDateBind = $selEndDate.wrappedValue
-            print("______")
-            
-            print(selStartDateBind)
-            print(selEndDateBind)
+    }
+    
+    func addFilterItem(filterItem: String){
+        if !filterArr.contains(filterItem) {
+            filterArr.append(filterItem)
+        }
+    }
+    
+    func deleteFilterItem(filterItem: String) {
+        if let i = filterArr.firstIndex(of: filterItem) {
+            filterArr.remove(at: i)
+        }
+    }
+}
 
+struct ActiveFilterView: View {
+    @State var startDate: Date
+    @State var endDate: Date
+    
+    var body: some View {
+        HStack {
+            Text("\(formatStringDate(date: startDate.description)) - \(formatStringDate(date: endDate.description))")
+                .font(.system(size: 11).bold())
+                .padding(.vertical, 5)
+                .padding(.leading, 5)
             
-        }) {
-            Text("Bruk")
-                .frame(width: 300, height: 50, alignment: .center)
+            Button(action: {
+                print("It works")
+            }) {
+                Image(systemName: "x.circle.fill")
+                    .foregroundColor(Color.secondary)
+            }
+            .padding(.trailing, 5)
+            .buttonStyle(PlainButtonStyle())
+
         }
         .foregroundColor(.white)
         .background(Color.blue)
-        .cornerRadius(10)
-        
-        Spacer()
-            .frame(height:50)  // limit spacer size by applying a frame
+        .cornerRadius(5)
+        .padding(.vertical, 5)
+    }
+    
+    func formatStringDate(date: String) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yy-MM-dd'T'HH:mm:ss.SSSZ"
+        let newDate = dateFormatter.date(from: date)
+        dateFormatter.setLocalizedDateFormatFromTemplate("MMMM d, yy")
+        return dateFormatter.string(from: newDate ?? Date.now)
     }
 }
+
 /*
 struct FilterView_Previews: PreviewProvider {
     static var previews: some View {
