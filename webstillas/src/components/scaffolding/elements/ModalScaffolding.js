@@ -2,14 +2,13 @@ import React, {useState} from "react";
 import {Button, Modal} from "react-bootstrap";
 import img from "../images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 import {Link} from "react-router-dom";
-import {PROJECTS_URL_WITH_SCAFFOLDING} from "../../../modelData/constantsFile";
+import { useQueryClient} from 'react-query'
 
 
-function scaffoldingInProject(type) {
-
-    const projects = sessionStorage.getItem('allProjects')
-    const jsonProjects = JSON.parse(projects)
-    const result = jsonProjects.map((element) => {
+function ScaffoldingInProject(type, projects) {
+    const queryClient = useQueryClient()
+    let dataProjects = queryClient.getQueryData("allProjects")
+    const result = dataProjects.map((element) => {
         return {
             ...element, scaffolding: element.scaffolding.filter((subElement) =>
                 subElement.type.toLowerCase() === type.toLowerCase() && subElement.Quantity.expected !== 0)
@@ -90,7 +89,9 @@ export default function InfoModal(props) {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {scaffoldingInProject(props.type)}
+                    {
+                        ScaffoldingInProject(props.type, props.project)
+                    }
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleClose}>
