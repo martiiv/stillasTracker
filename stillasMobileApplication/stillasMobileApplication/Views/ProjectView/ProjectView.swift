@@ -180,7 +180,7 @@ struct ProjectView: View {
     
     var filteredProjects: [Project] {
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd/MM/yy"
+        dateFormatter.dateFormat = "dd/MM/yyyy"
         
         switch filter {
         case .none:
