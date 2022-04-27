@@ -59,7 +59,7 @@ func getPart(w http.ResponseWriter, r *http.Request) {
 		getScaffoldingByType(w, queries["type"])
 
 	default: //URL is on the following format: /stillastracking/v1/api/unit/
-		getAllScaffoldingParts(w, r)
+		getAllScaffoldingParts(w)
 	}
 }
 
@@ -89,7 +89,7 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 
 	for i := range scaffoldList { //For loop iterates through the list of new scaffolding parts
 
-		newPartPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldList[i].Type).Doc(strconv.Itoa(scaffoldList[i].ID))
+		newPartPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldList[i].Type).Doc(scaffoldList[i].Id)
 
 		var firebasePart map[string]interface{} //Defines the database structure for the new part
 
@@ -147,7 +147,7 @@ func deletePart(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for i := range deleteList {
-		objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(deleteList[i].Type).Doc(strconv.Itoa(deleteList[i].Id))
+		objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(deleteList[i].Type).Doc(deleteList[i].Id)
 		err := database.DeleteDocument(objectPath)
 		if err != nil {
 			tool.HandleError(tool.COULDNOTFINDDATA, w)
@@ -242,7 +242,7 @@ getAllScaffoldingParts
 Function connects to the database and fetches all the parts in the database
 URL format: /stillastracking/v1/api/unit/
 */
-func getAllScaffoldingParts(w http.ResponseWriter, r *http.Request) {
+func getAllScaffoldingParts(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 

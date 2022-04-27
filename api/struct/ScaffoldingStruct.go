@@ -8,24 +8,20 @@ Last edit: Martin Iversen 17.03.2022
 
 //ScaffoldingType will be used when getting info from scaffolding units
 type ScaffoldingType struct {
-	ID       int    `json:"id"`
-	Type     string `json:"type"`
-	Location struct {
-		Longitude float64 `json:"longitude"`
-		Latitude  float64 `json:"latitude"`
-		Address   string  `json:"address"`
-	} `json:"location"`
-	BatteryLevel int `json:"batteryLevel"`
+	Id           string `json:"id"`
+	Type         string `json:"type"`
+	Project      string `json:"project"`
+	BatteryLevel int    `json:"batteryLevel"`
+	TagID        string `json:"tagID"`
 }
 
 //ScaffoldHistory will be used when getting the history of scaffolding parts
 type ScaffoldHistory struct {
-	ID       int `json:"id"`
+	Id       string `json:"id"`
 	Location []struct {
-		Latitude  float64 `json:"latitude"`
-		Longitude float64 `json:"longitude"`
-		Date      string  `json:"date"`
-		Time      string  `json:"time"`
+		Project string `json:"project"`
+		Date    string `json:"date"`
+		Time    string `json:"time"`
 	} `json:"location"`
 }
 
@@ -40,18 +36,16 @@ type MoveScaffolding struct {
 }
 
 //AddScaffolding will be used when adding scaffolding units to the database
-type AddScaffolding []struct {
-	ID           int    `json:"id"`
-	Type         string `json:"type"`
-	BatteryLevel int    `json:"batteryLevel"`
-	Location     struct {
-		Longitude interface{} `json:"longitude"`
-		Latitude  interface{} `json:"latitude"`
-		Address   interface{} `json:"address"`
-	} `json:"location"`
-}
 
 type DeleteScaffolding []struct {
-	Id   int    `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
+}
+
+type AddScaffolding []struct {
+	Id           string `json:"id"`
+	Type         string `json:"type"`
+	BatteryLevel int    `json:"batteryLevel"`
+	Project      string `json:"project"`
+	TagID        string `json:"tagID"`
 }
