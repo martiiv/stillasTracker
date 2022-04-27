@@ -167,11 +167,12 @@ func updateRegistered(tagList _struct.GetProject, idList []string, batteryList m
 
 	//TODO Update the project with information from the batteryList and the IDList
 	for i := range tagList.ScaffoldingArray {
-
+		print(i)
 	}
 }
 
 func getTagTypes(idList []string) map[string]int {
 	//TODO use the list of tag ID's to create a map with the scaffoldingtype and the amount of that type
-
+	var typeList map[string]int
+	return typeList
 }
