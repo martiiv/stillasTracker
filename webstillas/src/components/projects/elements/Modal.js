@@ -3,9 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import {Button, Modal} from 'react-bootstrap';
 import img from "../../scaffolding/images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 import putModel from "../../../modelData/putData";
-import {PROJECTS_URL, TRANSFER_SCAFFOLDING} from "../../../modelData/constantsFile";
-import fetchModel from "../../../modelData/fetchData";
-import AddData from "../../../modelData/addData";
+import {TRANSFER_SCAFFOLDING} from "../../../modelData/constantsFile";
 import {useQueryClient} from "react-query";
 
 //https://ordinarycoders.com/blog/article/react-bootstrap-modal
@@ -56,19 +54,17 @@ const scaffoldingMove =
 
 
 
-export default function InfoModal(props) {
+export default function InfoModalFunc(props) {
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
-    const data = new AddData()
     //https://codesandbox.io/s/react-week-date-view-forked-ruxjr9?file=/src/App.js:857-868
-    //todo gjør om variablenavn
-
     const queryClient = useQueryClient()
     const jsonProjects = queryClient.getQueryData("allProjects")
     console.log(jsonProjects)
     let jsonProject = queryClient.getQueryData(["project", props.id])
     console.log(jsonProject)
+    //todo gjør om variablenavn
     const [roomRent, setRoomRent] = useState(scaffoldingMove);
     const [ToProject, setToProject] = useState("");
     const [FromProject, setFromProject] = useState("");
@@ -89,11 +85,17 @@ export default function InfoModal(props) {
 
     //todo add a note to the user if the transaction was a success or a fail.
     //Todo fix error
-    function AddScaffolding(body){
-        putModel(TRANSFER_SCAFFOLDING, JSON.stringify(body))
-        handleClose()
+    async function AddScaffolding(){
+        const queryClient = useQueryClient()
+        await putModel(TRANSFER_SCAFFOLDING, JSON.stringify(move));
+        await queryClient.invalidateQueries(["project", props.id]).then(r => handleClose())
     }
 
+
+    const AddScaffold = async () => {
+        await putModel(TRANSFER_SCAFFOLDING, JSON.stringify(move));
+        await queryClient.resetQueries(["project", props.id])
+    }
 
     const move = {
         "toProjectID": Number(ToProject),
@@ -165,7 +167,7 @@ export default function InfoModal(props) {
                     <Button variant="secondary" onClick={handleClose}>
                         Close
                     </Button>
-                    <Button variant="primary" disabled={!validFormat}>
+                    <Button variant="primary" disabled={!validFormat} onClick={AddScaffold}>
                         Save Changes
                     </Button>
                 </Modal.Footer>
@@ -173,3 +175,7 @@ export default function InfoModal(props) {
         </>
     );
 }
+
+
+
+

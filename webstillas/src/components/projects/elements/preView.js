@@ -57,69 +57,21 @@ class PreViewClass extends React.Component{
 
 
 
-    contactInformation(){
-        const {data} = this.state
-        const project = data
-        return(
-            <section className={"contact-highlights-cta"}>
-                <div className={"information-highlights"}>
-                    <ul className={"contact-list"}>
-                        <li className={"horizontal-list-contact"}>
-                            <span className={"left-contact-text"}>Navn/Bedrift</span>
-                            <span className={"right-contact-text"}>{project.customer.name}</span>
-                        </li>
-                        <li className={"horizontal-list-contact"}>
-                            <span className={"left-contact-text"}>Telefon nummer</span>
-                            <span className={"right-contact-text"}>{project.customer.number}</span>
-                        </li>
-                        <li className={"horizontal-list-contact"}>
-                            <span className={"left-contact-text"}>Adresse</span>
-                            <span className={"right-contact-text"}>{project.address.street}, {project.address.zipcode} {project.address.municipality}</span>
-                        </li>
-                        <li className={"horizontal-list-contact"}>
-                            <span className={"left-contact-text"}>E-mail</span>
-                            <span className={"right-contact-text"}>{project.customer.email}</span>
-                        </li>
-                        <li className={"horizontal-list-contact"}>
-                            <span className={"left-contact-text"}>Periode</span>
-                            <span className={"right-contact-text"}>{project.period.startDate} to {project.period.endDate}  </span>
-                        </li>
-                    </ul>
-                </div>
-            </section>
-        )
-    }
 
     getProjectID(){
         const pathSplit = window.location.href.split("/")
         return pathSplit[pathSplit.length - 1]
     }
 
-    scaffoldingComponents(){
-        const {data} = this.state
-        return(
-            <div className={"grid-container-project-scaffolding"}>
-                {data.scaffolding.map((e) => {
-                    return (
-                        <ScaffoldingCardProject
-                            key={e.type}
-                            type={e.type}
-                            expected={e.Quantity.expected}
-                            registered={e.Quantity.registered}
-                        />
-                    )
-                })}
-            </div>
-        )
-    }
+
+
 
 
     render() {
-
         return (
             <div className={"preView-Project-Main"}>
                 <div ref={this.mapContainer} className="map-container-project"/>
-                <div className={"tabs"}>
+                {/* <div className={"tabs"}>
                     <Tabs>
                         <div label="Kontakt">
                             {this.contactInformation()}
@@ -129,11 +81,10 @@ class PreViewClass extends React.Component{
                             {this.scaffoldingComponents()}
                         </div>
                     </Tabs>
-                </div>
+                </div>*/}
             </div>
         )
     }
-
 }
 
 function getProjectID(){
@@ -141,13 +92,80 @@ function getProjectID(){
     return pathSplit[pathSplit.length - 1]
 }
 
+
+function scaffoldingComponents(data){
+
+    return(
+        <div className={"grid-container-project-scaffolding"}>
+            {data.scaffolding.map((e) => {
+                return (
+                    <ScaffoldingCardProject
+                        key={e.type}
+                        type={e.type}
+                        expected={e.Quantity.expected}
+                        registered={e.Quantity.registered}
+                    />
+                )
+            })}
+        </div>
+    )
+}
+
+
+
+function contactInformation(project){
+    return(
+        <section className={"contact-highlights-cta"}>
+            <div className={"information-highlights"}>
+                <ul className={"contact-list"}>
+                    <li className={"horizontal-list-contact"}>
+                        <span className={"left-contact-text"}>Navn/Bedrift</span>
+                        <span className={"right-contact-text"}>{project[0].customer.name}</span>
+                    </li>
+                    <li className={"horizontal-list-contact"}>
+                        <span className={"left-contact-text"}>Telefon nummer</span>
+                        <span className={"right-contact-text"}>{project[0].customer.number}</span>
+                    </li>
+                    <li className={"horizontal-list-contact"}>
+                        <span className={"left-contact-text"}>Adresse</span>
+                        <span className={"right-contact-text"}>{project[0].address.street}, {project[0].address.zipcode} {project[0].address.municipality}</span>
+                    </li>
+                    <li className={"horizontal-list-contact"}>
+                        <span className={"left-contact-text"}>E-mail</span>
+                        <span className={"right-contact-text"}>{project[0].customer.email}</span>
+                    </li>
+                    <li className={"horizontal-list-contact"}>
+                        <span className={"left-contact-text"}>Periode</span>
+                        <span className={"right-contact-text"}>{project[0].period.startDate} to {project[0].period.endDate}  </span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+    )
+}
+
+
+
 export const PreView = () => {
     const {isLoading, data} = GetDummyData(["project", getProjectID()], PROJECTS_URL_WITH_ID + getProjectID() + WITH_SCAFFOLDING_URL)
     console.log(data)
     if (isLoading) {
         return <h1>Loading</h1>
     } else {
-        return <PreViewClass data={data[0]}/>
+        return (
+            <div className={"preView-Project-Main"}>
+                {/*<PreViewClass data={data[0]}/>*/}
+                <Tabs>
+                    <div label="Kontakt">
+                        {contactInformation(data)}
+                    </div>
+                    <div label="Stillas-komponenter">
+                        <InfoModal id={getProjectID()}/>
+                        {scaffoldingComponents(data[0])}
+                    </div>
+                </Tabs>
+            </div>
+        )
     }
 }
 
