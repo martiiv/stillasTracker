@@ -139,12 +139,12 @@ func addIDtoPart(m *igs.Message) {
 func getTagLists(gatewayList []*igs.Message, tagList []*ibs.Payload) ([]string, map[string]float32) {
 	var printList []string
 	var tagIDList []string
-	var batteryList map[string]float32
+	batteryList := make(map[string]float32)
 
 	for i := 0; i < len(tagList); i++ {
 		tagInfo := gatewayList[i].Beacon()
-		runedPayload := []rune(tagInfo)
-		tagID := string(runedPayload[6:12])
+		runePayload := []rune(tagInfo)
+		tagID := string(runePayload[6:12])
 		battery, _ := tagList[i].BatteryVoltage()
 
 		printList = append(printList, "Tag ID:"+tagID+" battery voltage:"+strconv.FormatFloat(float64(battery), 'E', -1, 32)+"\n")
