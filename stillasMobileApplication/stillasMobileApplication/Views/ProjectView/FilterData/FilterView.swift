@@ -44,7 +44,7 @@ struct FilterView: View {
                                 .onAppear {
                                     selStartDateBind = Date.distantPast
                                     selEndDateBind = Date.distantFuture
-                                    if ((selStartDateBind) != Date.distantPast || selEndDateBind != Date.distantFuture) {
+                                    if (selStartDateBind != Date.distantPast || selEndDateBind != Date.distantFuture) {
                                         periodFilterActive = true
                                     }
                                 }
@@ -97,8 +97,11 @@ struct FilterView: View {
                 if !filterArrArea.isEmpty {
                     areaFilterActive = true
                 }
-                if ((selStartDateBind) != Date.distantPast || selEndDateBind != Date.distantFuture) {
+                if ((selStartDateBind != Date.distantPast || selEndDateBind != Date.distantFuture) && filterArr.contains("period")) {
+                    print(periodFilterActive)
                     periodFilterActive = true
+                    print(periodFilterActive)
+                    print(filterArr)
                 }
             }
             .navigationTitle(Text("Filter"))
