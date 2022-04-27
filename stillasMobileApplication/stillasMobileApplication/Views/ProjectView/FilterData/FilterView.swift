@@ -41,6 +41,13 @@ struct FilterView: View {
                                 }
                         case "Periode":
                             FilterProjectPeriod(selStartDateBind: $selStartDate, selEndDateBind: $selEndDate, periodFilterActiveBind: $periodFilterActive)
+                                .onAppear {
+                                    selStartDateBind = Date.distantPast
+                                    selEndDateBind = Date.distantFuture
+                                    if ((selStartDateBind) != Date.distantPast || selEndDateBind != Date.distantFuture) {
+                                        periodFilterActive = true
+                                    }
+                                }
                                 .onChange(of: selStartDate) { selectedStartDate in
                                     selStartDateBind = selectedStartDate
                                 }
@@ -86,6 +93,14 @@ struct FilterView: View {
                     }
                 }
             }
+            .onAppear {
+                if !filterArrArea.isEmpty {
+                    areaFilterActive = true
+                }
+                if ((selStartDateBind) != Date.distantPast || selEndDateBind != Date.distantFuture) {
+                    periodFilterActive = true
+                }
+            }
             .navigationTitle(Text("Filter"))
             .navigationViewStyle(StackNavigationViewStyle())
             .overlay(alignment: .bottom) {
@@ -98,6 +113,11 @@ struct FilterView: View {
                         addFilterItem(filterItem: "area")
                     } else {
                         deleteFilterItem(filterItem: "area")
+                    }
+                    if periodFilterActive {
+                        addFilterItem(filterItem: "period")
+                    } else {
+                        deleteFilterItem(filterItem: "period")
                     }
                     
                     print(filterArr)
