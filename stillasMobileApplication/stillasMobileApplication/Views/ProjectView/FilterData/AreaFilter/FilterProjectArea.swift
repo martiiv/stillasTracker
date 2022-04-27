@@ -25,34 +25,41 @@ struct FilterProjectArea: View {
     
     var body: some View {
         VStack {
-            List {
-                ForEach(counties, id: \.self) { county in
-                    HStack {
-                        CheckBoxRow(title: county, selectedItems: $selectedItems, isSelected: selectedItems.contains(county))
-                            .padding(.top)
-                            .padding(.bottom)
-                    }
-                }
-            }
-            .navigationTitle(Text("Område"))
-            .overlay(alignment: .bottom) {
-                Button(action: {
-                    print(self.selectedItems)
-                    for selectedItem in selectedItems {
-                        if(!selArr.contains(selectedItem)) {
-                            selArr.append(selectedItem)
+            VStack {
+                List {
+                    ForEach(counties, id: \.self) { county in
+                        HStack {
+                            CheckBoxRow(title: county, selectedItems: $selectedItems, isSelected: selectedItems.contains(county))
+                                .padding(.top)
+                                .padding(.bottom)
                         }
                     }
-                    areaFilterActive = true
-                }) {
-                    Text("Bruk")
-                        .frame(width: 300, height: 50, alignment: .center)
                 }
-                .foregroundColor(.white)
-                .background(Color.blue)
-                .cornerRadius(10)
-                .padding(.bottom, 50)
+                .navigationTitle(Text("Område"))
+                }
+            .padding(.bottom, 110)
             }
+        .overlay(alignment: .bottom) {
+            Button(action: {
+                print(self.selectedItems)
+                for selectedItem in selectedItems {
+                    if(!selArr.contains(selectedItem)) {
+                        selArr.append(selectedItem)
+                    }
+                }
+                if !selArr.isEmpty {
+                    areaFilterActive = true
+                } else {
+                    areaFilterActive = false
+                }
+            }) {
+                Text("Bruk")
+                    .frame(width: 300, height: 50, alignment: .center)
+            }
+            .foregroundColor(.white)
+            .background(Color.blue)
+            .cornerRadius(10)
+            .padding(.bottom, 50)
         }
     }
 }

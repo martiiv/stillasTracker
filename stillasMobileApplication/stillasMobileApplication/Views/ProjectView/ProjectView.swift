@@ -138,6 +138,9 @@ struct ProjectView: View {
                     if filterArr.contains("area") {
                         filter = .county
                     }
+                    if filterArr.isEmpty {
+                        filter = .none
+                    }
                 }
         }
         .navigationViewStyle(.stack)

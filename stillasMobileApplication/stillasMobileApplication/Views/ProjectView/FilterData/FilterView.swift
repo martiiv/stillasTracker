@@ -23,7 +23,6 @@ struct FilterView: View {
     @State var areaFilterActive: Bool = false
     
     @Binding var filterArr: [String]
-    //@State var filterArrArea: [String] = []
     @Binding var filterArrArea: [String]
 
     @State var selStartDate = Date()
@@ -69,6 +68,7 @@ struct FilterView: View {
                                 HStack {
                                     ActiveAreaFilterView(filterArr: $filterArrArea, areaFilterActive: $areaFilterActive)
                                 }
+                                .lineLimit(1)
 
                             case "Periode":
                                 HStack {
@@ -94,9 +94,13 @@ struct FilterView: View {
                     /*for filterItem in filterArr {
                         addFilterItem(filterItem: filterItem)
                     }*/
+                    if areaFilterActive {
+                        addFilterItem(filterItem: "area")
+                    } else {
+                        deleteFilterItem(filterItem: "area")
+                    }
                     
-                    addFilterItem(filterItem: "area")
-                    addFilterItem(filterItem: "period")
+                    print(filterArr)
                 }) {
                     Text("Bruk")
                         .frame(width: 300, height: 50, alignment: .center)
@@ -182,18 +186,30 @@ struct ActiveAreaFilterView: View {
         if areaFilterActive {
             HStack {
                 HStack {
-                    ForEach(filterArr, id: \.self) { area in
+                    ScrollView (.horizontal, showsIndicators: false) {
                         HStack {
-                            Text("\(area)")
+                            Text("(\(filterArr.count))")
+                                .padding(.leading, 4)
+                            ForEach(filterArr.indices, id: \.self) { index in
+                                HStack {
+                                    Text("\(filterArr[index])")
+                                        .lineLimit(1)
+                                        .padding(-3)
+                                    if index != filterArr.count-1 {
+                                        Text(",")
+                                    }
+                                }
+                            }
                         }
                     }
                 }
                 .font(.system(size: 11).bold())
                 .padding(.vertical, 5)
+                .lineLimit(1)
                 
                 Button(action: {
                     deleteFilterItem(filterItem: "area")
-                    self.areaFilterActive.toggle()
+                    self.areaFilterActive = false
                 }) {
                     Image(systemName: "x.circle.fill")
                         .foregroundColor(Color.secondary)
@@ -201,6 +217,7 @@ struct ActiveAreaFilterView: View {
                 .padding(.trailing, 5)
                 .buttonStyle(PlainButtonStyle())
             }
+            .frame(width: 150, alignment: .trailing)
             .foregroundColor(.white)
             .background(Color.blue)
             .cornerRadius(5)
