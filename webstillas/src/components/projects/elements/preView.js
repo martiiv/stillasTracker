@@ -152,21 +152,26 @@ export const PreView = () => {
     if (isLoading) {
         return <h1>Loading</h1>
     } else {
+        //todo fix css on position
         return (
             <div className={"preView-Project-Main"}>
-                {/*<PreViewClass data={data[0]}/>*/}
-                <Tabs>
-                    <div label="Kontakt">
-                        {contactInformation(data)}
-                    </div>
-                    <div label="Stillas-komponenter">
-                        <InfoModal id={getProjectID()}/>
-                        {scaffoldingComponents(data[0])}
-                    </div>
-                </Tabs>
+                <PreViewClass data={data[0]}/>
+                <div className={"tabs"}>
+                    <Tabs>
+                        <div label="Kontakt">
+                            {contactInformation(data)}
+                        </div>
+                        <div label="Stillas-komponenter">
+                            <InfoModal id={getProjectID()}/>
+                            {scaffoldingComponents(data[0])}
+                        </div>
+                    </Tabs>
+                </div>
             </div>
         )
     }
 }
+
+
 
 

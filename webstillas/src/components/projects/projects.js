@@ -82,19 +82,6 @@ class Projects extends React.Component {
     render() {
 
         const {projectData, fromSize, toSize, fromDate, toDate, searchName, selectedOption} = this.state;
-
-        /*let allProjects
-        if (sessionStorage.getItem('allProjects') != null){
-             allProjects = sessionStorage.getItem('allProjects')
-            console.log('From Storage')
-           allProjects = (JSON.parse(allProjects))
-         }else {
-            console.log('From API')
-            allProjects = projectData
-         }
-*/
-
-
         return (
             <div className={"main-project-window"}>
                 <div className={"main-sidebar"}>
