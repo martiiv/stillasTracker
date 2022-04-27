@@ -164,7 +164,7 @@ func getTagLists(gatewayList []*igs.Message, tagList []*ibs.Payload) ([]string, 
 }
 
 func updateRegistered(tagList _struct.GetProject, idList []string, batteryList map[string]float32) {
-	batch := database.Client.Batch()
+
 	//TODO Update the project with information from the batteryList and the IDList
 	for i := range tagList.ScaffoldingArray {
 
