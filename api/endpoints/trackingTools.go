@@ -36,13 +36,12 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
+	var gatewayList []*igs.Message
+	var beaconList []*ibs.Payload
 
 	payload, _ := ioutil.ReadAll(r.Body)
 	convertedPayload := string(payload)
 	payloadList := strings.Split(convertedPayload, "\n")
-
-	var gatewayList []*igs.Message
-	var beaconList []*ibs.Payload
 
 	for i := 0; i < len(payloadList)-1; i++ {
 		if m := igs.Parse(payloadList[i]); m != nil {
@@ -52,7 +51,7 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 				beaconList = append(beaconList, p)
 			}
 			idList, batteryList := getTagLists(gatewayList, beaconList)
-			print(idList, batteryList)
+			updateAmountProject(gatewayList, gatewayList[i].Gateway(), w, idList, batteryList)
 
 		} else {
 			fmt.Println("Error: Invalid input message")
@@ -68,8 +67,9 @@ func updateAmountProject(gatewayList []*igs.Message, beaconID string, w http.Res
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
-	scaffoldingLIst := getTagList(w, beaconID)
-	updateRegistered(scaffoldingLIst, idList, batteryList)
+	scaffoldingLIst := getProjectInfo(w, beaconID)
+
+	updateRegistered(w, scaffoldingLIst, idList, batteryList)
 
 	for _, v := range gatewayList {
 		tagID := v.Beacon()
@@ -81,7 +81,7 @@ func getTags(w http.ResponseWriter) {
 
 }
 
-func getTagList(w http.ResponseWriter, beaconID string) _struct.GetProject {
+func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
 	ProjectCollection = database.Client.Doc(constants.P_LocationCollection + "/" + constants.P_ProjectDocument)
 	project, err := http.NewRequest(http.MethodGet, "http://10.212.138.205:8080/stillastracking/v1/api/gateway?id="+beaconID, nil)
 	if err != nil {
@@ -163,16 +163,52 @@ func getTagLists(gatewayList []*igs.Message, tagList []*ibs.Payload) ([]string, 
 	return tagIDList, batteryList
 }
 
-func updateRegistered(tagList _struct.GetProject, idList []string, batteryList map[string]float32) {
+func updateRegistered(w http.ResponseWriter, tagList _struct.GetProject, idList []string) _struct.GetProject {
+	var updatedProject _struct.GetProject
+	updatedProject.NewProject = tagList.NewProject
 
-	//TODO Update the project with information from the batteryList and the IDList
+	resultList := getTagTypes(w, tagList, idList)
 	for i := range tagList.ScaffoldingArray {
-		print(i)
+		scaffoldingType := tagList.ScaffoldingArray[i].Type
+		newAmount := resultList[scaffoldingType]
+		expected := tagList.ScaffoldingArray[i].Expected
+
+		updatedProject.ScaffoldingArray[i].Type = scaffoldingType
+		updatedProject.ScaffoldingArray[i].Expected = expected
+		updatedProject.ScaffoldingArray[i].Registered = newAmount
 	}
+	return updatedProject
 }
 
-func getTagTypes(idList []string) map[string]int {
-	//TODO use the list of tag ID's to create a map with the scaffoldingtype and the amount of that type
+/*
+TODO Årets støggeste mest uoptimaliserte møkkafunksjon : )
+*/
+func getTagTypes(w http.ResponseWriter, projectList _struct.GetProject, idList []string) map[string]int {
 	var typeList map[string]int
-	return typeList
+	var resultList map[string]int
+	for i := range projectList.ScaffoldingArray {
+		typeList[projectList.ScaffoldingArray[i].Type] = projectList.ScaffoldingArray[i].Registered
+	}
+
+	for j, _ := range typeList {
+		counter := 0
+		for i := range idList {
+			objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(j).Doc(idList[i])
+
+			_, err := database.GetDocumentData(objectPath)
+			if err != nil {
+				tool.HandleError(tool.DATABASEREADERROR, w)
+				return nil
+			}
+			counter = counter + 1
+		}
+		resultList[j] = counter
+	}
+
+	return resultList
+}
+
+func updateProjectInDatabase(w http.ResponseWriter, updatedProject _struct.GetProject) {
+	batch := database.Client.Batch()
+
 }
