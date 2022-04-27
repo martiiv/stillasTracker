@@ -26,7 +26,8 @@ struct FilterProjectData: View {
     @State var projects = [Project]()
     @State private var showFilterModalView: Bool = false
     @State private var showAddProjectModalView: Bool = false
-    
+    @State var filterArrArea: [String] = []
+
     @State var filter: FilterType = .none
     @State var filterArr: [String] = []
 
@@ -72,7 +73,7 @@ struct FilterProjectData: View {
                 }
                 .sheet(isPresented: $showFilterModalView,
                        onDismiss: didDismiss) {
-                    FilterView(selStartDateBind: $projectStartDate, selEndDateBind: $projectEndDate, projectArea: $projectCounty, projectSize: $projectSize, projectStatus: $projectState, filterArr: $filterArr)
+                    FilterView(selStartDateBind: $projectStartDate, selEndDateBind: $projectEndDate, projectArea: $projectCounty, projectSize: $projectSize, projectStatus: $projectState, filterArr: $filterArr, filterArrArea: $filterArrArea)
                         .onChange(of: projectStartDate) { value in
                             filter = .period
                         }

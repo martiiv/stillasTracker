@@ -75,7 +75,9 @@ struct ProjectView: View {
     
     @State var filter: FilterType = .none
     @State var filterArr: [String] = []
+    @State var filterArrArea: [String] = []
 
+    // TODO: REMOVE?
     @State var projectStartDate = Date.distantPast
     @State var projectEndDate = Date.distantFuture
     @State var projectSize = 99999
@@ -92,7 +94,7 @@ struct ProjectView: View {
                         )
                     }
                     .navigationTitle("Projects")*/
-                    List(filteredProjects, id: \.projectID) { project in
+                    List(searchResults, id: \.projectID) { project in
                         NavigationLink(destination: ProjectDetailView(project: project), label: {
                             ProjectRow(project: project) }
                         )
@@ -128,35 +130,15 @@ struct ProjectView: View {
         }
         .sheet(isPresented: $showFilterModalView,
                onDismiss: didDismiss) {
-            FilterView(selStartDateBind: $projectStartDate, selEndDateBind: $projectEndDate, projectArea: $projectCounty, projectSize: $projectSize, projectStatus: $projectState, filterArr: $filterArr)
+            FilterView(selStartDateBind: $projectStartDate, selEndDateBind: $projectEndDate, projectArea: $projectCounty, projectSize: $projectSize, projectStatus: $projectState, filterArr: $filterArr, filterArrArea: $filterArrArea)
                 .onChange(of: filterArr) { filterVal in
                     if filterArr.contains("period") {
                         filter = .period
                     }
+                    if filterArr.contains("area") {
+                        filter = .county
+                    }
                 }
-                
-            /*
-            Spacer()
-            Button(action: {
-                print("______")
-                print(filter)
-                filter = .period
-                print(filter)
-                print(projectStartDate)
-                print(projectEndDate)
-
-                
-            }) {
-                Text("Bruk")
-                    .frame(width: 300, height: 50, alignment: .center)
-            }
-            .foregroundColor(.white)
-            .background(Color.blue)
-            .cornerRadius(10)
-            
-            Spacer()
-                .frame(height:50)  // limit spacer size by applying a frame
-             */
         }
         .navigationViewStyle(.stack)
         .searchable(text: $searchQuery, placement: .navigationBarDrawer(displayMode: .always))
@@ -165,16 +147,17 @@ struct ProjectView: View {
             // TODO: Add action here (retrieve from API again or something)
         }
     }
+    
+    // TODO: Add support for search of filtered items
     var searchResults: [Project] {
         if searchQuery.isEmpty {
-            return projects.sorted { $0.projectName < $1.projectName }
+            return filteredProjects.sorted { $0.projectName < $1.projectName }
         } else {
-            return projects.filter { $0.projectName.lowercased().contains(searchQuery.lowercased()) }.sorted { $0.projectName < $1.projectName }
+            return filteredProjects.filter { $0.projectName.lowercased().contains(searchQuery.lowercased()) }.sorted { $0.projectName < $1.projectName }
         }
     }
     
     func didDismiss() {
-        
         // Handle the dismissing action.
     }
     
@@ -187,19 +170,19 @@ struct ProjectView: View {
             return projects
         case .period:
             //return projects.filter { $0.period.startDate > projectStartDate && $0.period.endDate < projectEndDate }
-            return projects.filter { dateFormatter.date(from: $0.period.startDate)! > projectStartDate && dateFormatter.date(from: $0.period.endDate)! < projectEndDate }
+            return projects.filter { dateFormatter.date(from: $0.period.startDate)! >= projectStartDate && dateFormatter.date(from: $0.period.endDate)! <= projectEndDate }
         case .startBeforePeriod:
             //return projects.filter { $0.period.startDate < projectStartDate }
-            return projects.filter { dateFormatter.date(from: $0.period.startDate)! < projectStartDate }
+            return projects.filter { dateFormatter.date(from: $0.period.startDate)! <= projectStartDate }
         case .startAfterPeriod:
             //return projects.filter { $0.period.startDate > projectStartDate }
-            return projects.filter { dateFormatter.date(from: $0.period.startDate)! > projectStartDate }
+            return projects.filter { dateFormatter.date(from: $0.period.startDate)! >= projectStartDate }
         case .endBeforePeriod:
             //return projects.filter { $0.period.endDate < projectEndDate }
-            return projects.filter { dateFormatter.date(from: $0.period.endDate)! < projectEndDate }
+            return projects.filter { dateFormatter.date(from: $0.period.endDate)! <= projectEndDate }
         case .endAfterPeriod:
             //return projects.filter { $0.period.endDate > projectEndDate }
-            return projects.filter { dateFormatter.date(from: $0.period.endDate)! > projectEndDate }
+            return projects.filter { dateFormatter.date(from: $0.period.endDate)! >= projectEndDate }
         case .sizeEqualTo:
             return projects.filter { $0.size == Int(projectSize) }
         case .sizeLessThan:
@@ -209,7 +192,7 @@ struct ProjectView: View {
         case .state:
             return projects.filter { $0.state == projectState }
         case .county:
-            return projects.filter { $0.address.county == projectCounty }
+            return projects.filter { filterArrArea.contains($0.address.county)}
         }
     }
 }

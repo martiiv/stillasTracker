@@ -10,6 +10,7 @@ import SwiftUI
 // TODO: Add enum for switch case instead of hard-coded values
 
 struct FilterView: View {
+    // TODO: Add buttons for switching between start before only, period between etc.
     @State private var filterItems = ["Område", "Periode", "Størrelse", "Status"]
     
     @Binding var selStartDateBind: Date
@@ -19,9 +20,12 @@ struct FilterView: View {
     @Binding var projectStatus: String
     
     @State var periodFilterActive: Bool = false
-
-    @Binding var filterArr: [String]
+    @State var areaFilterActive: Bool = false
     
+    @Binding var filterArr: [String]
+    //@State var filterArrArea: [String] = []
+    @Binding var filterArrArea: [String]
+
     @State var selStartDate = Date()
     @State var selEndDate = Date()
         
@@ -32,7 +36,10 @@ struct FilterView: View {
                     NavigationLink {
                         switch filterItem {
                         case "Område":
-                            FilterProjectArea()
+                            FilterProjectArea(selArr: $filterArrArea, areaFilterActive: $areaFilterActive)
+                                .onAppear {
+                                    filterArrArea.removeAll()
+                                }
                         case "Periode":
                             FilterProjectPeriod(selStartDateBind: $selStartDate, selEndDateBind: $selEndDate, periodFilterActiveBind: $periodFilterActive)
                                 .onChange(of: selStartDate) { selectedStartDate in
@@ -59,10 +66,13 @@ struct FilterView: View {
                             Spacer()
                             switch filterItem {
                             case "Område":
-                                Text("")
+                                HStack {
+                                    ActiveAreaFilterView(filterArr: $filterArrArea, areaFilterActive: $areaFilterActive)
+                                }
+
                             case "Periode":
                                 HStack {
-                                    ActiveFilterView(startDate: $selStartDateBind, endDate: $selEndDateBind, filterArr: $filterArr, periodFilterActive: $periodFilterActive)
+                                    ActivePeriodFilterView(startDate: $selStartDateBind, endDate: $selEndDateBind, filterArr: $filterArr, periodFilterActive: $periodFilterActive)
                                 }
                                 .lineLimit(1)
                             case "Størrelse":
@@ -80,6 +90,12 @@ struct FilterView: View {
             .navigationViewStyle(StackNavigationViewStyle())
             .overlay(alignment: .bottom) {
                 Button(action: {
+                    // TODO: Change to use for loop?
+                    /*for filterItem in filterArr {
+                        addFilterItem(filterItem: filterItem)
+                    }*/
+                    
+                    addFilterItem(filterItem: "area")
                     addFilterItem(filterItem: "period")
                 }) {
                     Text("Bruk")
@@ -106,7 +122,7 @@ struct FilterView: View {
     }
 }
 
-struct ActiveFilterView: View {
+struct ActivePeriodFilterView: View {
     @Binding var startDate: Date
     @Binding var endDate: Date
 
@@ -135,6 +151,49 @@ struct ActiveFilterView: View {
                 Button(action: {
                     deleteFilterItem(filterItem: "period")
                     self.periodFilterActive.toggle()
+                }) {
+                    Image(systemName: "x.circle.fill")
+                        .foregroundColor(Color.secondary)
+                }
+                .padding(.trailing, 5)
+                .buttonStyle(PlainButtonStyle())
+            }
+            .foregroundColor(.white)
+            .background(Color.blue)
+            .cornerRadius(5)
+            .padding(.vertical, 5)
+        }
+    }
+    
+    func deleteFilterItem(filterItem: String) {
+        if let i = filterArr.firstIndex(of: filterItem) {
+            filterArr.remove(at: i)
+        }
+    }
+}
+
+struct ActiveAreaFilterView: View {
+    @Binding var filterArr: [String]
+    
+    @Binding var areaFilterActive: Bool
+
+    var body: some View {
+
+        if areaFilterActive {
+            HStack {
+                HStack {
+                    ForEach(filterArr, id: \.self) { area in
+                        HStack {
+                            Text("\(area)")
+                        }
+                    }
+                }
+                .font(.system(size: 11).bold())
+                .padding(.vertical, 5)
+                
+                Button(action: {
+                    deleteFilterItem(filterItem: "area")
+                    self.areaFilterActive.toggle()
                 }) {
                     Image(systemName: "x.circle.fill")
                         .foregroundColor(Color.secondary)
