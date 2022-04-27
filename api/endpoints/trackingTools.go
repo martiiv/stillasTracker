@@ -51,23 +51,25 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 				p := ibs.Parse(bytes)
 				beaconList = append(beaconList, p)
 			}
-			printFilteredGatewayInfo(gatewayList, beaconList)
+			idList, batteryList := getTagLists(gatewayList, beaconList)
+			print(idList, batteryList)
+
 		} else {
 			fmt.Println("Error: Invalid input message")
 			fmt.Println(os.Args[1])
 		}
+
 	}
 }
 
-func updateRegistered(gatewayList []*igs.Message, beaconID string, w http.ResponseWriter) {
+func updateAmountProject(gatewayList []*igs.Message, beaconID string, w http.ResponseWriter, idList []string, batteryList map[string]float32) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
 	scaffoldingLIst := getTagList(w, beaconID)
-
-	print(scaffoldingLIst)
+	updateRegistered(scaffoldingLIst, idList, batteryList)
 
 	for _, v := range gatewayList {
 		tagID := v.Beacon()
@@ -79,7 +81,7 @@ func getTags(w http.ResponseWriter) {
 
 }
 
-func getTagList(w http.ResponseWriter, beaconID string) _struct.ScaffoldingArray {
+func getTagList(w http.ResponseWriter, beaconID string) _struct.GetProject {
 	ProjectCollection = database.Client.Doc(constants.P_LocationCollection + "/" + constants.P_ProjectDocument)
 	project, err := http.NewRequest(http.MethodGet, "http://10.212.138.205:8080/stillastracking/v1/api/gateway?id="+beaconID, nil)
 	if err != nil {
@@ -95,23 +97,23 @@ func getTagList(w http.ResponseWriter, beaconID string) _struct.ScaffoldingArray
 	marshal, err := json.Marshal(response)
 	if err != nil {
 		tool.HandleError(tool.MARSHALLERROR, w)
-		return nil
+		return _struct.GetProject{}
 	}
 
 	err = json.Unmarshal(marshal, &responseStruct)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
-		return nil
+		return _struct.GetProject{}
 	}
 	projectRef, err := http.NewRequest(http.MethodGet, "http://10.212.138.205:8080/stillastracking/v1/api/project?id="+strconv.Itoa(responseStruct.ProjectID)+"&scaffolding=true", nil)
 	if err != nil {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
-		return nil
+		return _struct.GetProject{}
 	}
 	data, err := ioutil.ReadAll(projectRef.Body)
 	if err != nil {
 		tool.HandleError(tool.READALLERROR, w)
-		return nil
+		return _struct.GetProject{}
 	}
 
 	var projectStruct _struct.GetProject
@@ -119,31 +121,35 @@ func getTagList(w http.ResponseWriter, beaconID string) _struct.ScaffoldingArray
 	marshal, err = json.Marshal(data)
 	if err != nil {
 		tool.HandleError(tool.MARSHALLERROR, w)
-		return nil
+		return _struct.GetProject{}
 	}
 	err = json.Unmarshal(marshal, &projectStruct)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
-		return nil
+		return _struct.GetProject{}
 	}
 
-	scaffoldingList := projectStruct.ScaffoldingArray
-	return scaffoldingList
+	return projectStruct
 }
 
 func addIDtoPart(m *igs.Message) {
 
 }
 
-func printFilteredGatewayInfo(gatewayList []*igs.Message, tagList []*ibs.Payload) {
+func getTagLists(gatewayList []*igs.Message, tagList []*ibs.Payload) ([]string, map[string]float32) {
 	var printList []string
+	var tagIDList []string
+	var batteryList map[string]float32
+
 	for i := 0; i < len(tagList); i++ {
 		tagInfo := gatewayList[i].Beacon()
 		runedPayload := []rune(tagInfo)
-		tagID := string(runedPayload[5:12])
+		tagID := string(runedPayload[6:12])
 		battery, _ := tagList[i].BatteryVoltage()
 
 		printList = append(printList, "Tag ID:"+tagID+" battery voltage:"+strconv.FormatFloat(float64(battery), 'E', -1, 32)+"\n")
+		tagIDList = append(tagIDList, tagID)
+		batteryList[tagID] = battery
 	}
 
 	fmt.Printf("\n-----------------------------------------------------")
@@ -153,4 +159,20 @@ func printFilteredGatewayInfo(gatewayList []*igs.Message, tagList []*ibs.Payload
 	fmt.Printf("Amount of tags registered: %v \n", len(tagList))
 	fmt.Printf("List of tags:\n %v", printList)
 	fmt.Printf("-----------------------------------------------------\n")
+
+	return tagIDList, batteryList
+}
+
+func updateRegistered(tagList _struct.GetProject, idList []string, batteryList map[string]float32) {
+
+	//TODO Update the project with information from the batteryList and the IDList
+	for i := range tagList.ScaffoldingArray {
+		print(i)
+	}
+}
+
+func getTagTypes(idList []string) map[string]int {
+	//TODO use the list of tag ID's to create a map with the scaffoldingtype and the amount of that type
+	var typeList map[string]int
+	return typeList
 }
