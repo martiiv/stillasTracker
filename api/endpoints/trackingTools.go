@@ -80,6 +80,7 @@ func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string
 	if err != nil {
 		tool.HandleError(tool.DATABASEADDERROR, w)
 	}
+	fmt.Printf("Succsessfully updated project with gateway id %v", beaconID)
 }
 
 func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
@@ -150,10 +151,13 @@ func getTagLists(gatewayList []*igs.Message, tagList []*ibs.Payload) ([]string, 
 }
 
 func updateRegistered(w http.ResponseWriter, tagList _struct.GetProject, idList []string) _struct.GetProject {
+
 	var updatedProject _struct.GetProject
 	updatedProject.NewProject = tagList.NewProject
 
 	resultList := getTagTypes(w, tagList, idList)
+	fmt.Printf("%v", resultList)
+
 	for i := range tagList.ScaffoldingArray {
 		scaffoldingType := tagList.ScaffoldingArray[i].Type
 		newAmount := resultList[scaffoldingType]
