@@ -118,9 +118,9 @@ struct SizeLessThanFilter: View {
             .frame(height:50)  // limit spacer size by applying a frame
     }
 }
-
+/*
 struct SizeLessThanFilter_Previews: PreviewProvider {
     static var previews: some View {
         SizeLessThanFilter()
     }
-}
+}*/

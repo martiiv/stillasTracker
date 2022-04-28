@@ -56,9 +56,9 @@ struct ActivePeriodFilterView: View {
         }
     }
 }
-
+/*
 struct ActivePeriodFilterView_Previews: PreviewProvider {
     static var previews: some View {
         ActivePeriodFilterView()
     }
-}
+}*/
