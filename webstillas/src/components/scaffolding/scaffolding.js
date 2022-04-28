@@ -2,7 +2,7 @@ import React from "react";
 import "./scaffolding.css"
 import CardElement from "./elements/scaffoldingCard";
 import {PROJECTS_WITH_SCAFFOLDING_URL, SCAFFOLDING_URL, STORAGE_URL} from "../../modelData/constantsFile";
-import {GetDummyData} from "../projects/getDummyData";
+import {GetDummyData} from "../../modelData/addData";
 import {useQueryClient} from "react-query";
 /**
  Class that will create an overview of the scaffolding parts

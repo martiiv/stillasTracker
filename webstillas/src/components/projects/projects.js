@@ -3,7 +3,7 @@ import "./projects.css"
 import CardElement from './elements/card'
 import {Route, Routes} from "react-router-dom";
 import {PROJECTS_WITH_SCAFFOLDING_URL} from "../../modelData/constantsFile";
-import {GetDummyData} from "./getDummyData";
+import {GetDummyData} from "../../modelData/addData";
 
 /**
  Class that will create an overview of the projects

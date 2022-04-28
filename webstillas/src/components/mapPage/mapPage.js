@@ -2,8 +2,7 @@ import React from "react";
 import "./mapPage.css"
 import mapboxgl from 'mapbox-gl';
 import {MAP_STYLE_V11, PROJECTS_URL, PROJECTS_WITH_SCAFFOLDING_URL} from "../../modelData/constantsFile";
-import fetchModel from "../../modelData/fetchData";
-import {GetDummyData} from "../projects/getDummyData";
+import {GetDummyData} from "../../modelData/addData";
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ';
 

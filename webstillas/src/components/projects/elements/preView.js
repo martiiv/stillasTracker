@@ -6,7 +6,7 @@ import ScaffoldingCardProject from "../../scaffolding/elements/scaffoldingCardPr
 import InfoModal from "./Modal";
 import {MAP_STYLE_V11, PROJECTS_URL_WITH_ID, WITH_SCAFFOLDING_URL} from "../../../modelData/constantsFile";
 import img from "./../../mapPage/mapbox-marker-icon-20px-orange.png"
-import {GetDummyData} from "../getDummyData";
+import {GetDummyData} from "../../../modelData/addData";
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ';
 

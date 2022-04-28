@@ -4,6 +4,8 @@ import {FormErrors} from "./FormErrors";
 
 export default function AddProjectFunc() {
 
+
+
     const [address, setAddress] = useState({street: "", zipcode: "", municipality: "", county: ""})
 
     const [period, setPeriod] = useState({startDate: "", endDate: ""})
@@ -66,7 +68,7 @@ export default function AddProjectFunc() {
         const name = e.target.name;
         const value = e.target.value;
         if (name.toLowerCase() === "number") {
-            setCustomer({...customer, [name]: parseInt(value) });
+            setCustomer({[name]: parseInt(value) });
             validateFieldProjectCustomer(name, parseInt(value))
             console.log(customer)
         }
