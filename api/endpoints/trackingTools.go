@@ -51,26 +51,24 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 				p := ibs.Parse(bytes)
 				beaconList = append(beaconList, p)
 			}
-			idList, batteryList := getTagLists(gatewayList, beaconList)
-			updateAmountProject(gatewayList, gatewayList[0].Gateway(), w, idList, batteryList)
-
-			idList = append(idList, "Tag ID:"+idList[i]+" battery voltage:"+strconv.FormatFloat(float64(batteryList[idList[i]]), 'E', -1, 32)+"\n")
-
-			fmt.Printf("\n-----------------------------------------------------")
-			fmt.Println("\nBeacon payload:")
-			fmt.Printf("Time of POST: %v \n", time.Now())
-			fmt.Printf("Gateway: %v\n", gatewayList[0].Gateway())
-			fmt.Printf("Amount of tags registered: %v \n", len(idList))
-			fmt.Printf("List of tags:\n %v", idList)
-			fmt.Printf("-----------------------------------------------------\n")
 		} else {
 			fmt.Println("Error: Invalid input message")
 			fmt.Println(os.Args[1])
 		}
 	}
+	idList, _ := getTagLists(gatewayList, beaconList)
+	updateAmountProject(gatewayList[0].Gateway(), w, idList)
+
+	fmt.Printf("\n-----------------------------------------------------")
+	fmt.Println("\nBeacon payload:")
+	fmt.Printf("Time of POST: %v \n", time.Now())
+	fmt.Printf("Gateway: %v\n", gatewayList[0].Gateway())
+	fmt.Printf("Amount of tags registered: %v \n", len(idList))
+	fmt.Printf("List of tags:\n %v", idList)
+	fmt.Printf("-----------------------------------------------------\n")
 }
 
-func updateAmountProject(gatewayList []*igs.Message, beaconID string, w http.ResponseWriter, idList []string, batteryList map[string]float32) {
+func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
@@ -84,19 +82,14 @@ func updateAmountProject(gatewayList []*igs.Message, beaconID string, w http.Res
 	}
 }
 
-func getTags(w http.ResponseWriter) {
-
-}
-
 func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
 	ProjectCollection = database.Client.Doc(constants.P_LocationCollection + "/" + constants.P_ProjectDocument)
-
-	fmt.Printf("%v", beaconID)
 
 	project, err := http.NewRequest(http.MethodGet, "http://10.212.138.205:8080/stillastracking/v1/api/gateway?id="+beaconID+"", nil)
 	if err != nil {
 		tool.HandleError(tool.INVALIDREQUEST, w)
 	}
+
 	var responseStruct _struct.Gateway
 
 	response, err := ioutil.ReadAll(project.Body)
