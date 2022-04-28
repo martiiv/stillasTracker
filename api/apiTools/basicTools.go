@@ -102,7 +102,7 @@ func GetQueryProfile(r *http.Request) (map[string]string, bool) {
 }
 
 /*
-getQueryCustomer Function returns a query list containing the queries specific to the profile endpoint
+GetQueryCustomer Function returns a query list containing the queries specific to the profile endpoint
 */
 func GetQueryCustomer(w http.ResponseWriter, r *http.Request) string {
 	w.Header().Set("Content-Type", "application/json")

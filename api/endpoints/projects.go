@@ -122,12 +122,6 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	queries := mux.Vars(r)
 
-	/*query, err := tool.GetQueryProject(r)
-	if !err {
-		tool.HandleError(tool.INVALIDREQUEST, w)
-		return
-	}*/
-
 	switch true {
 	case queries[constants.P_idURL] == "" && queries[constants.P_nameURL] == "" && queries[constants.P_State] == "":
 		getProjectCollection(w, r) //If the query has keywords specific to the state of the project it ends up here
