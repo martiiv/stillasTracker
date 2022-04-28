@@ -3,15 +3,38 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './card.css'
 import img from '../images/blog-item.jpg'
 import {Link} from "react-router-dom";
+import {PROJECTS_URL} from "../../../modelData/constantsFile";
+import deleteModel from "../../../modelData/deleteProject";
+import {useQueryClient} from "react-query";
 
 
 function CardElement(props){
+    const queryClient = useQueryClient()
+
+
+
+    const DeleteProject = async () => {
+        const deleteBody =
+            [
+            {
+                id: props.id
+            }
+        ]
+
+        await deleteModel(PROJECTS_URL, (deleteBody)).catch(e => console.log(e)).then(e => console.log("success"))
+        await queryClient.invalidateQueries("allProjects")
+    }
+
     return(
         <div className={"main"}>
             <article className={"card"}>
+                <div className={"name-btn"}>
                     <section className={"header"}>
                         <h3>{props.name}</h3>
                     </section>
+                    <button className={"btn"} onClick={DeleteProject}>Slett</button>
+                </div>
+
                     <section className={"image"}>
                         <img src={img} alt={""}/>
                     </section>
