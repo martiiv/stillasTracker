@@ -8,7 +8,6 @@ Last edit: Martin Iversen 17.03.2022
 
 //ScaffoldingType will be used when getting info from scaffolding units
 type ScaffoldingType struct {
-	Id           string `json:"id"`
 	Type         string `json:"type"`
 	Project      string `json:"project"`
 	BatteryLevel int    `json:"batteryLevel"`

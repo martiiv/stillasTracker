@@ -275,7 +275,7 @@ func getAllScaffoldingParts(w http.ResponseWriter) {
 			var scaffoldPart _struct.ScaffoldingType
 			partByte, err := json.Marshal(part)
 			if err != nil {
-				tool.HandleError(tool.UNMARSHALLERROR, w)
+				tool.HandleError(tool.MARSHALLERROR, w)
 				return
 			}
 
