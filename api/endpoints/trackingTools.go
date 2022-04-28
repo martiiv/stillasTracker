@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"cloud.google.com/go/firestore"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -68,13 +69,9 @@ func updateAmountProject(gatewayList []*igs.Message, beaconID string, w http.Res
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
 	scaffoldingLIst := getProjectInfo(w, beaconID)
-
-	updateRegistered(w, scaffoldingLIst, idList, batteryList)
-
-	for _, v := range gatewayList {
-		tagID := v.Beacon()
-		print(tagID)
-	}
+	updatedProject := updateRegistered(w, scaffoldingLIst, idList)
+	fmt.Printf("%v", updatedProject)
+	//_, err := database.Client.Collection()
 }
 
 func getTags(w http.ResponseWriter) {
@@ -132,10 +129,6 @@ func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
 	return projectStruct
 }
 
-func addIDtoPart(m *igs.Message) {
-
-}
-
 func getTagLists(gatewayList []*igs.Message, tagList []*ibs.Payload) ([]string, map[string]float32) {
 	var printList []string
 	var tagIDList []string
@@ -181,8 +174,8 @@ func updateRegistered(w http.ResponseWriter, tagList _struct.GetProject, idList 
 }
 
 /*
-TODO Årets støggeste mest uoptimaliserte møkkafunksjon : )
-*/
+
+ */
 func getTagTypes(w http.ResponseWriter, projectList _struct.GetProject, idList []string) map[string]int {
 	var typeList map[string]int
 	var resultList map[string]int
@@ -200,6 +193,7 @@ func getTagTypes(w http.ResponseWriter, projectList _struct.GetProject, idList [
 				tool.HandleError(tool.DATABASEREADERROR, w)
 				return nil
 			}
+			//TODO oppdater batterinivå her et sted
 			counter = counter + 1
 		}
 		resultList[j] = counter
@@ -208,7 +202,10 @@ func getTagTypes(w http.ResponseWriter, projectList _struct.GetProject, idList [
 	return resultList
 }
 
-func updateProjectInDatabase(w http.ResponseWriter, updatedProject _struct.GetProject) {
-	batch := database.Client.Batch()
+func updateBatteryOnTag(w http.ResponseWriter, battery float32, scaffoldingRef *firestore.DocumentRef) {
+
+}
+
+func updateProjectOnTag() {
 
 }
