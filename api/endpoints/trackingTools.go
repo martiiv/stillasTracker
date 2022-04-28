@@ -72,7 +72,7 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Time of POST: %v \n", time.Now())
 	fmt.Printf("Gateway: %v\n", gatewayList[0].Gateway())
 	fmt.Printf("Amount of tags registered: %v \n", len(idList))
-	fmt.Printf("List of tags:\n %v", printList)
+	fmt.Printf("List of tags:\n %v \n", printList)
 	fmt.Printf("-----------------------------------------------------\n")
 }
 
@@ -160,11 +160,11 @@ func getTagLists(gatewayList []*igs.Message, tagList []*ibs.Payload) ([]string, 
 }
 
 func updateRegistered(w http.ResponseWriter, oldProject _struct.GetProject, idList []string) _struct.GetProject {
-
 	var updatedProject _struct.GetProject
 	updatedProject.NewProject = oldProject.NewProject
 
 	resultList := getTagTypes(w, oldProject, idList)
+
 	fmt.Printf("%v", resultList)
 
 	for i := range oldProject.ScaffoldingArray {

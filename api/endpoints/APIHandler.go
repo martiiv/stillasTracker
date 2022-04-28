@@ -1,7 +1,6 @@
 package endpoints
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -57,7 +56,6 @@ func Handle() {
 	router.HandleFunc(baseURL+"/gateway/input", UpdatePosition)
 
 	http.Handle("/", router)
-	fmt.Println("MQTT Server initializing...")
 	log.Println(http.ListenAndServe(getPort(), nil))
 }
 
