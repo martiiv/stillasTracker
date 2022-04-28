@@ -36,19 +36,22 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 
 	var gatewayList []*igs.Message
 	var beaconList []*ibs.Payload
-	var printlist []string
+	var printList []string
 
 	payload, _ := ioutil.ReadAll(r.Body)
 	convertedPayload := string(payload)
 	payloadList := strings.Split(convertedPayload, "\n")
 
 	for i := 0; i < len(payloadList)-1; i++ {
+
 		if m := igs.Parse(payloadList[i]); m != nil {
 			gatewayList = append(gatewayList, m)
+
 			if bytes, err := hex.DecodeString(m.Payload()); err == nil {
 				p := ibs.Parse(bytes)
 				beaconList = append(beaconList, p)
 			}
+
 		} else {
 			fmt.Println("Error: Invalid input message")
 			fmt.Println(os.Args[1])
@@ -56,10 +59,11 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	}
 	idList, _ := getTagLists(gatewayList, beaconList)
 	for i := range idList {
+
 		batteryVoltage, _ := beaconList[i].BatteryVoltage()
 		battery := strconv.FormatFloat(float64(batteryVoltage), 'E', -1, 32)
 
-		printlist = append(printlist, "Tag id:"+idList[i]+" Battery voltage: "+battery)
+		printList = append(printList, "Tag id:"+idList[i]+" Battery voltage: "+battery)
 	}
 	updateAmountProject(gatewayList[0].Gateway(), w, idList)
 
@@ -68,7 +72,7 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Time of POST: %v \n", time.Now())
 	fmt.Printf("Gateway: %v\n", gatewayList[0].Gateway())
 	fmt.Printf("Amount of tags registered: %v \n", len(idList))
-	fmt.Printf("List of tags:\n %v", printlist)
+	fmt.Printf("List of tags:\n %v", printList)
 	fmt.Printf("-----------------------------------------------------\n")
 }
 
@@ -78,8 +82,8 @@ func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
-	scaffoldingLIst := getProjectInfo(w, beaconID)
-	updatedProject := updateRegistered(w, scaffoldingLIst, idList)
+	oldProject := getProjectInfo(w, beaconID)
+	updatedProject := updateRegistered(w, oldProject, idList)
 
 	_, err := database.Client.Doc(constants.P_LocationCollection+"/"+constants.P_ProjectDocument).Collection(constants.P_Active).Doc(string(rune(updatedProject.ProjectID))).Set(database.Ctx, updatedProject, firestore.MergeAll)
 	if err != nil {
@@ -155,18 +159,19 @@ func getTagLists(gatewayList []*igs.Message, tagList []*ibs.Payload) ([]string, 
 	return tagIDList, batteryList
 }
 
-func updateRegistered(w http.ResponseWriter, tagList _struct.GetProject, idList []string) _struct.GetProject {
+func updateRegistered(w http.ResponseWriter, oldProject _struct.GetProject, idList []string) _struct.GetProject {
 
 	var updatedProject _struct.GetProject
-	updatedProject.NewProject = tagList.NewProject
+	updatedProject.NewProject = oldProject.NewProject
 
-	resultList := getTagTypes(w, tagList, idList)
+	resultList := getTagTypes(w, oldProject, idList)
 	fmt.Printf("%v", resultList)
 
-	for i := range tagList.ScaffoldingArray {
-		scaffoldingType := tagList.ScaffoldingArray[i].Type
+	for i := range oldProject.ScaffoldingArray {
+
+		scaffoldingType := oldProject.ScaffoldingArray[i].Type
 		newAmount := resultList[scaffoldingType]
-		expected := tagList.ScaffoldingArray[i].Expected
+		expected := oldProject.ScaffoldingArray[i].Expected
 
 		updatedProject.ScaffoldingArray[i].Type = scaffoldingType
 		updatedProject.ScaffoldingArray[i].Expected = expected
@@ -179,28 +184,27 @@ func updateRegistered(w http.ResponseWriter, tagList _struct.GetProject, idList 
 
  */
 func getTagTypes(w http.ResponseWriter, projectList _struct.GetProject, idList []string) map[string]int {
-	typeList := make(map[string]int)
 	resultList := make(map[string]int)
-	for i := range projectList.ScaffoldingArray {
-		typeList[projectList.ScaffoldingArray[i].Type] = projectList.ScaffoldingArray[i].Registered
-	}
 
-	for j, _ := range typeList {
+	for j := range projectList.ScaffoldingArray {
 		counter := 0
+		scaffoldingType := projectList.ScaffoldingArray[j].Type
 		for i := range idList {
-			objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(j).Doc(idList[i])
+			objectPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldingType).Doc(idList[i])
 
-			_, err := database.GetDocumentData(objectPath)
+			data, err := database.GetDocumentData(objectPath)
 			if err != nil {
 				tool.HandleError(tool.DATABASEREADERROR, w)
 				return nil
 			}
+			if data != nil {
+				counter = counter + 1
+			}
 			//TODO oppdater batterinivå her et sted
-			counter = counter + 1
-		}
-		resultList[j] = counter
-	}
 
+		}
+		resultList[scaffoldingType] = counter
+	}
 	return resultList
 }
 
