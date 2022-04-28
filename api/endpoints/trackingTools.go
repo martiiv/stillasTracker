@@ -54,11 +54,19 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 			idList, batteryList := getTagLists(gatewayList, beaconList)
 			updateAmountProject(gatewayList, gatewayList[i].Gateway(), w, idList, batteryList)
 
+			idList = append(idList, "Tag ID:"+idList[i]+" battery voltage:"+strconv.FormatFloat(float64(batteryList[idList[i]]), 'E', -1, 32)+"\n")
+
+			fmt.Printf("\n-----------------------------------------------------")
+			fmt.Println("\nBeacon payload:")
+			fmt.Printf("Time of POST: %v \n", time.Now())
+			fmt.Printf("Gateway: %v\n", gatewayList[0].Gateway())
+			fmt.Printf("Amount of tags registered: %v \n", len(idList))
+			fmt.Printf("List of tags:\n %v", idList)
+			fmt.Printf("-----------------------------------------------------\n")
 		} else {
 			fmt.Println("Error: Invalid input message")
 			fmt.Println(os.Args[1])
 		}
-
 	}
 }
 
@@ -70,8 +78,10 @@ func updateAmountProject(gatewayList []*igs.Message, beaconID string, w http.Res
 
 	scaffoldingLIst := getProjectInfo(w, beaconID)
 	updatedProject := updateRegistered(w, scaffoldingLIst, idList)
-	fmt.Printf("%v", updatedProject)
-	//_, err := database.Client.Collection()
+	_, err := database.Client.Doc(constants.P_LocationCollection+"/"+constants.P_ProjectDocument).Collection(constants.P_Active).Doc(string(rune(updatedProject.ProjectID))).Set(database.Ctx, updatedProject, firestore.MergeAll)
+	if err != nil {
+		tool.HandleError(tool.DATABASEADDERROR, w)
+	}
 }
 
 func getTags(w http.ResponseWriter) {
@@ -130,7 +140,6 @@ func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
 }
 
 func getTagLists(gatewayList []*igs.Message, tagList []*ibs.Payload) ([]string, map[string]float32) {
-	var printList []string
 	var tagIDList []string
 	batteryList := make(map[string]float32)
 
@@ -140,19 +149,9 @@ func getTagLists(gatewayList []*igs.Message, tagList []*ibs.Payload) ([]string, 
 		tagID := string(runePayload[6:12])
 		battery, _ := tagList[i].BatteryVoltage()
 
-		printList = append(printList, "Tag ID:"+tagID+" battery voltage:"+strconv.FormatFloat(float64(battery), 'E', -1, 32)+"\n")
 		tagIDList = append(tagIDList, tagID)
 		batteryList[tagID] = battery
 	}
-
-	fmt.Printf("\n-----------------------------------------------------")
-	fmt.Println("\nBeacon payload:")
-	fmt.Printf("Time of POST: %v \n", time.Now())
-	fmt.Printf("Gateway: %v\n", gatewayList[0].Gateway())
-	fmt.Printf("Amount of tags registered: %v \n", len(tagList))
-	fmt.Printf("List of tags:\n %v", printList)
-	fmt.Printf("-----------------------------------------------------\n")
-
 	return tagIDList, batteryList
 }
 
