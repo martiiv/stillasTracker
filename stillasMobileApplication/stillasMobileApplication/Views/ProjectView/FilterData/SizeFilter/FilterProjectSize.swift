@@ -8,30 +8,83 @@
 import SwiftUI
 
 struct FilterProjectSize: View {
+    @State var scoreFrom: Int = 100
+    @State var scoreTo: Int = 1000
+    
+    @Binding var scoreFromBind: Int
+    @Binding var scoreToBind: Int
+    
+    @Binding var sizeFilterActive: Bool
+    
     var body: some View {
         VStack {
-            IntSlider()
+            IntSlider(sizeFilterActive: $sizeFilterActive, scoreFrom: scoreFrom, scoreFromBind: $scoreFromBind, scoreTo: scoreTo, scoreToBind: $scoreToBind)
+                .onChange(of: scoreTo) { val in
+                    scoreToBind = val
+                    sizeFilterActive = true
+                }
+                .onChange(of: scoreFrom) { val in
+                    scoreFromBind = val
+                    sizeFilterActive = true
+                }
         }
     }
 }
 
-struct IntSlider: View {
-    private enum Field: Int, CaseIterable {
-            case input
-        }
+extension UIScreen {
+   static let screenWidth = UIScreen.main.bounds.size.width
+   static let screenHeight = UIScreen.main.bounds.size.height
+   static let screenSize = UIScreen.main.bounds.size
+}
 
-    @FocusState private var focusedField: Field?
-
+struct CornerRadiusStyle: ViewModifier {
+    var radius: CGFloat
+    var corners: UIRectCorner
     
-    @State var scoreFrom: Int = 0
+    struct CornerRadiusShape: Shape {
+
+        var radius = CGFloat.infinity
+        var corners = UIRectCorner.allCorners
+
+        func path(in rect: CGRect) -> Path {
+            let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
+            return Path(path.cgPath)
+        }
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .clipShape(CornerRadiusShape(radius: radius, corners: corners))
+    }
+}
+
+extension View {
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        ModifiedContent(content: self, modifier: CornerRadiusStyle(radius: radius, corners: corners))
+    }
+}
+
+struct IntSlider: View {
+    enum Field: Int, CaseIterable {
+            case input
+    }
+
+    @Binding var sizeFilterActive: Bool
+    
+    @FocusState var focusedField: Field?
+    
+    @State var scoreFrom: Int = 100
+    @Binding var scoreFromBind: Int
     @ObservedObject var input = NumbersOnly()
     
-    @State var scoreTo: Int = 0
+    @State var scoreTo: Int = 1000
+    @Binding var scoreToBind: Int
+
     @ObservedObject var input2 = NumbersOnly()
     
-    private var sliderSizeMin = 100.0
-    private var sliderSizeMax = 1000.0
-    private var stepLength = 50.0
+    var sliderSizeMin = 100.0
+    var sliderSizeMax = 1000.0
+    var stepLength = 50.0
 
     var intProxyS1: Binding<Double>{
         Binding<Double>(
@@ -74,7 +127,6 @@ struct IntSlider: View {
                             .onChange(of: input.value) { value in
                                 scoreFrom = Int(value) ?? Int(sliderSizeMax + sliderSizeMin) / 2
                             }
-                        //.frame(height: 100)
                             .keyboardType(.numberPad)
                             .focused($focusedField, equals: .input)
                             .frame(alignment: .center)
@@ -182,7 +234,14 @@ struct IntSlider: View {
             }
         }
         Spacer()
-        Button(action: { print("Bruk") }) {
+        Button(action: {
+            print("Bruk")
+            scoreFrom = Int(input.value) ?? 100
+            scoreFromBind = scoreFrom
+            scoreTo = Int(input2.value) ?? 1000
+            scoreToBind = scoreTo
+            sizeFilterActive = true
+        }) {
             Text("Bruk")
                 .frame(width: 300, height: 50, alignment: .center)
         }
@@ -210,9 +269,9 @@ class NumbersOnly: ObservableObject {
         }
     }
 }
-
+/*
 struct FilterProjectSize_Previews: PreviewProvider {
     static var previews: some View {
         FilterProjectSize()
     }
-}
+}*/

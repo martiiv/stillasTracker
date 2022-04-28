@@ -18,9 +18,13 @@ struct FilterView: View {
     @Binding var projectArea: String
     @Binding var projectSize: Int
     @Binding var projectStatus: String
+    @Binding var minProjectSize: Int
+    @Binding var maxProjectSize: Int
+    // TODO: DENNA TINGEN HER ISTEDENFOR scoreFrom
     
     @State var periodFilterActive: Bool = false
     @State var areaFilterActive: Bool = false
+    @State var sizeFilterActive: Bool = false
     
     @Binding var filterArr: [String]
     @Binding var filterArrArea: [String]
@@ -55,7 +59,15 @@ struct FilterView: View {
                                     selEndDateBind = selectedEndDate
                                 }
                         case "Størrelse":
-                            FilterProjectSize()
+                            FilterProjectSize(scoreFromBind: $minProjectSize, scoreToBind: $maxProjectSize, sizeFilterActive: $sizeFilterActive)
+                                .onChange(of: minProjectSize) { selectedMinSize in
+                                    minProjectSize = selectedMinSize
+                                    sizeFilterActive = true
+                                }
+                                .onChange(of: maxProjectSize) { selectedMaxSize in
+                                    maxProjectSize = selectedMaxSize
+                                    sizeFilterActive = true
+                                }
                             /*
                         case "Status":
                             print("Add status view")
@@ -64,7 +76,8 @@ struct FilterView: View {
                             print("Did not find any")
                         */
                         default:
-                            AddProjectView()
+                            Text("Default")
+                            //AddProjectView()
                         }
                     } label: {
                         HStack {
@@ -83,7 +96,10 @@ struct FilterView: View {
                                 }
                                 .lineLimit(1)
                             case "Størrelse":
-                                Text("")
+                                HStack {
+                                    ActiveSizeFilterView(filterArr: $filterArr, projectMinSize: $minProjectSize, projectMaxSize: $maxProjectSize, sizeFilterActive: $sizeFilterActive)
+                                }
+                                .lineLimit(1)
                             case "Status":
                                 Text("")
                             default:
@@ -103,6 +119,9 @@ struct FilterView: View {
                     print(periodFilterActive)
                     print(filterArr)
                 }
+                if (filterArr.contains("size")) {
+                    sizeFilterActive = true
+                }
             }
             .navigationTitle(Text("Filter"))
             .navigationViewStyle(StackNavigationViewStyle())
@@ -121,6 +140,11 @@ struct FilterView: View {
                         addFilterItem(filterItem: "period")
                     } else {
                         deleteFilterItem(filterItem: "period")
+                    }
+                    if sizeFilterActive {
+                        addFilterItem(filterItem: "size")
+                    } else {
+                        deleteFilterItem(filterItem: "size")
                     }
                     
                     print(filterArr)
@@ -209,22 +233,28 @@ struct ActiveAreaFilterView: View {
         if areaFilterActive {
             HStack {
                 HStack {
-                    ScrollView (.horizontal, showsIndicators: false) {
-                        HStack {
-                            Text("(\(filterArr.count))")
-                                .padding(.leading, 4)
-                            ForEach(filterArr.indices, id: \.self) { index in
-                                HStack {
-                                    Text("\(filterArr[index])")
-                                        .lineLimit(1)
-                                        .padding(-3)
-                                    if index != filterArr.count-1 {
-                                        Text(",")
+                    //ScrollViewReader { scrollView in
+                        ScrollView (.horizontal, showsIndicators: false) {
+                            HStack {
+                                Text("(\(filterArr.count))")
+                                    .padding(.leading, 4)
+                                ForEach(filterArr.indices, id: \.self) { index in
+                                    HStack {
+                                        Text("\(filterArr[index])")
+                                            .lineLimit(1)
+                                            .padding(-3)
+                                        if index != filterArr.count-1 {
+                                            Text(",")
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
+                    /*
+                        .onAppear {
+                            scrollView.scrollTo(filterArr[filterArr.endIndex])
+                        }
+                    }*/
                 }
                 .font(.system(size: 11).bold())
                 .padding(.vertical, 5)
@@ -241,6 +271,63 @@ struct ActiveAreaFilterView: View {
                 .buttonStyle(PlainButtonStyle())
             }
             .frame(width: 150, alignment: .trailing)
+            .foregroundColor(.white)
+            .background(Color.blue)
+            .cornerRadius(5)
+            .padding(.vertical, 5)
+        }
+    }
+    
+    func deleteFilterItem(filterItem: String) {
+        if let i = filterArr.firstIndex(of: filterItem) {
+            filterArr.remove(at: i)
+        }
+    }
+}
+
+struct ActiveSizeFilterView: View {
+    @Binding var filterArr: [String]
+    @Binding var projectMinSize: Int
+    @Binding var projectMaxSize: Int
+    @Binding var sizeFilterActive: Bool
+
+    var body: some View {
+
+        if sizeFilterActive {
+            HStack {
+                HStack {
+                    ScrollView (.horizontal, showsIndicators: false) {
+                        HStack {
+                            Text("\(projectMinSize) m")
+                            + Text("2")
+                                .baselineOffset(6)
+                                .font(Font.system(size: 10))
+
+                            + Text(" - ")
+                            + Text("\(projectMaxSize) m")
+                            + Text("2")
+                                .baselineOffset(6)
+                                .font(Font.system(size: 10))
+                        }
+                        .padding(.leading, 5)
+                    }
+                }
+                .font(.system(size: 11).bold())
+                .padding(.vertical, 5)
+                .lineLimit(1)
+                
+                Button(action: {
+                    deleteFilterItem(filterItem: "size")
+                    self.sizeFilterActive = false
+                }) {
+                    Image(systemName: "x.circle.fill")
+                        .foregroundColor(Color.secondary)
+                }
+                .padding(.trailing, 5)
+                .buttonStyle(PlainButtonStyle())
+            }
+            .frame(alignment: .trailing)
+            .scaledToFit()
             .foregroundColor(.white)
             .background(Color.blue)
             .cornerRadius(5)
