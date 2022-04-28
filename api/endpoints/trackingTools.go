@@ -14,7 +14,6 @@ import (
 	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
 	_struct "stillasTracker/api/struct"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -74,7 +73,6 @@ func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
-	fmt.Printf("%v line 76", beaconID)
 	scaffoldingLIst := getProjectInfo(w, beaconID)
 	updatedProject := updateRegistered(w, scaffoldingLIst, idList)
 
@@ -85,51 +83,47 @@ func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string
 }
 
 func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
-	fmt.Printf("%v inni getProject", beaconID)
+
 	ProjectCollection = database.Client.Doc(constants.P_LocationCollection + "/" + constants.P_ProjectDocument)
 
-	project, err := http.NewRequest(http.MethodGet, "http://10.212.138.205:8080/stillastracking/v1/api/gateway?id="+beaconID+"", nil)
-	if err != nil {
-		tool.HandleError(tool.INVALIDREQUEST, w)
-	}
+	documentReference := gatewayCollection.Doc(beaconID)
 
-	var responseStruct _struct.Gateway
-
-	response, err := ioutil.ReadAll(project.Body)
-	if err != nil {
-		tool.HandleError(tool.READALLERROR, w)
-	}
-	project.Body.Close()
-
-	marshal, err := json.Marshal(response)
-	if err != nil {
-		tool.HandleError(tool.MARSHALLERROR, w)
-		return _struct.GetProject{}
-	}
-
-	err = json.Unmarshal(marshal, &responseStruct)
-	if err != nil {
-		tool.HandleError(tool.UNMARSHALLERROR, w)
-		return _struct.GetProject{}
-	}
-	projectRef, err := http.NewRequest(http.MethodGet, "http://10.212.138.205:8080/stillastracking/v1/api/project?id="+strconv.Itoa(responseStruct.ProjectID)+"&scaffolding=true", nil)
+	data, err := database.GetDocumentData(documentReference)
 	if err != nil {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return _struct.GetProject{}
 	}
-	data, err := ioutil.ReadAll(projectRef.Body)
-	if err != nil {
-		tool.HandleError(tool.READALLERROR, w)
-		return _struct.GetProject{}
-	}
 
-	var projectStruct _struct.GetProject
-
-	marshal, err = json.Marshal(data)
+	marshalled, err := json.Marshal(data)
 	if err != nil {
 		tool.HandleError(tool.MARSHALLERROR, w)
 		return _struct.GetProject{}
 	}
+
+	var gateway _struct.Gateway
+	err = json.Unmarshal(marshalled, &gateway)
+	if err != nil {
+		tool.HandleError(tool.UNMARSHALLERROR, w)
+		return _struct.GetProject{}
+	}
+
+	if gateway.GatewayID == "" {
+		tool.HandleError(tool.COULDNOTFINDDATA, w)
+	}
+
+	project, err := IterateProjects(gateway.ProjectID, "", "")
+	if err != nil {
+		tool.HandleError(tool.NODOCUMENTWITHID, w)
+	}
+	newProject, _ := database.GetDocumentData(project[0])
+	var projectStruct _struct.GetProject
+
+	marshal, err := json.Marshal(newProject)
+	if err != nil {
+		tool.HandleError(tool.MARSHALLERROR, w)
+		return _struct.GetProject{}
+	}
+
 	err = json.Unmarshal(marshal, &projectStruct)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
