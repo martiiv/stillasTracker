@@ -130,8 +130,9 @@ struct SizeGreaterThanFilter: View {
     }
 }
 
+/*
 struct SizeGreaterThanFilter_Previews: PreviewProvider {
     static var previews: some View {
         SizeGreaterThanFilter()
     }
-}
+}*/
