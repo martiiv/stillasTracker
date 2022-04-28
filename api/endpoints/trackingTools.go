@@ -52,7 +52,7 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 				beaconList = append(beaconList, p)
 			}
 			idList, batteryList := getTagLists(gatewayList, beaconList)
-			updateAmountProject(gatewayList, gatewayList[i].Gateway(), w, idList, batteryList)
+			updateAmountProject(gatewayList, gatewayList[0].Gateway(), w, idList, batteryList)
 
 			idList = append(idList, "Tag ID:"+idList[i]+" battery voltage:"+strconv.FormatFloat(float64(batteryList[idList[i]]), 'E', -1, 32)+"\n")
 
@@ -90,7 +90,7 @@ func getTags(w http.ResponseWriter) {
 
 func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
 	ProjectCollection = database.Client.Doc(constants.P_LocationCollection + "/" + constants.P_ProjectDocument)
-	project, err := http.NewRequest(http.MethodGet, "http://10.212.138.205:8080/stillastracking/v1/api/gateway?id="+beaconID, nil)
+	project, err := http.NewRequest(http.MethodGet, "http://10.212.138.205:8080/stillastracking/v1/api/gateway?id="+beaconID+"", nil)
 	if err != nil {
 		tool.HandleError(tool.INVALIDREQUEST, w)
 	}
