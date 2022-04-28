@@ -18,7 +18,7 @@ export default function AddProjectFunc(string) {
     const [customerNumber, setCustomerNumber] = useState({number: 0})
 
     const [projectDetails, setProjectDetails] = useState({
-        projectID: 23322,
+        projectID: 2122398,
         projectName: '',
         latitude: 60.79077759591496,
         longitude: 10.683249543160402,

@@ -68,13 +68,9 @@ class MapPageClass extends React.Component {
 
 
 export const MapPage = () => {
-    const queryClient = useQueryClient()
     let projects
     let allProjectsLoading
 
-    if (queryClient.getQueryData("allProjects") !== undefined) {
-        projects = queryClient.getQueryData("allProjects")
-    }
     const {isLoading: allProjects, data} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
     projects = data
     allProjectsLoading = allProjects

@@ -4,6 +4,8 @@ import {
     AppBar, Toolbar, Button
 } from '@material-ui/core';
 import {Link} from "react-router-dom";
+import {DropdownButton} from "react-bootstrap";
+import DropdownItem from "react-bootstrap/DropdownItem";
 
 /**
  Class that will create a topbar for the application.
@@ -22,12 +24,20 @@ class TopBar extends React.Component {
                     <Link className="link" to="/stillas">
                         <Button className="button">Stillasdeler</Button>
                     </Link>
+
                     <Link className="link" to="/kart">
                         <Button className="button">Kart</Button>
                     </Link>
                     <Link className="link" to="/logistics">
                         <Button className="button">Logistikk</Button>
                     </Link>
+                    <DropdownButton id="dropdown-button"
+                                    title="Bruker"
+                                    size="sm"
+                    >
+                        <DropdownItem href="#/action-1">Bruker Informasjon</DropdownItem>
+                        <DropdownItem>Logg ut</DropdownItem>
+                    </DropdownButton>
                 </Toolbar>
             </AppBar>
         );
