@@ -1,10 +1,11 @@
 
 .preView-Project-Main{
-    display: flex;
     width: 100%;
     height: 100%;
-    float: left;
     position: absolute;
+    display:flex;
+    flex-direction: column;
+
 }
 
 .transfer-scaffolding-btn{
@@ -27,7 +28,10 @@
 
 .tabs{
     padding-top: 10px;
-    padding-left: 150px;
+    width: fit-content;
+    position: sticky;
+    padding-left: 450px;
+
 }
 
 .grid-container-project-scaffolding{

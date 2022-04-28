@@ -2,29 +2,30 @@ import React, {useState} from "react";
 import {Button, Modal} from "react-bootstrap";
 import img from "../images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 import {Link} from "react-router-dom";
+import { useQueryClient} from 'react-query'
 
 
-function scaffoldingInProject(type, props){
-    const projects = sessionStorage.getItem('allProjects')
-    const jsonProjects = JSON.parse(projects)
-
-   const result = jsonProjects.map((element) => {
-         return {...element, scaffolding: element.scaffolding.filter((subElement) =>
-                subElement.type.toLowerCase() === type.toLowerCase() && subElement.Quantity.expected !== 0)}
+function ScaffoldingInProject(type, projects) {
+    const queryClient = useQueryClient()
+    let dataProjects = queryClient.getQueryData("allProjects")
+    const result = dataProjects.map((element) => {
+        return {
+            ...element, scaffolding: element.scaffolding.filter((subElement) =>
+                subElement.type.toLowerCase() === type.toLowerCase() && subElement.Quantity.expected !== 0)
+        }
     })
-
-    //todo mulig legge til sortering??
     const results = result.filter(element => Object.keys(element.scaffolding).length !== 0)
-    return(
-        results.map(e =>{
-            return(
-                <article key={e.projectID} className={"project-card-long"}>
+
+    return (
+        results.map(e => {
+                return (
+                    <article key={e.projectID} className={"project-card-long"}>
                         <section className={"header"}>
                             <h3>{e.projectName.toUpperCase()}</h3>
                         </section>
                         <div className={"main-body-project-card"}>
-                            <section  className={"information-highlights-cta"}>
-                                <div  className={"information-highlights"}>
+                            <section className={"information-highlights-cta"}>
+                                <div className={"information-highlights"}>
                                     <ul className={"information-list"}>
                                         <li className={"horizontal-list"}>
                                             <div className={"highlightText"}>
@@ -51,24 +52,18 @@ function scaffoldingInProject(type, props){
                                 </section>
                                 <section className={"card-btn"}>
                                     <div className={"card-btns"}>
-                                        <Link className={"btn"} to={"/project/" + e.projectID}>Mer Informasjon</Link>
+                                        <Link className={"btn"} to={"/project/" + e.projectID}>More Information</Link>
                                     </div>
                                 </section>
                             </div>
                         </div>
-                    <hr/>
-
+                        <hr/>
                     </article>
-
-            )
-        })
+                )
+            }
+        )
     )
 }
-
-
-
-
-
 
 
 export default function InfoModal(props) {
@@ -78,7 +73,7 @@ export default function InfoModal(props) {
     //https://codesandbox.io/s/react-week-date-view-forked-ruxjr9?file=/src/App.js:857-868
     //todo gjør om variablenavn
     return (
-        <>
+        <div>
             <Button className="nextButton" onClick={handleShow}>
                 Vis detaljer
             </Button>
@@ -94,7 +89,9 @@ export default function InfoModal(props) {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {scaffoldingInProject(props.type, props)}
+                    {
+                        ScaffoldingInProject(props.type, props.project)
+                    }
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleClose}>
@@ -102,6 +99,6 @@ export default function InfoModal(props) {
                     </Button>
                 </Modal.Footer>
             </Modal>
-        </>
+        </div>
     );
 }
