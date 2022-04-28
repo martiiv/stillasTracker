@@ -25,13 +25,14 @@ struct FilterView: View {
     @State var periodFilterActive: Bool = false
     @State var areaFilterActive: Bool = false
     @State var sizeFilterActive: Bool = false
+    @State var statusFilterActive: Bool = false
     
     @Binding var filterArr: [String]
     @Binding var filterArrArea: [String]
 
     @State var selStartDate = Date()
     @State var selEndDate = Date()
-        
+    
     var body: some View {
         NavigationView {
             List {
@@ -68,16 +69,15 @@ struct FilterView: View {
                                     maxProjectSize = selectedMaxSize
                                     sizeFilterActive = true
                                 }
-                            /*
                         case "Status":
-                            print("Add status view")
-                            // ADD status view
+                            FilterProjectStatus(filterArr: $filterArr, selection: $projectStatus)
+                                .onChange(of: projectStatus) { status in
+                                    projectStatus = status
+                                    print(projectStatus)
+                                    statusFilterActive = true
+                                }
                         default:
-                            print("Did not find any")
-                        */
-                        default:
-                            Text("Default")
-                            //AddProjectView()
+                            Text("No views available")
                         }
                     } label: {
                         HStack {
@@ -101,7 +101,10 @@ struct FilterView: View {
                                 }
                                 .lineLimit(1)
                             case "Status":
-                                Text("")
+                                HStack {
+                                    ActiveStatusFilterView(filterArr: $filterArr, projectStatus: $projectStatus, statusFilterActive: $statusFilterActive)
+                                }
+                                .lineLimit(1)
                             default:
                                 Text("")
                             }
@@ -114,13 +117,13 @@ struct FilterView: View {
                     areaFilterActive = true
                 }
                 if ((selStartDateBind != Date.distantPast || selEndDateBind != Date.distantFuture) && filterArr.contains("period")) {
-                    print(periodFilterActive)
                     periodFilterActive = true
-                    print(periodFilterActive)
-                    print(filterArr)
                 }
                 if (filterArr.contains("size")) {
                     sizeFilterActive = true
+                }
+                if (filterArr.contains("status")) {
+                    statusFilterActive = true
                 }
             }
             .navigationTitle(Text("Filter"))
@@ -145,6 +148,11 @@ struct FilterView: View {
                         addFilterItem(filterItem: "size")
                     } else {
                         deleteFilterItem(filterItem: "size")
+                    }
+                    if statusFilterActive {
+                        addFilterItem(filterItem: "status")
+                    } else {
+                        deleteFilterItem(filterItem: "status")
                     }
                     
                     print(filterArr)
