@@ -74,8 +74,10 @@ func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
+	fmt.Printf("%v line 76", beaconID)
 	scaffoldingLIst := getProjectInfo(w, beaconID)
 	updatedProject := updateRegistered(w, scaffoldingLIst, idList)
+
 	_, err := database.Client.Doc(constants.P_LocationCollection+"/"+constants.P_ProjectDocument).Collection(constants.P_Active).Doc(string(rune(updatedProject.ProjectID))).Set(database.Ctx, updatedProject, firestore.MergeAll)
 	if err != nil {
 		tool.HandleError(tool.DATABASEADDERROR, w)
@@ -83,6 +85,7 @@ func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string
 }
 
 func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
+	fmt.Printf("%v inni getProject", beaconID)
 	ProjectCollection = database.Client.Doc(constants.P_LocationCollection + "/" + constants.P_ProjectDocument)
 
 	project, err := http.NewRequest(http.MethodGet, "http://10.212.138.205:8080/stillastracking/v1/api/gateway?id="+beaconID+"", nil)
@@ -96,6 +99,7 @@ func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
 	if err != nil {
 		tool.HandleError(tool.READALLERROR, w)
 	}
+	project.Body.Close()
 
 	marshal, err := json.Marshal(response)
 	if err != nil {
