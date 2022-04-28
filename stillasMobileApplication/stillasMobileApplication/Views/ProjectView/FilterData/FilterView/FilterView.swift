@@ -22,6 +22,8 @@ struct FilterView: View {
     @Binding var maxProjectSize: Int
     // TODO: DENNA TINGEN HER ISTEDENFOR scoreFrom
     
+    @Binding var sizeSortType: String
+    
     @State var periodFilterActive: Bool = false
     @State var areaFilterActive: Bool = false
     @State var sizeFilterActive: Bool = false
@@ -60,7 +62,7 @@ struct FilterView: View {
                                     selEndDateBind = selectedEndDate
                                 }
                         case "Størrelse":
-                            FilterProjectSize(scoreFromBind: $minProjectSize, scoreToBind: $maxProjectSize, sizeFilterActive: $sizeFilterActive)
+                            FilterProjectSize(scoreFromBind: $minProjectSize, scoreToBind: $maxProjectSize, sizeFilterActive: $sizeFilterActive, selection: $sizeSortType)
                                 .onChange(of: minProjectSize) { selectedMinSize in
                                     minProjectSize = selectedMinSize
                                     sizeFilterActive = true
@@ -97,7 +99,8 @@ struct FilterView: View {
                                 .lineLimit(1)
                             case "Størrelse":
                                 HStack {
-                                    ActiveSizeFilterView(filterArr: $filterArr, projectMinSize: $minProjectSize, projectMaxSize: $maxProjectSize, sizeFilterActive: $sizeFilterActive)
+                                    ActiveSizeFilterView(filterArr: $filterArr, projectMinSize: $minProjectSize, projectMaxSize: $maxProjectSize, sizeFilterActive: $sizeFilterActive, selection: $sizeSortType)
+
                                 }
                                 .lineLimit(1)
                             case "Status":
@@ -106,7 +109,7 @@ struct FilterView: View {
                                 }
                                 .lineLimit(1)
                             default:
-                                Text("")
+                                Text("No views available")
                             }
                         }
                     }

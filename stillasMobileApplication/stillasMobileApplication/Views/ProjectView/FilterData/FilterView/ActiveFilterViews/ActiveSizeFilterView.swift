@@ -12,6 +12,7 @@ struct ActiveSizeFilterView: View {
     @Binding var projectMinSize: Int
     @Binding var projectMaxSize: Int
     @Binding var sizeFilterActive: Bool
+    @Binding var selection: String
 
     var body: some View {
 
@@ -19,19 +20,39 @@ struct ActiveSizeFilterView: View {
             HStack {
                 HStack {
                     ScrollView (.horizontal, showsIndicators: false) {
-                        HStack {
-                            Text("\(projectMinSize) m")
-                            + Text("2")
-                                .baselineOffset(6)
-                                .font(Font.system(size: 10))
+                        if selection == "Between" {
+                            HStack {
+                                Text("\(projectMinSize) m")
+                                + Text("2")
+                                    .baselineOffset(6)
+                                    .font(Font.system(size: 10))
 
-                            + Text(" - ")
-                            + Text("\(projectMaxSize) m")
-                            + Text("2")
-                                .baselineOffset(6)
-                                .font(Font.system(size: 10))
+                                + Text(" - ")
+                                + Text("\(projectMaxSize) m")
+                                + Text("2")
+                                    .baselineOffset(6)
+                                    .font(Font.system(size: 10))
+                            }
+                            .padding(.leading, 5)
+                        } else if selection == "Less Than" {
+                            HStack {
+                                Text("Under ") +
+                                Text("\(projectMinSize) m")
+                                + Text("2")
+                                    .baselineOffset(6)
+                                    .font(Font.system(size: 10))
+                            }
+                            .padding(.leading, 5)
+                        } else if selection == "Greater Than" {
+                            HStack {
+                                Text("Over ") +
+                                Text("\(projectMaxSize) m")
+                                + Text("2")
+                                    .baselineOffset(6)
+                                    .font(Font.system(size: 10))
+                            }
+                            .padding(.leading, 5)
                         }
-                        .padding(.leading, 5)
                     }
                 }
                 .font(.system(size: 11).bold())

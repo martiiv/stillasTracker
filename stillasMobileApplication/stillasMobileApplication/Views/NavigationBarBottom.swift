@@ -38,10 +38,6 @@ struct NavigationBarBottom: View {
                     Label("Profile", systemImage: "person.crop.circle")
                 }
                 .tag(Tab.profile)
-            FilterProjectData(filter: .period)
-                .tabItem {
-                    Label("Project API", systemImage: "map")
-                }
         }
         .onAppear() {
             /// https://www.bigmountainstudio.com/community/public/posts/86559-how-to-customize-the-background-of-the-tabview-in-swiftui

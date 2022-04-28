@@ -15,15 +15,18 @@ struct BookMark: Identifiable {
     var items: [BookMark]?
 }
 
-struct ProjectView: View {
-    //let items: [BookMark] = [.example1, .example2, .example3]
- Section(header: Text("Second List")) {
-     List(items, children: \.items) { row in
-         Image(systemName: row.icon)
-         Text(row.name)
+struct ProjectView1: View {
+    let items: [BookMark] = [.example1, .example2, .example3]
+    var body: some View {
+    Section(header: Text("Second List")) {
+         List(items, children: \.items) { row in
+             Image(systemName: row.icon)
+             Text(row.name)
+         }
      }
- }
- */
+    }
+}*/
+ 
 
 enum FilterType {
     case none,
@@ -32,6 +35,7 @@ enum FilterType {
          startAfterPeriod,
          endBeforePeriod,
          endAfterPeriod,
+         sizeBetween,
          sizeEqualTo,
          sizeLessThan,
          sizeGreaterThan,
@@ -54,6 +58,7 @@ struct ProjectRow: View {
         }
     }
 }
+
 /*
 extension BookMark {
     static let apple = BookMark(name: "Apple", icon: "1.circle")
@@ -65,7 +70,7 @@ extension BookMark {
     static let example2 = BookMark(name: "Recent", icon: "timer", items: [BookMark.apple, BookMark.bbc, BookMark.swift, BookMark.twitter])
     static let example3 = BookMark(name: "Recommended", icon: "hand.thumbsup", items: [BookMark.apple, BookMark.bbc, BookMark.swift, BookMark.twitter])
 }
- */
+*/
 
 struct ProjectView: View {
     @State var searchQuery = ""
@@ -73,6 +78,7 @@ struct ProjectView: View {
     @State var projects = [Project]()
     @State private var showFilterModalView: Bool = false
     
+    @State var sizeSortType: String = "Between"
     @State var filter: FilterType = .none
     @State var filterArr: [String] = []
     @State var filterArrArea: [String] = []
@@ -81,10 +87,13 @@ struct ProjectView: View {
     @State var projectStartDate = Date.distantPast
     @State var projectEndDate = Date.distantFuture
     @State var projectSize = 99999
+    @State var minProjectSize = 100
+    @State var maxProjectSize = 1000
     @State var projectState = "Active"
     @State var projectCounty = "Innlandet"
     
     var body: some View {
+        VStack {
         NavigationView {
             Form {
                 Section(header: Text("All Projects")) {
@@ -130,13 +139,23 @@ struct ProjectView: View {
         }
         .sheet(isPresented: $showFilterModalView,
                onDismiss: didDismiss) {
-            FilterView(selStartDateBind: $projectStartDate, selEndDateBind: $projectEndDate, projectArea: $projectCounty, projectSize: $projectSize, projectStatus: $projectState, filterArr: $filterArr, filterArrArea: $filterArrArea)
+            FilterView(selStartDateBind: $projectStartDate, selEndDateBind: $projectEndDate, projectArea: $projectCounty, projectSize: $projectSize, projectStatus: $projectState, minProjectSize: $minProjectSize, maxProjectSize: $maxProjectSize, sizeSortType: $sizeSortType, filterArr: $filterArr, filterArrArea: $filterArrArea)
                 .onChange(of: filterArr) { filterVal in
                     if filterArr.contains("period") {
                         filter = .period
                     }
                     if filterArr.contains("area") {
                         filter = .county
+                    }
+                    if filterArr.contains("size") && sizeSortType == "Between" {
+                        filter = .sizeBetween
+                    } else if filterArr.contains("size") && sizeSortType == "Less Than" {
+                        filter = .sizeLessThan
+                    } else if filterArr.contains("size") && sizeSortType == "Greater Than" {
+                        filter = .sizeGreaterThan
+                    }
+                    if filterArr.contains("status") {
+                        filter = .state
                     }
                     if filterArr.isEmpty {
                         filter = .none
@@ -148,6 +167,8 @@ struct ProjectView: View {
         .refreshable {
             print("Refreshed")
             // TODO: Add action here (retrieve from API again or something)
+        }
+            //ProjectView1()
         }
     }
     
@@ -186,12 +207,14 @@ struct ProjectView: View {
         case .endAfterPeriod:
             //return projects.filter { $0.period.endDate > projectEndDate }
             return projects.filter { dateFormatter.date(from: $0.period.endDate)! >= projectEndDate }
+        case .sizeBetween:
+            return projects.filter { $0.size >= Int(minProjectSize) && $0.size <= Int(maxProjectSize)}
         case .sizeEqualTo:
             return projects.filter { $0.size == Int(projectSize) }
         case .sizeLessThan:
-            return projects.filter { $0.size < Int(projectSize) }
+            return projects.filter { $0.size < Int(minProjectSize) }
         case .sizeGreaterThan:
-            return projects.filter { $0.size > Int(projectSize) }
+            return projects.filter { $0.size > Int(maxProjectSize) }
         case .state:
             return projects.filter { $0.state == projectState }
         case .county:
