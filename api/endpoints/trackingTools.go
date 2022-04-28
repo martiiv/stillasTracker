@@ -22,10 +22,6 @@ import (
 Class gateway
 The class wil handle all information regarding the cellular gateways in the system
 The class will contain the following functions:
-	- getCentrals
-	- addCentral
-	- deleteCentral
-	- fetchConnections
 
 Version 0.1
 Last modified Martin Iversen
@@ -174,8 +170,8 @@ func updateRegistered(w http.ResponseWriter, tagList _struct.GetProject, idList 
 
  */
 func getTagTypes(w http.ResponseWriter, projectList _struct.GetProject, idList []string) map[string]int {
-	var typeList map[string]int
-	var resultList map[string]int
+	typeList := make(map[string]int)
+	resultList := make(map[string]int)
 	for i := range projectList.ScaffoldingArray {
 		typeList[projectList.ScaffoldingArray[i].Type] = projectList.ScaffoldingArray[i].Registered
 	}
