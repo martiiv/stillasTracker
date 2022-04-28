@@ -14,6 +14,7 @@ import (
 	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
 	_struct "stillasTracker/api/struct"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -22,10 +23,6 @@ import (
 Class gateway
 The class wil handle all information regarding the cellular gateways in the system
 The class will contain the following functions:
-	- getCentrals
-	- addCentral
-	- deleteCentral
-	- fetchConnections
 
 Version 0.1
 Last modified Martin Iversen
@@ -36,8 +33,10 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
+
 	var gatewayList []*igs.Message
 	var beaconList []*ibs.Payload
+	var printlist []string
 
 	payload, _ := ioutil.ReadAll(r.Body)
 	convertedPayload := string(payload)
@@ -56,6 +55,12 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	idList, _ := getTagLists(gatewayList, beaconList)
+	for i := range idList {
+		batteryVoltage, _ := beaconList[i].BatteryVoltage()
+		battery := strconv.FormatFloat(float64(batteryVoltage), 'E', -1, 32)
+
+		printlist = append(printlist, "Tag id:"+idList[i]+" Battery voltage: "+battery)
+	}
 	updateAmountProject(gatewayList[0].Gateway(), w, idList)
 
 	fmt.Printf("\n-----------------------------------------------------")
@@ -63,7 +68,7 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Time of POST: %v \n", time.Now())
 	fmt.Printf("Gateway: %v\n", gatewayList[0].Gateway())
 	fmt.Printf("Amount of tags registered: %v \n", len(idList))
-	fmt.Printf("List of tags:\n %v", idList)
+	fmt.Printf("List of tags:\n %v", printlist)
 	fmt.Printf("-----------------------------------------------------\n")
 }
 
@@ -174,8 +179,8 @@ func updateRegistered(w http.ResponseWriter, tagList _struct.GetProject, idList 
 
  */
 func getTagTypes(w http.ResponseWriter, projectList _struct.GetProject, idList []string) map[string]int {
-	var typeList map[string]int
-	var resultList map[string]int
+	typeList := make(map[string]int)
+	resultList := make(map[string]int)
 	for i := range projectList.ScaffoldingArray {
 		typeList[projectList.ScaffoldingArray[i].Type] = projectList.ScaffoldingArray[i].Registered
 	}
