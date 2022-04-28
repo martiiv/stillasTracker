@@ -90,6 +90,9 @@ func getTags(w http.ResponseWriter) {
 
 func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
 	ProjectCollection = database.Client.Doc(constants.P_LocationCollection + "/" + constants.P_ProjectDocument)
+
+	fmt.Printf("%v", beaconID)
+
 	project, err := http.NewRequest(http.MethodGet, "http://10.212.138.205:8080/stillastracking/v1/api/gateway?id="+beaconID+"", nil)
 	if err != nil {
 		tool.HandleError(tool.INVALIDREQUEST, w)

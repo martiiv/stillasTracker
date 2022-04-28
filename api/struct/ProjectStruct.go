@@ -74,8 +74,7 @@ type Project struct {
 
 // IDStruct to insert id of each project.
 type IDStruct []struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+	ID int `json:"id"`
 }
 
 // StateStruct to change the state of a project.
