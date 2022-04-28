@@ -14,6 +14,7 @@ import (
 	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
 	_struct "stillasTracker/api/struct"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -32,8 +33,10 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
+
 	var gatewayList []*igs.Message
 	var beaconList []*ibs.Payload
+	var printlist []string
 
 	payload, _ := ioutil.ReadAll(r.Body)
 	convertedPayload := string(payload)
@@ -52,6 +55,12 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	idList, _ := getTagLists(gatewayList, beaconList)
+	for i := range idList {
+		batteryVoltage, _ := beaconList[i].BatteryVoltage()
+		battery := strconv.FormatFloat(float64(batteryVoltage), 'E', -1, 32)
+
+		printlist = append(printlist, "Tag id:"+idList[i]+" Battery voltage: "+battery)
+	}
 	updateAmountProject(gatewayList[0].Gateway(), w, idList)
 
 	fmt.Printf("\n-----------------------------------------------------")
@@ -59,7 +68,7 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Time of POST: %v \n", time.Now())
 	fmt.Printf("Gateway: %v\n", gatewayList[0].Gateway())
 	fmt.Printf("Amount of tags registered: %v \n", len(idList))
-	fmt.Printf("List of tags:\n %v", idList)
+	fmt.Printf("List of tags:\n %v", printlist)
 	fmt.Printf("-----------------------------------------------------\n")
 }
 
