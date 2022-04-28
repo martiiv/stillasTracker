@@ -1,25 +1,31 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useReducer, useState} from 'react'
 import {MapClass} from "./map";
 import {FormErrors} from "./FormErrors";
 
-export default function AddProjectFunc() {
 
 
+export default function AddProjectFunc(string) {
 
-    const [address, setAddress] = useState({street: "", zipcode: "", municipality: "", county: ""})
+
+    const [address, setAddress] = useState({street: "", municipality: "", county: ""})
+
+    const [zipCode, setZipCode] = useState({zipcode: 0})
 
     const [period, setPeriod] = useState({startDate: "", endDate: ""})
 
-    const [customer, setCustomer] = useState({name: "", number: 0, email: ""})
+    const [customer, setCustomer] = useState({name: "",email: ""})
+
+    const [customerNumber, setCustomerNumber] = useState({number: 0})
 
     const [projectDetails, setProjectDetails] = useState({
         projectID: 2321112,
         projectName: '',
         latitude: 60.79077759591496,
         longitude: 10.683249543160402,
-        size: 0,
         state: "Active"
     })
+
+    const [size, setSize] = useState({size: 0})
 
     const [errors, setErrors] = useState({
         projectName: '',
@@ -47,18 +53,15 @@ export default function AddProjectFunc() {
         formValid: false,
         dateValid: false
     })
-    projectDetails.period = period
-    projectDetails.customer = customer
-    projectDetails.address = address
 
 
     const handleUserInputProjectDetails = (e) => {
         const name = e.target.name;
         const value = e.target.value;
         if (name.toLowerCase() === "size") {
-            const valueNumber = Number(e.target.value);
-            setProjectDetails({...projectDetails, [name]: (valueNumber)});
-            validateFieldProjectDetails(name, Number(value))
+            const valueNumber = Number(value);
+            setSize({...size, [name]: valueNumber});
+            validateFieldProjectDetails(name, valueNumber)
         }
         validateFieldProjectDetails(name, value)
         setProjectDetails({...projectDetails, [name]: value});
@@ -68,18 +71,20 @@ export default function AddProjectFunc() {
         const name = e.target.name;
         const value = e.target.value;
         if (name.toLowerCase() === "number") {
-            setCustomer({[name]: parseInt(value) });
-            validateFieldProjectCustomer(name, parseInt(value))
-            console.log(customer)
+            setCustomerNumber({...customerNumber,  [name]: parseInt(value, 10)});
+            validateFieldProjectCustomer(name, (value))
         }
         validateFieldProjectCustomer(name, value)
-
-        setCustomer({...customer, [name]: value});
+        setCustomer(({...customer, [name]: value}));
     }
 
     const handleUserInputAddress = (e) => {
         const name = e.target.name;
         const value = e.target.value;
+        if (name.toLowerCase() === "zipcode"){
+            setZipCode({...zipCode, [name]: parseInt(value, 10)})
+            validateFieldProjectAddress(name, parseInt(value, 10))
+        }
         validateFieldProjectAddress(name, value)
         setAddress({...address, [name]: value});
     }
@@ -95,7 +100,6 @@ export default function AddProjectFunc() {
             case 'street':
                 setValid({...valid, streetValid: (value.length >= 2)})
                 setErrors({...errors, street: (valid.streetValid ? '' : ' is too short')})
-                //fieldValidationErrors.street = streetValid ? '': ' is too short';
                 break;
             case 'zipcode':
                 setValid({...valid, zipcodeValid: (value.length === 4)})
@@ -186,6 +190,33 @@ export default function AddProjectFunc() {
 
     }
 
+    const finalProject = {
+        projectID: projectDetails.projectID,
+        projectName: projectDetails.projectName,
+        latitude: projectDetails.latitude,
+        longitude: projectDetails.longitude,
+        state: projectDetails.state,
+        size: size.size,
+        period: {
+            startDate: period.startDate,
+            endDate: period.endDate
+        },
+        customer:{
+            name: customer.name,
+            number: customerNumber.number,
+            email: customer.email,
+        },
+        address:{
+            street: address.street,
+            zipcode: zipCode.zipcode,
+            municipality: address.municipality,
+            county: address.county,
+        }
+
+    }
+
+    console.log(finalProject)
+    console.log(valid)
 
     if (!mapPage) {
         return (
@@ -310,7 +341,7 @@ export default function AddProjectFunc() {
             </div>
         )
     } else {
-        return <MapClass props = {projectDetails}/>
+        return <MapClass props = {finalProject}/>
     }
 }
 
