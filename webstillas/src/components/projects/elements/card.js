@@ -8,24 +8,22 @@ import deleteModel from "../../../modelData/deleteProject";
 import {useQueryClient} from "react-query";
 
 
-function CardElement(props){
+function CardElement(props) {
     const queryClient = useQueryClient()
-
-
 
     const DeleteProject = async () => {
         const deleteBody =
             [
-            {
-                id: props.id
-            }
-        ]
+                {
+                    id: props.id
+                }
+            ]
 
         await deleteModel(PROJECTS_URL, (deleteBody)).catch(e => console.log(e)).then(e => console.log("success"))
         await queryClient.invalidateQueries("allProjects")
     }
 
-    return(
+    return (
         <div className={"main"}>
             <article className={"card"}>
                 <div className={"name-btn"}>
@@ -35,63 +33,64 @@ function CardElement(props){
                     <button className={"btn"} onClick={DeleteProject}>Slett</button>
                 </div>
 
-                    <section className={"image"}>
-                        <img src={img} alt={""}/>
-                    </section>
-                    <section className={"information-highlights-cta"}>
-                        <div className={"information-highlights"}>
-                            <ul className={"information-list"}>
-                                <li className={"horizontal-list"}>
-                                    <div className={"highlightText"}>
-                                        <span>{props.state}</span>
-                                    </div>
-                                    <div className={"highlightText-caption"}>
-                                        <span>Status</span>
-                                    </div>
-                                </li>
-                                <li className={"horizontal-list"}>
-                                    <div className={"highlightText"}>
-                                        <span >{props.rentPeriod}</span>
-                                    </div>
-                                    <div className={"highlightText-caption"}>
-                                        <span>Leieperiode</span>
-                                    </div>
-                                </li>
-                                <li className={"horizontal-list"}>
-                                    <div className={"highlightText"}>
-                                        <span >&nbsp;&nbsp; {props.size}</span>
-                                        <span >&#13217;</span>
-                                    </div>
-                                    <div className={"highlightText-caption"}>
-                                        <span>Størrelse</span>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </section>
-                    <section className={"contact-highlights-cta"}>
-                        <div className={"information-highlights"}>
-                            <ul className={"contact-list"}>
-                                <li className={"horizontal-list-contact"}>
-                                    <span className={"left-contact-text"}>Kontakt person</span>
-                                    <span className={"right-contact-text"}>{props.contactPerson}</span>
-                                </li>
-                                <li className={"horizontal-list-contact"}>
-                                    <span className={"left-contact-text"}>Adresse</span>
-                                    <span className={"right-contact-text"}>{props.address_Street}, {props.address_zip} {props.address_Municipality}</span>
-                                </li>
-                                <li className={"horizontal-list-contact"}>
-                                    <span className={"left-contact-text"}>Nummer</span>
-                                    <span className={"right-contact-text"}>{props.contactNumber}</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </section>
-                    <section className={"card-btn"}>
-                        <div className={"card-btns"}>
-                            <Link className={"btn"} to={"/project/" + props.id}>Mer Informasjon</Link>
-                        </div>
-                    </section>
+                <section className={"image"}>
+                    <img src={img} alt={""}/>
+                </section>
+                <section className={"information-highlights-cta"}>
+                    <div className={"information-highlights"}>
+                        <ul className={"information-list"}>
+                            <li className={"horizontal-list"}>
+                                <div className={"highlightText"}>
+                                    <span>{props.state}</span>
+                                </div>
+                                <div className={"highlightText-caption"}>
+                                    <span>Status</span>
+                                </div>
+                            </li>
+                            <li className={"horizontal-list"}>
+                                <div className={"highlightText"}>
+                                    <span>{props.rentPeriod}</span>
+                                </div>
+                                <div className={"highlightText-caption"}>
+                                    <span>Leieperiode</span>
+                                </div>
+                            </li>
+                            <li className={"horizontal-list"}>
+                                <div className={"highlightText"}>
+                                    <span>&nbsp;&nbsp; {props.size}</span>
+                                    <span>&#13217;</span>
+                                </div>
+                                <div className={"highlightText-caption"}>
+                                    <span>Størrelse</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+                <section className={"contact-highlights-cta"}>
+                    <div className={"information-highlights"}>
+                        <ul className={"contact-list"}>
+                            <li className={"horizontal-list-contact"}>
+                                <span className={"left-contact-text"}>Kontakt person</span>
+                                <span className={"right-contact-text"}>{props.contactPerson}</span>
+                            </li>
+                            <li className={"horizontal-list-contact"}>
+                                <span className={"left-contact-text"}>Adresse</span>
+                                <span
+                                    className={"right-contact-text"}>{props.address_Street}, {props.address_zip} {props.address_Municipality}</span>
+                            </li>
+                            <li className={"horizontal-list-contact"}>
+                                <span className={"left-contact-text"}>Nummer</span>
+                                <span className={"right-contact-text"}>{props.contactNumber}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+                <section className={"card-btn"}>
+                    <div className={"card-btns"}>
+                        <Link className={"btn"} to={"/project/" + props.id}>Mer Informasjon</Link>
+                    </div>
+                </section>
             </article>
         </div>
     )

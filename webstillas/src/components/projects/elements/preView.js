@@ -4,9 +4,15 @@ import "./preView.css"
 import Tabs from "../tabView/Tabs"
 import ScaffoldingCardProject from "../../scaffolding/elements/scaffoldingCardProject";
 import InfoModal from "./Modal";
-import {MAP_STYLE_V11, PROJECTS_URL_WITH_ID, WITH_SCAFFOLDING_URL} from "../../../modelData/constantsFile";
+import {
+    MAP_STYLE_V11,
+    PROJECTS_URL_WITH_ID,
+    PROJECTS_WITH_SCAFFOLDING_URL,
+    WITH_SCAFFOLDING_URL
+} from "../../../modelData/constantsFile";
 import img from "./../../mapPage/mapbox-marker-icon-20px-orange.png"
 import {GetDummyData} from "../../../modelData/addData";
+import {useQueryClient} from "react-query";
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ';
 
@@ -147,23 +153,34 @@ function contactInformation(project){
 
 
 export const PreView = () => {
-    const {isLoading, data} = GetDummyData(["project", getProjectID()], PROJECTS_URL_WITH_ID + getProjectID() + WITH_SCAFFOLDING_URL)
-    console.log(data)
-    if (isLoading) {
+    const queryClient = useQueryClient()
+
+    const {isLoading: projectLoad, data: project} = GetDummyData(["project", getProjectID()], PROJECTS_URL_WITH_ID + getProjectID() + WITH_SCAFFOLDING_URL)
+    let projects
+    let allProjectsLoading
+    if (queryClient.getQueryData("allProjects") !== undefined) {
+        projects = queryClient.getQueryData("allProjects")
+    }
+        const {isLoading: allProjects, data} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
+        projects = data
+        allProjectsLoading = allProjects
+
+
+    if (allProjectsLoading || projectLoad) {
         return <h1>Loading</h1>
     } else {
         //todo fix css on position
         return (
             <div className={"preView-Project-Main"}>
-                <PreViewClass data={data[0]}/>
+                <PreViewClass data={project[0]}/>
                 <div className={"tabs"}>
                     <Tabs>
                         <div label="Kontakt">
-                            {contactInformation(data)}
+                            {contactInformation(projects)}
                         </div>
                         <div label="Stillas-komponenter">
                             <InfoModal id={getProjectID()}/>
-                            {scaffoldingComponents(data[0])}
+                            {scaffoldingComponents(project[0])}
                         </div>
                     </Tabs>
                 </div>

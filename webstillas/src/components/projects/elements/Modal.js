@@ -3,8 +3,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import {Button, Modal} from 'react-bootstrap';
 import img from "../../scaffolding/images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 import putModel from "../../../modelData/putData";
-import {TRANSFER_SCAFFOLDING} from "../../../modelData/constantsFile";
+import {PROJECTS_WITH_SCAFFOLDING_URL, TRANSFER_SCAFFOLDING} from "../../../modelData/constantsFile";
 import {useQueryClient} from "react-query";
+import {GetDummyData} from "../../../modelData/addData";
 
 //https://ordinarycoders.com/blog/article/react-bootstrap-modal
 const scaffoldingMove =
@@ -60,7 +61,11 @@ export default function InfoModalFunc(props) {
     const handleShow = () => setShow(true);
     //https://codesandbox.io/s/react-week-date-view-forked-ruxjr9?file=/src/App.js:857-868
     const queryClient = useQueryClient()
-    const jsonProjects = queryClient.getQueryData("allProjects")
+
+    let jsonProjects
+    jsonProjects = queryClient.getQueryData("allProjects")
+
+
     console.log(jsonProjects)
     let jsonProject = queryClient.getQueryData(["project", props.id])
     console.log(jsonProject)
@@ -105,6 +110,9 @@ export default function InfoModalFunc(props) {
 
 
     const validFormat = ToProject !== FromProject
+    console.log(ToProject)
+    console.log(FromProject)
+
     return (
         <>
             <Button className="nextButton" onClick={handleShow}>
@@ -126,9 +134,10 @@ export default function InfoModalFunc(props) {
                             <span>Overfør til prosjekt:</span>
                             <select value={ToProject} onChange={(e) => setToProject(e.target.value)}>
                                 <option selected defaultValue="">Choose here</option>
+                                <option value={0}>Storage</option>
                                 {jsonProjects.map(e => {
                                     return (
-                                        <option value={e.projectID}>{e.projectID}</option>
+                                        <option value={e.projectID}>{e.projectName}</option>
                                     )
                                 })}
                             </select>
@@ -138,9 +147,10 @@ export default function InfoModalFunc(props) {
                             <select value={FromProject}
                                     onChange={(e) => setFromProject(e.target.value)}>
                                 <option selected defaultValue="">Choose here</option>
+                                <option value={0}>Storage</option>
                                 {jsonProjects.map(e => {
                                     return (
-                                        <option value={e.projectID}>{e.projectID}</option>
+                                        <option value={e.projectID}>{e.projectName}</option>
                                     )
                                 })}
                             </select>

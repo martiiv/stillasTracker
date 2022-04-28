@@ -128,14 +128,18 @@ export const Scaffolding = () => {
     const {isLoading: LoadingScaffolding, data: Scaffolding} = GetDummyData("scaffolding", SCAFFOLDING_URL)
     const {isLoading: LoadingStorage, data: Storage} = GetDummyData("storage", STORAGE_URL)
     const queryClient = useQueryClient()
-    const dataProjects = queryClient.getQueryData("allProjects")
     let LoadingAll
     let ProjectsData
-    if(dataProjects === undefined){
-        const {isLoading: LoadingAllProjects, data: ProjectData} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
-        LoadingAll = LoadingAllProjects
-        ProjectsData = ProjectData
+    if (queryClient.getQueryData("allProjects") !== undefined) {
+        ProjectsData = queryClient.getQueryData("allProjects")
     }
+        const {isLoading: LoadingAllProjects, data} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
+        ProjectsData = data
+        LoadingAll = LoadingAllProjects
+
+
+
+
 
     if (LoadingScaffolding || LoadingStorage || LoadingAll) {
         return <h1>Loading</h1>
