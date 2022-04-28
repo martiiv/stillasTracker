@@ -2,6 +2,10 @@ import React, {useState} from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {Button, Modal} from 'react-bootstrap';
 import img from "../../scaffolding/images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
+import putModel from "../../../modelData/putData";
+import {PROJECTS_WITH_SCAFFOLDING_URL, TRANSFER_SCAFFOLDING} from "../../../modelData/constantsFile";
+import {useQueryClient} from "react-query";
+import {GetDummyData} from "../../../modelData/addData";
 
 //https://ordinarycoders.com/blog/article/react-bootstrap-modal
 const scaffoldingMove =
@@ -46,26 +50,32 @@ const scaffoldingMove =
             "type": "Trapp",
             "quantity": 0
         }
-        ]
+    ]
 
 
 
 
-export default function InfoModal() {
+export default function InfoModalFunc(props) {
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
     //https://codesandbox.io/s/react-week-date-view-forked-ruxjr9?file=/src/App.js:857-868
+    const queryClient = useQueryClient()
+
+    let jsonProjects
+    jsonProjects = queryClient.getQueryData("allProjects")
+
+
+    console.log(jsonProjects)
+    let jsonProject = queryClient.getQueryData(["project", props.id])
+    console.log(jsonProject)
     //todo gjør om variablenavn
-    const projects = sessionStorage.getItem('allProjects')
-    const jsonProjects = JSON.parse(projects)
-    const project = sessionStorage.getItem('project')
-    const jsonProject = JSON.parse(project)
     const [roomRent, setRoomRent] = useState(scaffoldingMove);
     const [ToProject, setToProject] = useState("");
     const [FromProject, setFromProject] = useState("");
 
 
+    //Todo change variable
     const handleroom = (e, id) => {
         let result = [...roomRent];
         result = result.map((x) => {
@@ -79,19 +89,18 @@ export default function InfoModal() {
     };
 
     //todo add a note to the user if the transaction was a success or a fail.
-    const AddScaffolding = (body) =>{
-        const requestOptions = {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        };
-
-        fetch('http://localhost:8080/stillastracking/v1/api/project/scaffolding', requestOptions)
-            .then(response => response.json())
-            .catch(error => console.log(error))
-        handleClose()
+    //Todo fix error
+    async function AddScaffolding(){
+        const queryClient = useQueryClient()
+        await putModel(TRANSFER_SCAFFOLDING, JSON.stringify(move));
+        await queryClient.invalidateQueries(["project", props.id]).then(r => handleClose())
     }
 
+
+    const AddScaffold = async () => {
+        await putModel(TRANSFER_SCAFFOLDING, JSON.stringify(move));
+        await queryClient.resetQueries(["project", props.id])
+    }
 
     const move = {
         "toProjectID": Number(ToProject),
@@ -99,8 +108,12 @@ export default function InfoModal() {
         "scaffold": roomRent
     }
 
+
     const validFormat = ToProject !== FromProject
-    return(
+    console.log(ToProject)
+    console.log(FromProject)
+
+    return (
         <>
             <Button className="nextButton" onClick={handleShow}>
                 Overfør deler til Prosjekt
@@ -121,9 +134,10 @@ export default function InfoModal() {
                             <span>Overfør til prosjekt:</span>
                             <select value={ToProject} onChange={(e) => setToProject(e.target.value)}>
                                 <option selected defaultValue="">Choose here</option>
-                                {jsonProjects.map(e =>{
-                                    return(
-                                        <option value={e.projectID}>{e.projectID}</option>
+                                <option value={0}>Storage</option>
+                                {jsonProjects.map(e => {
+                                    return (
+                                        <option value={e.projectID}>{e.projectName}</option>
                                     )
                                 })}
                             </select>
@@ -133,15 +147,16 @@ export default function InfoModal() {
                             <select value={FromProject}
                                     onChange={(e) => setFromProject(e.target.value)}>
                                 <option selected defaultValue="">Choose here</option>
-                                {jsonProjects.map(e =>{
-                                    return(
-                                        <option value={e.projectID}>{e.projectID}</option>
+                                <option value={0}>Storage</option>
+                                {jsonProjects.map(e => {
+                                    return (
+                                        <option value={e.projectID}>{e.projectName}</option>
                                     )
                                 })}
                             </select>
                         </div>
-                        {jsonProject.scaffolding.map(e => {
-                                return(
+                        {jsonProject[0].scaffolding.map(e => {
+                                return (
                                     <article className={"card"}>
                                         <section className={"header"}>
                                             <h3>{e.type.toUpperCase()}</h3>
@@ -149,7 +164,8 @@ export default function InfoModal() {
                                         <section className={"image"}>
                                             <img className={"img"} src={img} alt={""}/>
                                         </section>
-                                        <input type="number" min={0} key={"input" + e.type} onChange={(j) => handleroom(j, e.type)}/>
+                                        <input type="number" min={0} key={"input" + e.type}
+                                               onChange={(j) => handleroom(j, e.type)}/>
                                     </article>
                                 )
                             }
@@ -161,7 +177,7 @@ export default function InfoModal() {
                     <Button variant="secondary" onClick={handleClose}>
                         Close
                     </Button>
-                    <Button variant="primary" disabled={!validFormat} onClick={() => AddScaffolding(move)}>
+                    <Button variant="primary" disabled={!validFormat} onClick={AddScaffold}>
                         Save Changes
                     </Button>
                 </Modal.Footer>
@@ -169,3 +185,7 @@ export default function InfoModal() {
         </>
     );
 }
+
+
+
+

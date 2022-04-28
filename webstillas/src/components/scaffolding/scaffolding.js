@@ -1,44 +1,23 @@
 import React from "react";
 import "./scaffolding.css"
 import CardElement from "./elements/scaffoldingCard";
-import fetchModel from "../../modelData/fetchData";
-import {SCAFFOLDING_URL, STORAGE_URL} from "../../modelData/constantsFile";
-
+import {PROJECTS_WITH_SCAFFOLDING_URL, SCAFFOLDING_URL, STORAGE_URL} from "../../modelData/constantsFile";
+import {GetDummyData} from "../../modelData/addData";
+import {useQueryClient} from "react-query";
 /**
  Class that will create an overview of the scaffolding parts
  */
 
-class Scaffolding extends React.Component {
+class ScaffoldingClass extends React.Component {
     constructor(props) {
         super(props);
         this.state={
             isLoaded1: false,
             isLoaded2: false,
-            scaffolding: [],
-            storage:[],
+            scaffolding: props.scaffolding,
+            storage:props.storage,
             items: [],
             selectedOption: ""
-        }
-    }
-
-    async componentDidMount() {
-        try {
-            const scaffoldingResult = await fetchModel(SCAFFOLDING_URL)
-            sessionStorage.setItem('allScaffolding',JSON.stringify(scaffoldingResult))
-            this.setState({
-                isLoaded1: true,
-                scaffolding: scaffoldingResult
-            });
-
-            const storageResult = await fetchModel(STORAGE_URL)
-            sessionStorage.setItem('fromStorage',JSON.stringify(storageResult))
-            this.setState({
-                isLoaded2: true,
-                storage: storageResult
-            });
-
-        }catch (error){
-            console.log(error)
         }
     }
 
@@ -76,8 +55,6 @@ class Scaffolding extends React.Component {
         const scaffoldVar = {
             scaffolding: []
         };
-
-
         for(var i in scaffold) {
             var scaff = scaffold[i];
             for (var j in storage){
@@ -97,80 +74,79 @@ class Scaffolding extends React.Component {
     }
 
 
+    render() {
+        const {scaffolding, storage, selectedOption} = this.state;
+
+        const objectArr = this.countObjects(scaffolding, "type")
 
 
-  render() {
-      const {scaffolding, storage, isLoaded1,isLoaded2, selectedOption } = this.state;
+        const scaffoldingObject = this.scaffoldingAndStorage(objectArr, storage)
 
-      let scaffoldingArray
-      if (sessionStorage.getItem('allScaffolding') != null){
-          const scaffold = sessionStorage.getItem('allScaffolding')
-          console.log('From Storage')
-          scaffoldingArray = (JSON.parse(scaffold))
-      }else {
+        const result = Object.keys(scaffoldingObject).map((key) => scaffoldingObject[key]);
 
-          console.log('From API')
-          scaffoldingArray = scaffolding
-      }
-
-      const objectArr = this.countObjects(scaffoldingArray, "type")
-
-
-      //todo add session storage
-      let storageArray
-      if (sessionStorage.getItem('fromStorage') != null){
-          const storage = sessionStorage.getItem('fromStorage')
-          storageArray = (JSON.parse(storage))
-      }else {
-          console.log('From API')
-          storageArray = storage
-      }
-      const scaffoldingObject = this.scaffoldingAndStorage(objectArr, storageArray)
+        if (selectedOption === "ascending") {
+            result[0].sort((a, b) => (a.scaffolding < b.scaffolding) ? 1 : -1)
+        } else if (selectedOption === "descending") {
+            result[0].sort((a, b) => (a.scaffolding > b.scaffolding) ? 1 : -1)
+        } else {
+            result[0].sort((a, b) => (a.type > b.type))
+        }
+        return (
+            //todo only scroll the scaffolding not the map
+            <div>
+                <div>
+                    <select onChange={(e) =>
+                        this.setState({selectedOption: e.target.value})}>
+                        <option value={"alphabetic"}>Alfabetisk(A-Å)</option>
+                        <option value={"ascending"}>Stigende</option>
+                        <option value={"descending"}>Synkende</option>
+                    </select>
+                    <p>Sorter</p>
+                </div>
 
 
+                <div className={"grid-container"}>
+                    {result[0].map((e) => {
+                        return (
+                            <CardElement key={e.type}
+                                         type={e.type}
+                                         total={e.scaffolding}
+                                         storage={e.storage}
+                                         projects = {this.props.projects}
+                            />
+                        )
+                    })}
+                </div>
+            </div>
 
-      const result = Object.keys(scaffoldingObject).map((key) => scaffoldingObject[key]);
-      if (!isLoaded1 && !isLoaded2) {
-          return <h1>Is Loading Data....</h1>
-      } else {
-          if (selectedOption === "ascending") {
-              result[0].sort((a, b) => (a.scaffolding < b.scaffolding) ? 1 : -1)
-          }else if (selectedOption === "descending") {
-              result[0].sort((a, b) => (a.scaffolding > b.scaffolding) ? 1 : -1)
-          }else {
-              result[0].sort((a, b) => (a.type > b.type))
-          }
-          return (
-              //todo only scroll the scaffolding not the map
-              <div>
-                  <div>
-                      <select onChange={(e) =>
-                          this.setState({selectedOption: e.target.value})}>
-                          <option value={"alphabetic"}>Alfabetisk(A-Å)</option>
-                          <option value={"ascending"}>Stigende</option>
-                          <option value={"descending"}>Synkende</option>
-                      </select>
-                      <p>Sorter</p>
-                  </div>
+        )
+    }
 
-
-
-                 <div className={"grid-container"}>
-                      {result[0].map((e) => {
-                          return (
-                              <CardElement key={e.type}
-                                           type={e.type}
-                                           total={e.scaffolding}
-                                           storage={e.storage}
-                              />
-                          )
-                      })}
-                  </div>
-              </div>
-
-          )
-      }
-  }
 }
 
-export default Scaffolding;
+export const Scaffolding = () => {
+    const {isLoading: LoadingScaffolding, data: Scaffolding} = GetDummyData("scaffolding", SCAFFOLDING_URL)
+    const {isLoading: LoadingStorage, data: Storage} = GetDummyData("storage", STORAGE_URL)
+    const queryClient = useQueryClient()
+    let LoadingAll
+    let ProjectsData
+    if (queryClient.getQueryData("allProjects") !== undefined) {
+        ProjectsData = queryClient.getQueryData("allProjects")
+    }
+        const {isLoading: LoadingAllProjects, data} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
+        ProjectsData = data
+        LoadingAll = LoadingAllProjects
+
+
+
+
+
+    if (LoadingScaffolding || LoadingStorage || LoadingAll) {
+        return <h1>Loading</h1>
+    } else {
+        return <ScaffoldingClass scaffolding = {Scaffolding}
+                                 storage = {Storage}
+                                 projects = {ProjectsData}
+        />
+    }
+}
