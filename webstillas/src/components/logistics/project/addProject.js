@@ -18,7 +18,7 @@ export default function AddProjectFunc(string) {
     const [customerNumber, setCustomerNumber] = useState({number: 0})
 
     const [projectDetails, setProjectDetails] = useState({
-        projectID: 2321112,
+        projectID: 2322,
         projectName: '',
         latitude: 60.79077759591496,
         longitude: 10.683249543160402,
@@ -196,7 +196,7 @@ export default function AddProjectFunc(string) {
         latitude: projectDetails.latitude,
         longitude: projectDetails.longitude,
         state: projectDetails.state,
-        size: size.size,
+        size: (size.size),
         period: {
             startDate: period.startDate,
             endDate: period.endDate
@@ -208,7 +208,7 @@ export default function AddProjectFunc(string) {
         },
         address:{
             street: address.street,
-            zipcode: zipCode.zipcode,
+            zipcode: String(zipCode.zipcode),
             municipality: address.municipality,
             county: address.county,
         }
