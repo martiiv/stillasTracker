@@ -13,6 +13,9 @@ struct ProjectDetailView: View {
     @State private var isShowingSheet = false
         
     var project: Project
+    
+    let sizeSelections = ["Scaffolding", "Project Info"]
+    @State var selection: String = "Project Info"
 
     var body: some View {
         ScrollView {
@@ -25,26 +28,55 @@ struct ProjectDetailView: View {
                     .font(.title).bold()
                     .foregroundColor(colorScheme == .dark ? Color(UIColor.darkGray) : Color(UIColor.darkGray))
                 
-                DetailView(project: project)
-                
-                Button {
-                    isShowingSheet.toggle()
-                } label: {
-                    Text("Transfere Scaffolding")
-                        .padding(12)
-                        .font(.system(size: 20))
-                        .foregroundColor(colorScheme == .dark ? Color(UIColor.black) : Color(UIColor.darkGray))
-                }
-                .contentShape(Rectangle())
-                .background(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
-                .sheet(isPresented: $isShowingSheet,
-                       onDismiss: didDismiss) {
-                    TransfereScaffolding()
+                VStack {
+                    Picker("Select a state: ", selection: $selection) {
+                        ForEach(sizeSelections, id: \.self) {
+                            Text($0)
+                        }
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    .padding(.bottom, 15)
+                    
+                    Spacer()
+                    
+                    switch selection {
+                    case "Project Info":
+                        DetailView(project: project)
+                    case "Scaffolding":
+                        ScaffoldingView(isShowingSheet: $isShowingSheet)
+                    default:
+                        Text("Found none")
+                    }
                 }
              }
         }
         .ignoresSafeArea(edges: .top)
     }
+}
+
+struct ScaffoldingView: View {
+    @Environment(\.colorScheme) var colorScheme
+    @Binding var isShowingSheet: Bool
+    
+    var body: some View {
+        Button {
+            isShowingSheet.toggle()
+        } label: {
+            Text("Transfere Scaffolding")
+                .padding(12)
+                .font(.system(size: 20))
+                .foregroundColor(colorScheme == .dark ? Color(UIColor.black) : Color(UIColor.darkGray))
+        }
+        .contentShape(Rectangle())
+        .background(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
+        .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: 0, y: 2)
+        .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: 0, y: 10)
+        .sheet(isPresented: $isShowingSheet,
+               onDismiss: didDismiss) {
+            TransfereScaffolding()
+        }
+    }
+    
     func didDismiss() {
         // Handle the dismissing action.
     }
