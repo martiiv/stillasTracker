@@ -7,6 +7,10 @@
 
 import SwiftUI
 
+/*enum SwipeHorizontalDirection: String {
+        case left, right, none
+    }*/
+
 struct FilterProjectSize: View {
     @State var scoreFrom: Int = 100
     @State var scoreTo: Int = 1000
@@ -16,7 +20,8 @@ struct FilterProjectSize: View {
     
     @Binding var sizeFilterActive: Bool
     @Binding var selection: String
-    
+    //@State var swipeHorizontalDirection: SwipeHorizontalDirection = .none { didSet { print(swipeHorizontalDirection) } }
+
     let sizeSelections = ["Less Than", "Between", "Greater Than"]
 
     var body: some View {
@@ -40,6 +45,15 @@ struct FilterProjectSize: View {
                             scoreFromBind = val
                             sizeFilterActive = true
                         }
+                        /*.gesture(DragGesture().onChanged {
+                            if $0.startLocation.x == $0.location.x {
+                                                    self.swipeHorizontalDirection = .none
+                                                    selection = selection
+                            } else if $0.startLocation.x > $0.location.x {
+                                                    self.swipeHorizontalDirection = .right
+                                                    selection = "Between"
+                                                }
+                        }).transition(.asymmetric(insertion: .scale, removal: .opacity))*/
                 case "Between":
                     SizeBetweenFilter(sizeFilterActive: $sizeFilterActive, scoreFrom: scoreFrom, scoreFromBind: $scoreFromBind, scoreTo: scoreTo, scoreToBind: $scoreToBind)
                         .onChange(of: scoreTo) { val in
@@ -69,33 +83,6 @@ extension UIScreen {
    static let screenWidth = UIScreen.main.bounds.size.width
    static let screenHeight = UIScreen.main.bounds.size.height
    static let screenSize = UIScreen.main.bounds.size
-}
-
-struct CornerRadiusStyle: ViewModifier {
-    var radius: CGFloat
-    var corners: UIRectCorner
-    
-    struct CornerRadiusShape: Shape {
-
-        var radius = CGFloat.infinity
-        var corners = UIRectCorner.allCorners
-
-        func path(in rect: CGRect) -> Path {
-            let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
-            return Path(path.cgPath)
-        }
-    }
-
-    func body(content: Content) -> some View {
-        content
-            .clipShape(CornerRadiusShape(radius: radius, corners: corners))
-    }
-}
-
-extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        ModifiedContent(content: self, modifier: CornerRadiusStyle(radius: radius, corners: corners))
-    }
 }
 
 class NumbersOnly: ObservableObject {
