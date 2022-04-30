@@ -29,7 +29,6 @@ The class will contain the following functions:
 Version 0.1
 Last modified Martin Iversen
 */
-
 func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -85,11 +84,31 @@ func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string
 
 	oldProject := getProjectInfo(w, beaconID)
 	updatedProject := updateRegistered(w, oldProject, idList)
+	newMap := make(map[string]interface{})
 
-	_, err := database.Client.Doc(constants.P_LocationCollection+"/"+constants.P_ProjectDocument).Collection(constants.P_Active).Doc(string(rune(updatedProject.ProjectID))).Set(database.Ctx, updatedProject, firestore.MergeAll)
+	j, err := json.Marshal(updatedProject)
 	if err != nil {
-		tool.HandleError(tool.DATABASEADDERROR, w)
+		tool.HandleError(tool.MARSHALLERROR, w)
+		return
 	}
+
+	err = json.Unmarshal(j, &newMap)
+	if err != nil {
+		tool.HandleError(tool.UNMARSHALLERROR, w)
+		return
+	}
+	for i := range updatedProject.ScaffoldingArray {
+		fmt.Printf("%v", newMap["scaffolding"])
+
+		_, err := database.Client.Collection(constants.P_LocationCollection).Doc(constants.P_ProjectDocument).Collection(updatedProject.State).Doc(strconv.Itoa(updatedProject.ProjectID)).Collection(constants.P_StillasType).Doc(updatedProject.ScaffoldingArray[i].Type).Set(database.Ctx,
+			newMap["scaffolding"].([]interface{})[i],
+			firestore.MergeAll)
+
+		if err != nil {
+			tool.HandleError(tool.DATABASEADDERROR, w)
+		}
+	}
+
 	fmt.Printf("Succsessfully updated project with gateway id %v", beaconID)
 }
 
@@ -143,6 +162,7 @@ func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
 	}
 	completeProject.ScaffoldingArray = scaffoldingParts
 	return completeProject
+
 }
 
 func getTagLists(gatewayList []*igs.Message, tagList []*ibs.Payload) ([]string, map[string]float32) {
@@ -180,7 +200,6 @@ func updateRegistered(w http.ResponseWriter, oldProject _struct.GetProject, idLi
 		updatedProject.ScaffoldingArray[i].Type = scaffoldingType
 		updatedProject.ScaffoldingArray[i].Quantity.Expected = expected
 	}
-	fmt.Printf("%v", updatedProject)
 	return updatedProject
 }
 
@@ -208,7 +227,7 @@ func getTagTypes(w http.ResponseWriter, idList []string) map[string]int {
 		if err != nil {
 			tool.HandleError(tool.UNMARSHALLERROR, w)
 		}
-		resultList[strings.ToLower(tagInfo.Type)] = resultList[strings.ToLower(tagInfo.Type)] + 1
+		resultList[tagInfo.Type] = resultList[tagInfo.Type] + 1
 	}
 	return resultList
 }
