@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go/firestore v1.6.1
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/eclipse/paho.mqtt.golang v1.3.5
+	github.com/fatih/structs v1.1.0
 	github.com/gorilla/mux v1.8.0
 	github.com/ingics/ingics-parser-go v1.0.1
 	github.com/steinfletcher/apitest v1.5.11
@@ -24,6 +25,7 @@ require (
 	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pkg/errors v0.8.1 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
