@@ -35,6 +35,8 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
+	fmt.Printf("Recieved POST at %v \n", time.Now())
+
 	var gatewayList []*igs.Message
 	var beaconList []*ibs.Payload
 	var printList []string
@@ -42,7 +44,7 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	payload, _ := ioutil.ReadAll(r.Body)
 	convertedPayload := string(payload)
 	payloadList := strings.Split(convertedPayload, "\n")
-
+	fmt.Printf("\n%v\n", payloadList)
 	for i := 0; i < len(payloadList)-1; i++ {
 
 		if m := igs.Parse(payloadList[i]); m != nil {
@@ -58,7 +60,6 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	idList, batteryList := getTagLists(gatewayList, beaconList)
-	print(batteryList)
 
 	for i := range idList {
 
@@ -67,7 +68,6 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 
 		printList = append(printList, "Tag id:"+idList[i]+" Battery voltage: "+battery)
 	}
-	updateAmountProject(gatewayList[0].Gateway(), w, idList, batteryList)
 
 	fmt.Printf("\n-----------------------------------------------------")
 	fmt.Println("\nBeacon payload:")
@@ -76,6 +76,8 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Amount of tags registered: %v \n", len(idList))
 	fmt.Printf("List of tags:\n %v", printList)
 	fmt.Printf("\n-----------------------------------------------------\n")
+
+	updateAmountProject(gatewayList[0].Gateway(), w, idList, batteryList)
 }
 
 func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string, batteryList map[string]float32) {
@@ -141,11 +143,8 @@ func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
 		return _struct.GetProject{}
 	}
 
-	project, err := IterateProjects(gateway.ProjectID, "", "")
-	if err != nil {
-		tool.HandleError(tool.NODOCUMENTWITHID, w)
-	}
-	newProject, _ := database.GetDocumentData(project[0])
+	project := ProjectCollection.Collection(constants.P_Active).Doc(string(rune(gateway.ProjectID)))
+	newProject, _ := database.GetDocumentData(project)
 	var projectStruct _struct.NewProject
 
 	marshal, err := json.Marshal(newProject)
@@ -162,7 +161,7 @@ func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
 	var completeProject _struct.GetProject
 	completeProject.NewProject = projectStruct
 
-	scaffoldingParts, err := getScaffoldingStruct(project[0])
+	scaffoldingParts, err := getScaffoldingStruct(project)
 	if err != nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return _struct.GetProject{}
@@ -189,11 +188,10 @@ func getTagLists(gatewayList []*igs.Message, tagList []*ibs.Payload) ([]string, 
 }
 
 func updateRegistered(w http.ResponseWriter, oldProject _struct.GetProject, idList []string, batteryList map[string]float32) _struct.GetProject {
-
 	var updatedProject _struct.GetProject
+
 	updatedProject.NewProject = oldProject.NewProject
 	updatedProject.ScaffoldingArray = oldProject.ScaffoldingArray
-
 	resultList := getTagTypes(w, idList, updatedProject.ProjectName, batteryList)
 
 	for i := range updatedProject.ScaffoldingArray {
@@ -248,27 +246,22 @@ func iterateScaffoldingParts(w http.ResponseWriter, scaffoldingID string, projec
 		if err == iterator.Done || err != nil {
 			break
 		}
-		var document *firestore.DocumentIterator
+		var document *firestore.DocumentSnapshot
 
-		document = database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(collRef.ID).Where("tagID", "==", scaffoldingID).Documents(database.Ctx)
-		for {
-			documentReference, err := document.Next()
-			if err == iterator.Done {
-				break
-			}
-			_, err = documentReference.Ref.Set(database.Ctx, map[string]interface{}{
-				"project":      projectName,
-				"batteryLevel": batteryList[scaffoldingID],
-			}, firestore.MergeAll)
-
-			if err != nil {
-				tool.HandleError(tool.NODOCUMENTSINDATABASE, w)
-			}
-			documentReferences = append(documentReferences, documentReference.Ref)
+		document, err = database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(collRef.ID).Doc(scaffoldingID).Get(database.Ctx)
+		if err != nil {
+			break
 		}
+		_, err = document.Ref.Set(database.Ctx, map[string]interface{}{
+			"project":      projectName,
+			"batteryLevel": batteryList[scaffoldingID],
+		}, firestore.MergeAll)
 
+		if err != nil {
+			tool.HandleError(tool.NODOCUMENTSINDATABASE, w)
+		}
+		documentReferences = append(documentReferences, document.Ref)
 	}
-
 	if documentReferences != nil {
 		return documentReferences, nil
 	} else {
