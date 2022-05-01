@@ -9,13 +9,10 @@ import SwiftUI
 
 struct ScaffoldingView: View {
     var scaffolding: [Scaffolding]
-    @Binding var isShowingSheet: Bool
-
+    @State var isShowingSheet: Bool = false
     var body: some View {
         VStack {
-            TransfereScaffoldingButton(isShowingSheet: $isShowingSheet)
-            
-            ScaffoldingItems(scaffolding: scaffolding)
+            ScaffoldingItems(scaffolding: scaffolding, isShowingSheet: $isShowingSheet)
         }
     }
 }

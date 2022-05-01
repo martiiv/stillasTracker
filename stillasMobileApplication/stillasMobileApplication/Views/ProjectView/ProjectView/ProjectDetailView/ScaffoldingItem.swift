@@ -13,10 +13,10 @@ struct ScaffoldingItem: View {
     
     var body: some View {
         VStack {
-            Text(scaffolding.type).font(.title2)
+            Text("\(scaffolding.type)".capitalizingFirstLetter()).font(.title2)
                 .lineLimit(1)
             
-            Image("\(scaffolding.type)").resizable().scaledToFit()
+            Image("\(scaffolding.type)".capitalizingFirstLetter()).resizable().scaledToFit()
             
             Spacer()
 
@@ -57,6 +57,16 @@ struct ScaffoldingItem: View {
         .background(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
         .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: 0, y: 2)
         .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: 0, y: 10)
+    }
+}
+
+extension String {
+    func capitalizingFirstLetter() -> String {
+        return prefix(1).capitalized + dropFirst()
+    }
+
+    mutating func capitalizeFirstLetter() {
+        self = self.capitalizingFirstLetter()
     }
 }
 

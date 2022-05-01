@@ -46,7 +46,7 @@ struct ProjectDetailView: View {
                         }
                     case "Scaffolding":
                         VStack {
-                            ScaffoldingView(scaffolding: project.scaffolding!, isShowingSheet: $isShowingSheet)
+                            ScaffoldingView(scaffolding: project.scaffolding!)
                         }
                     default:
                         Text("Found none")
