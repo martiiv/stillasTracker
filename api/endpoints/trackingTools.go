@@ -67,7 +67,7 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 
 		printList = append(printList, "Tag id:"+idList[i]+" Battery voltage: "+battery)
 	}
-	updateAmountProject(gatewayList[0].Gateway(), w, idList)
+	updateAmountProject(gatewayList[0].Gateway(), w, idList, batteryList)
 
 	fmt.Printf("\n-----------------------------------------------------")
 	fmt.Println("\nBeacon payload:")
@@ -78,14 +78,14 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("\n-----------------------------------------------------\n")
 }
 
-func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string) {
+func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string, batteryList map[string]float32) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
 	oldProject := getProjectInfo(w, beaconID)
-	updatedProject := updateRegistered(w, oldProject, idList)
+	updatedProject := updateRegistered(w, oldProject, idList, batteryList)
 	newMap := make(map[string]interface{})
 
 	j, err := json.Marshal(updatedProject)
@@ -188,13 +188,13 @@ func getTagLists(gatewayList []*igs.Message, tagList []*ibs.Payload) ([]string, 
 	return tagIDList, batteryList
 }
 
-func updateRegistered(w http.ResponseWriter, oldProject _struct.GetProject, idList []string) _struct.GetProject {
+func updateRegistered(w http.ResponseWriter, oldProject _struct.GetProject, idList []string, batteryList map[string]float32) _struct.GetProject {
 
 	var updatedProject _struct.GetProject
 	updatedProject.NewProject = oldProject.NewProject
 	updatedProject.ScaffoldingArray = oldProject.ScaffoldingArray
 
-	resultList := getTagTypes(w, idList, updatedProject.ProjectName)
+	resultList := getTagTypes(w, idList, updatedProject.ProjectName, batteryList)
 
 	for i := range updatedProject.ScaffoldingArray {
 		scaffoldingType := oldProject.ScaffoldingArray[i].Type
@@ -213,10 +213,10 @@ func updateRegistered(w http.ResponseWriter, oldProject _struct.GetProject, idLi
 /*
 
  */
-func getTagTypes(w http.ResponseWriter, idList []string, projectName string) map[string]int {
+func getTagTypes(w http.ResponseWriter, idList []string, projectName string, batteryList map[string]float32) map[string]int {
 	resultList := make(map[string]int)
 	for i := range idList {
-		docRef, err := iterateScaffoldingParts(w, idList[i], projectName)
+		docRef, err := iterateScaffoldingParts(w, idList[i], projectName, batteryList)
 		if err != nil {
 			tool.HandleError(tool.NODOCUMENTWITHID, w)
 		}
@@ -239,7 +239,7 @@ func getTagTypes(w http.ResponseWriter, idList []string, projectName string) map
 	return resultList
 }
 
-func iterateScaffoldingParts(w http.ResponseWriter, scaffoldingID string, projectName string) ([]*firestore.DocumentRef, error) {
+func iterateScaffoldingParts(w http.ResponseWriter, scaffoldingID string, projectName string, batteryList map[string]float32) ([]*firestore.DocumentRef, error) {
 	var documentReferences []*firestore.DocumentRef
 	collection := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collections(database.Ctx)
 
@@ -257,7 +257,8 @@ func iterateScaffoldingParts(w http.ResponseWriter, scaffoldingID string, projec
 				break
 			}
 			_, err = documentReference.Ref.Set(database.Ctx, map[string]interface{}{
-				"project": projectName,
+				"project":      projectName,
+				"batteryLevel": batteryList[scaffoldingID],
 			}, firestore.MergeAll)
 
 			if err != nil {
