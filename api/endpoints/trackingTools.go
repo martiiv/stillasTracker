@@ -34,8 +34,6 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
-	fmt.Printf("Recieved POST at %v \n", time.Now())
-
 	var gatewayList []*igs.Message
 	var beaconList []*ibs.Payload
 	var printList []string
