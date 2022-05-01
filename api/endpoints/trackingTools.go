@@ -58,6 +58,8 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	idList, batteryList := getTagLists(gatewayList, beaconList)
+	print(batteryList)
+
 	for i := range idList {
 
 		batteryVoltage, _ := beaconList[i].BatteryVoltage()
@@ -65,7 +67,6 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 
 		printList = append(printList, "Tag id:"+idList[i]+" Battery voltage: "+battery)
 	}
-	updateTag(idList, batteryList, gatewayList[0].Gateway())
 	updateAmountProject(gatewayList[0].Gateway(), w, idList)
 
 	fmt.Printf("\n-----------------------------------------------------")
@@ -112,7 +113,7 @@ func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string
 		}
 	}
 	if update == true {
-		fmt.Printf("Succsessfully updated project with gateway id %v", beaconID)
+		fmt.Printf("Succsessfully updated project with gateway id %v\n", beaconID)
 	} else {
 		fmt.Printf("Unsuccsesful update")
 	}
@@ -193,7 +194,7 @@ func updateRegistered(w http.ResponseWriter, oldProject _struct.GetProject, idLi
 	updatedProject.NewProject = oldProject.NewProject
 	updatedProject.ScaffoldingArray = oldProject.ScaffoldingArray
 
-	resultList := getTagTypes(w, idList)
+	resultList := getTagTypes(w, idList, updatedProject.ProjectName)
 
 	for i := range updatedProject.ScaffoldingArray {
 		scaffoldingType := oldProject.ScaffoldingArray[i].Type
@@ -212,10 +213,10 @@ func updateRegistered(w http.ResponseWriter, oldProject _struct.GetProject, idLi
 /*
 
  */
-func getTagTypes(w http.ResponseWriter, idList []string) map[string]int {
+func getTagTypes(w http.ResponseWriter, idList []string, projectName string) map[string]int {
 	resultList := make(map[string]int)
 	for i := range idList {
-		docRef, err := iterateScaffoldingParts(idList[i])
+		docRef, err := iterateScaffoldingParts(w, idList[i], projectName)
 		if err != nil {
 			tool.HandleError(tool.NODOCUMENTWITHID, w)
 		}
@@ -238,7 +239,7 @@ func getTagTypes(w http.ResponseWriter, idList []string) map[string]int {
 	return resultList
 }
 
-func iterateScaffoldingParts(scaffoldingID string) ([]*firestore.DocumentRef, error) {
+func iterateScaffoldingParts(w http.ResponseWriter, scaffoldingID string, projectName string) ([]*firestore.DocumentRef, error) {
 	var documentReferences []*firestore.DocumentRef
 	collection := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collections(database.Ctx)
 
@@ -255,8 +256,16 @@ func iterateScaffoldingParts(scaffoldingID string) ([]*firestore.DocumentRef, er
 			if err == iterator.Done {
 				break
 			}
+			_, err = documentReference.Ref.Set(database.Ctx, map[string]interface{}{
+				"project": projectName,
+			}, firestore.MergeAll)
+
+			if err != nil {
+				tool.HandleError(tool.NODOCUMENTSINDATABASE, w)
+			}
 			documentReferences = append(documentReferences, documentReference.Ref)
 		}
+
 	}
 
 	if documentReferences != nil {
@@ -264,10 +273,6 @@ func iterateScaffoldingParts(scaffoldingID string) ([]*firestore.DocumentRef, er
 	} else {
 		return nil, errors.New("could not find document")
 	}
-}
-
-func updateTag(tagList []string, batteryList map[string]float32, beaconID string) {
-	//TODO Update the project and battery field in the database
 }
 
 func convertBattery(batteryVoltage float32) int {
