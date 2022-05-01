@@ -4,7 +4,6 @@ import (
 	"cloud.google.com/go/firestore"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/ingics/ingics-parser-go/ibs"
 	"github.com/ingics/ingics-parser-go/igs"
@@ -212,64 +211,31 @@ func updateRegistered(w http.ResponseWriter, oldProject _struct.GetProject, idLi
 
  */
 func getTagTypes(w http.ResponseWriter, idList []string, projectName string, batteryList map[string]float32) map[string]int {
+	collection := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collections(database.Ctx)
 	resultList := make(map[string]int)
+	var scaffoldingType string
 	for i := range idList {
-		docRef, err := iterateScaffoldingParts(w, idList[i], projectName, batteryList)
-		if err != nil {
-			tool.HandleError(tool.NODOCUMENTWITHID, w)
-		}
-		data, err := database.GetDocumentData(docRef[0])
-		if err != nil {
-			tool.HandleError(tool.DATABASEREADERROR, w)
-		}
+		for {
+			collRef, err := collection.Next()
+			if err == iterator.Done || err != nil {
+				break
+			}
+			var document *firestore.DocumentSnapshot
 
-		marshalled, _ := json.Marshal(data)
-		if err != nil {
-			tool.HandleError(tool.MARSHALLERROR, w)
+			document, err = database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(collRef.ID).Doc(idList[i]).Get(database.Ctx)
+			if err != nil {
+				break
+			}
+			_, err = document.Ref.Set(database.Ctx, map[string]interface{}{
+				"project":      projectName,
+				"batteryLevel": batteryList[idList[i]],
+			}, firestore.MergeAll)
+			if err != nil {
+				tool.HandleError(tool.NODOCUMENTSINDATABASE, w)
+			}
+			scaffoldingType = collRef.ID
 		}
-		var tagInfo _struct.ScaffoldingType
-		err = json.Unmarshal(marshalled, &tagInfo)
-		if err != nil {
-			tool.HandleError(tool.UNMARSHALLERROR, w)
-		}
-		resultList[tagInfo.Type] = resultList[tagInfo.Type] + 1
+		resultList[scaffoldingType] = resultList[scaffoldingType] + 1
 	}
 	return resultList
-}
-
-func iterateScaffoldingParts(w http.ResponseWriter, scaffoldingID string, projectName string, batteryList map[string]float32) ([]*firestore.DocumentRef, error) {
-	var documentReferences []*firestore.DocumentRef
-	collection := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collections(database.Ctx)
-
-	for {
-		collRef, err := collection.Next()
-		if err == iterator.Done || err != nil {
-			break
-		}
-		var document *firestore.DocumentSnapshot
-
-		document, err = database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(collRef.ID).Doc(scaffoldingID).Get(database.Ctx)
-		if err != nil {
-			break
-		}
-		_, err = document.Ref.Set(database.Ctx, map[string]interface{}{
-			"project":      projectName,
-			"batteryLevel": batteryList[scaffoldingID],
-		}, firestore.MergeAll)
-
-		if err != nil {
-			tool.HandleError(tool.NODOCUMENTSINDATABASE, w)
-		}
-		documentReferences = append(documentReferences, document.Ref)
-	}
-	if documentReferences != nil {
-		return documentReferences, nil
-	} else {
-		return nil, errors.New("could not find document")
-	}
-}
-
-func convertBattery(batteryVoltage float32) int {
-
-	return 0
 }
