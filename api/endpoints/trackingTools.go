@@ -57,7 +57,7 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(os.Args[1])
 		}
 	}
-	idList, _ := getTagLists(gatewayList, beaconList)
+	idList, batteryList := getTagLists(gatewayList, beaconList)
 	for i := range idList {
 
 		batteryVoltage, _ := beaconList[i].BatteryVoltage()
@@ -65,6 +65,7 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 
 		printList = append(printList, "Tag id:"+idList[i]+" Battery voltage: "+battery)
 	}
+	updateTag(idList, batteryList, gatewayList[0].Gateway())
 	updateAmountProject(gatewayList[0].Gateway(), w, idList)
 
 	fmt.Printf("\n-----------------------------------------------------")
@@ -73,7 +74,7 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Gateway: %v\n", gatewayList[0].Gateway())
 	fmt.Printf("Amount of tags registered: %v \n", len(idList))
 	fmt.Printf("List of tags:\n %v", printList)
-	fmt.Printf("-----------------------------------------------------\n")
+	fmt.Printf("\n-----------------------------------------------------\n")
 }
 
 func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string) {
@@ -97,19 +98,24 @@ func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string
 		tool.HandleError(tool.UNMARSHALLERROR, w)
 		return
 	}
+	var update bool
 	for i := range updatedProject.ScaffoldingArray {
-		fmt.Printf("%v", newMap["scaffolding"])
-
 		_, err := database.Client.Collection(constants.P_LocationCollection).Doc(constants.P_ProjectDocument).Collection(updatedProject.State).Doc(strconv.Itoa(updatedProject.ProjectID)).Collection(constants.P_StillasType).Doc(updatedProject.ScaffoldingArray[i].Type).Set(database.Ctx,
 			newMap["scaffolding"].([]interface{})[i],
 			firestore.MergeAll)
 
 		if err != nil {
 			tool.HandleError(tool.DATABASEADDERROR, w)
+			update = false
+		} else {
+			update = true
 		}
 	}
-
-	fmt.Printf("Succsessfully updated project with gateway id %v", beaconID)
+	if update == true {
+		fmt.Printf("Succsessfully updated project with gateway id %v", beaconID)
+	} else {
+		fmt.Printf("Unsuccsesful update")
+	}
 }
 
 func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
@@ -260,10 +266,11 @@ func iterateScaffoldingParts(scaffoldingID string) ([]*firestore.DocumentRef, er
 	}
 }
 
-func updateBatteryOnTag(w http.ResponseWriter, battery float32, scaffoldingRef *firestore.DocumentRef) {
-
+func updateTag(tagList []string, batteryList map[string]float32, beaconID string) {
+	//TODO Update the project and battery field in the database
 }
 
-func updateProjectOnTag() {
+func convertBattery(batteryVoltage float32) int {
 
+	return 0
 }
