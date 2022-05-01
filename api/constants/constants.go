@@ -89,7 +89,7 @@ const (
 	S_type         = "type"
 
 	//Scaffolding parts
-	S_Spir           = "Spire"
+	S_Spir           = "Spir"
 	S_Lengdebjelke   = "Lengdebjelke"
 	S_Enrorsbjelke   = "Enrørsbjelke"
 	S_Rekkverksramme = "Rekkverksramme"
