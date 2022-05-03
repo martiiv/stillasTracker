@@ -15,11 +15,18 @@ Last modified by martiiv@stud.ntnu.no
 Date: 06.04.2022
 Version 0.8
 */
+var (
+	InfoLogger     *log.Logger
+	ErrorLogger    *log.Logger
+	DatabaseLogger *log.Logger
+)
 
 const baseURL = "/stillastracking/v1/api"
 
 //Handle Function starts when launching program, function forwards the request to the appropriate endpoint
 func Handle() {
+	InitLog()
+
 	router := mux.NewRouter()
 
 	//Scaffolding endpoint
@@ -54,7 +61,19 @@ func Handle() {
 	router.HandleFunc(baseURL+"/gateway/input", UpdatePosition)
 
 	http.Handle("/", router)
-	log.Println(http.ListenAndServe(getPort(), nil))
+	InfoLogger.Println(http.ListenAndServe(getPort(), nil))
+}
+
+func InitLog() {
+	file, err := os.OpenFile("logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(file)
+
+	InfoLogger = log.New(file, "INFO:", log.Ldate|log.Ltime|log.Lshortfile)
+	DatabaseLogger = log.New(file, "DATABASE:", log.Ldate|log.Ltime|log.Lshortfile)
+	ErrorLogger = log.New(file, "ERROR:", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 /*

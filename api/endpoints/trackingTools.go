@@ -8,7 +8,6 @@ import (
 	"github.com/ingics/ingics-parser-go/ibs"
 	"github.com/ingics/ingics-parser-go/igs"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	tool "stillasTracker/api/apiTools"
@@ -41,9 +40,8 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	payload, _ := ioutil.ReadAll(r.Body)
 	convertedPayload := string(payload)
 	payloadList := strings.Split(convertedPayload, "\n")
-	fmt.Printf("\n%v\n", payloadList)
-	for i := 0; i < len(payloadList)-1; i++ {
 
+	for i := 0; i < len(payloadList)-1; i++ {
 		if m := igs.Parse(payloadList[i]); m != nil {
 			gatewayList = append(gatewayList, m)
 			if bytes, err := hex.DecodeString(m.Payload()); err == nil {
@@ -52,8 +50,7 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 			}
 
 		} else {
-			fmt.Println("Error: Invalid input message")
-			fmt.Println(os.Args[1])
+			InfoLogger.Printf("Invalid input message: %v", os.Args[1])
 		}
 	}
 	idList, batteryList := getTagLists(gatewayList, beaconList)
@@ -90,31 +87,34 @@ func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string
 	j, err := json.Marshal(updatedProject)
 	if err != nil {
 		tool.HandleError(tool.MARSHALLERROR, w)
+		ErrorLogger.Printf("Failed to unmarshal object: %v", updatedProject)
 		return
 	}
 
 	err = json.Unmarshal(j, &newMap)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
+		ErrorLogger.Printf("Failed to unmarshal object: %v", updatedProject)
 		return
 	}
 	var update bool
 	for i := range updatedProject.ScaffoldingArray {
-		_, err := database.Client.Collection(constants.P_LocationCollection).Doc(constants.P_ProjectDocument).Collection(updatedProject.State).Doc(strconv.Itoa(updatedProject.ProjectID)).Collection(constants.P_StillasType).Doc(updatedProject.ScaffoldingArray[i].Type).Set(database.Ctx,
+		doc, err := database.Client.Collection(constants.P_LocationCollection).Doc(constants.P_ProjectDocument).Collection(updatedProject.State).Doc(strconv.Itoa(updatedProject.ProjectID)).Collection(constants.P_StillasType).Doc(updatedProject.ScaffoldingArray[i].Type).Set(database.Ctx,
 			newMap["scaffolding"].([]interface{})[i],
 			firestore.MergeAll)
 
 		if err != nil {
 			tool.HandleError(tool.DATABASEADDERROR, w)
+			ErrorLogger.Printf("Database ADD error on object %v", doc)
 			update = false
 		} else {
 			update = true
 		}
 	}
 	if update == true {
-		fmt.Printf("Succsessfully updated project with gateway id %v\n", beaconID)
+		DatabaseLogger.Printf("Successfully updated project with gateway id %v\n", beaconID)
 	} else {
-		fmt.Printf("Unsuccsesful update")
+		DatabaseLogger.Printf("Unsuccessfully updated project with gateway id %v\n", beaconID)
 	}
 }
 
@@ -125,33 +125,42 @@ func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
 	data, err := database.GetDocumentData(gatewayCollection.Doc(beaconID))
 	if err != nil {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
+		ErrorLogger.Printf("Could not get document %v from the database", beaconID)
 		return _struct.GetProject{}
 	}
 
 	marshalled, err := json.Marshal(data)
 	if err != nil {
 		tool.HandleError(tool.MARSHALLERROR, w)
+		ErrorLogger.Printf("Marshall error on object %v", data)
 		return _struct.GetProject{}
 	}
 	var gateway _struct.Gateway
 	err = json.Unmarshal(marshalled, &gateway)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
+		ErrorLogger.Printf("Unmarshall error on object %v", marshalled)
 		return _struct.GetProject{}
 	}
 
 	project := ProjectCollection.Collection(constants.P_Active).Doc(string(rune(gateway.ProjectID)))
-	newProject, _ := database.GetDocumentData(project)
+	newProject, err := database.GetDocumentData(project)
+	if err != nil {
+		tool.HandleError(tool.DATABASEREADERROR, w)
+		ErrorLogger.Printf("Error occurred when fetching document %v", gateway.ProjectID)
+	}
 	var projectStruct _struct.NewProject
 
 	marshal, err := json.Marshal(newProject)
 	if err != nil {
 		tool.HandleError(tool.MARSHALLERROR, w)
+		ErrorLogger.Printf("Error occurred when marshalling object: %v", newProject)
 		return _struct.GetProject{}
 	}
 	err = json.Unmarshal(marshal, &projectStruct)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
+		ErrorLogger.Printf("Error occurred when unmarshalling object: %v", marshal)
 		return _struct.GetProject{}
 	}
 
@@ -161,6 +170,7 @@ func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
 	scaffoldingParts, err := getScaffoldingStruct(project)
 	if err != nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
+		ErrorLogger.Printf("Could not find scaffolding parts on project:", project)
 		return _struct.GetProject{}
 	}
 	completeProject.ScaffoldingArray = scaffoldingParts
@@ -224,9 +234,10 @@ func getTagTypes(idList []string, projectName string, scaffoldingArray _struct.S
 				"batteryLevel": batteryList[idList[i]],
 			}, firestore.MergeAll)
 			if err != nil {
-				log.Printf("Document with id: %v is not in scaffoldingType collection %n", idList[i], scaffoldingType)
+				ErrorLogger.Printf("Document with id: %v is not in scaffoldingType collection %n", idList[i], scaffoldingType)
 				break
 			}
+			DatabaseLogger.Printf("Succsessfully updated scaffolding part: %v", idList[i])
 		}
 		resultList[scaffoldingType] = resultList[scaffoldingType] + 1
 	}
