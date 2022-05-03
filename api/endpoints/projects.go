@@ -594,10 +594,6 @@ func transferProject(w http.ResponseWriter, r *http.Request) {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return
 	}
-	if len(fromLocation) != len(newLocation) {
-		tool.HandleError(tool.COULDNOTFINDDATA, w)
-		return
-	}
 
 	var sub = map[string]interface{}{}
 	var add = map[string]interface{}{}

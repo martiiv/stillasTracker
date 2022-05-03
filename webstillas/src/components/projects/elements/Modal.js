@@ -39,7 +39,7 @@ const scaffoldingMove =
             "quantity": 0
         },
         {
-            "type": "Spire",
+            "type": "Spir",
             "quantity": 0
         },
         {
@@ -111,7 +111,6 @@ export default function InfoModalFunc(props) {
 
     const validFormat = ToProject !== FromProject
 
-    console.log(JSON.stringify(move))
 
     return (
         <>
