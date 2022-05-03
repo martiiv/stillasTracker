@@ -1,15 +1,24 @@
-import React, {useEffect, useReducer, useState} from 'react'
+import React, {useCallback, useRef, useState} from 'react'
 import {MapClass} from "./map";
-import {FormErrors} from "./FormErrors";
+import MapboxAutocomplete from "react-mapbox-autocomplete";
+import 'mapbox-gl/dist/mapbox-gl.css'
+import 'react-map-gl-geocoder/dist/mapbox-gl-geocoder.css'
+import Geocoder from "react-map-gl-geocoder/src";
+
 
 
 
 export default function AddProjectFunc(string) {
 
+    const mapAccess = {
+        // Thanks to SomeSoftwareTeam (https://github.com/SomeSoftwareTeam/some-react-app/blob/acd17860b8b1f51edefa4e18486cc1fb07afff70/src/components/SomeComponent.js)
+        mapboxApiAccessToken:
+            "pk.eyJ1IjoiZmFrZXVzZXJnaXRodWIiLCJhIjoiY2pwOGlneGI4MDNnaDN1c2J0eW5zb2ZiNyJ9.mALv0tCpbYUPtzT7YysA2g"
+    };
 
-    const [address, setAddress] = useState({street: "", municipality: "", county: ""})
 
-    const [zipCode, setZipCode] = useState({zipcode: 0})
+    const [address, setAddress] = useState({street: "", zipcode: 0 ,municipality: "", county: ""})
+
 
     const [period, setPeriod] = useState({startDate: "", endDate: ""})
 
@@ -18,10 +27,10 @@ export default function AddProjectFunc(string) {
     const [customerNumber, setCustomerNumber] = useState({number: 0})
 
     const [projectDetails, setProjectDetails] = useState({
-        projectID: 23322,
+        projectID: Math.round(Math.random() * 1000000),
         projectName: '',
-        latitude: 60.79077759591496,
-        longitude: 10.683249543160402,
+        latitude: 0,
+        longitude: 0,
         state: "Active"
     })
 
@@ -81,10 +90,6 @@ export default function AddProjectFunc(string) {
     const handleUserInputAddress = (e) => {
         const name = e.target.name;
         const value = e.target.value;
-        if (name.toLowerCase() === "zipcode"){
-            setZipCode({...zipCode, [name]: parseInt(value, 10)})
-            validateFieldProjectAddress(name, parseInt(value, 10))
-        }
         validateFieldProjectAddress(name, value)
         setAddress({...address, [name]: value});
     }
@@ -190,6 +195,72 @@ export default function AddProjectFunc(string) {
 
     }
 
+
+
+
+    const queryParams = {
+        country: "no",
+        place_type: "address"
+    };
+
+
+    const parseReverseGeo = async (geoData, lat, long) => {
+        let street, postcode, region, place
+        await fetch("https://api.mapbox.com/geocoding/v5/mapbox.places/" + long + "," + lat + ".json?access_token=pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ")
+            .then(res => res.json())
+            .then(res => {
+                console.log(res)
+                    for (const re of res.features) {
+                        console.log(re.place_type[0]);
+                        console.log(re);
+                        if (re.place_type[0] === "address" || re.place_type[0] === "poi") {
+                            street =  re.text
+                        } else if (re.place_type[0] === "postcode") {
+                            postcode =  re.text
+                        } else if (re.place_type[0] === "region") {
+                            region =  re.text
+                        } else if (re.place_type[0] === "place") {
+                            place =  re.text                        }
+                    }
+                    setAddress({street: street, county: region, municipality: place, zipcode: postcode})
+                }
+            ).then( () => setProjectDetails({...projectDetails,
+                longitude: long,
+                latitude: lat
+            }))
+
+
+
+           /* if (geoData !== null){
+                const dataArr = geoData.split(",")
+                console.log(dataArr.length)
+                if (dataArr.length === 3) {
+                    const zipAndCity = dataArr[1].split(" ")
+                    if (zipAndCity.length === 3){
+                        setAddress({
+                            zipcode: Number(zipAndCity[1]),
+                            municipality: zipAndCity[2],
+                            street: dataArr[0],
+                            county: dataArr[2]
+                        })
+                        setProjectDetails({...projectDetails,
+                            latitude: Number(lat),
+                            longitude: Number(long)
+                        })
+                    }else{
+                        console.log("feil format")
+                    }
+
+                }
+
+
+            }*/
+    }
+
+    const _suggestionSelect = async (result, lat, long, country) => {
+        await parseReverseGeo(result, lat, long)
+    }
+
     const finalProject = {
         projectID: projectDetails.projectID,
         projectName: projectDetails.projectName,
@@ -208,19 +279,18 @@ export default function AddProjectFunc(string) {
         },
         address:{
             street: address.street,
-            zipcode: String(zipCode.zipcode),
+            zipcode: String(address.zipcode),
             municipality: address.municipality,
             county: address.county,
         }
 
     }
-
-    console.log(finalProject)
-    console.log(valid)
+    console.log(finalProject);
 
     if (!mapPage) {
         return (
             <div className={"general-information"}>
+
                 <h1>Add project</h1>
                 <hr/>
                 <form>
@@ -236,46 +306,46 @@ export default function AddProjectFunc(string) {
                             />
                             <p>Enter Project Name</p>
                         </div>
+                        <hr/>
                         <div>
-                            <input type={"text"}
-                                   required
-                                   name={"street"}
-                                   placeholder={"Street"}
-                                   className={"input-text-add"}
-                                   onChange={handleUserInputAddress}
+                            <MapboxAutocomplete
+                                publicKey={mapAccess.mapboxApiAccessToken}
+                                onSuggestionSelect={_suggestionSelect}
+
+                                country="no"
+                                resetSearch={false}
+                                placeholder="Search Address..."
+                                queryParams={queryParams}
+
                             />
+
+
+
+
                             <p>Enter Address</p>
                         </div>
-                        <div>
-                            <input type={"number"}
-                                   min={0}
-                                   required
-                                   name={"zipcode"}
-                                   placeholder={"ZIP Code"}
-                                   onChange={handleUserInputAddress}
-                            />
-                            <p>Enter Zip Code</p>
+                        <hr/>
+                        <div className={"date-add-project"}>
+                            <div>
+                                <input type={"date"}
+                                       required
+                                       name={"startDate"}
+                                       placeholder={"Start Date"}
+                                       className={"input-text-add"}
+                                       onChange={handleUserInputPeriod}/>
+                                <p>Enter Start date</p>
+                            </div>
+                            <div>
+                                <input type={"date"}
+                                       required
+                                       name={"endDate"}
+                                       placeholder={"End Date"}
+                                       className={"input-text-add"}
+                                       onChange={handleUserInputPeriod}/>
+                                <p>Enter end Date</p>
+                            </div>
                         </div>
-                        <div>
-                            <input type={"text"}
-                                   required
-                                   name={"municipality"}
-                                   placeholder={"Enter Municipality"}
-                                   className={"input-text-add"}
-                                   onChange={handleUserInputAddress}
-                            />
-                            <p>Enter Municipality</p>
-                        </div>
-                        <div>
-                            <input type={"text"}
-                                   required
-                                   name={"county"}
-                                   placeholder={"Enter County"}
-                                   className={"input-text-add"}
-                                   onChange={handleUserInputAddress}
-                            />
-                            <p>Enter County</p>
-                        </div>
+                        <hr/>
                         <div>
                             <input type={"number"}
                                    min={0}
@@ -286,24 +356,7 @@ export default function AddProjectFunc(string) {
                                    onChange={handleUserInputProjectDetails}/>
                             <p>Enter size</p>
                         </div>
-                        <div>
-                            <input type={"date"}
-                                   required
-                                   name={"startDate"}
-                                   placeholder={"Start Date"}
-                                   className={"input-text-add"}
-                                   onChange={handleUserInputPeriod}/>
-                            <p>Enter Start date</p>
-                        </div>
-                        <div>
-                            <input type={"date"}
-                                   required
-                                   name={"endDate"}
-                                   placeholder={"End Date"}
-                                   className={"input-text-add"}
-                                   onChange={handleUserInputPeriod}/>
-                            <p>Enter end Date</p>
-                        </div>
+                        <hr/>
                         <div>
                             <input type={"text"}
                                    required

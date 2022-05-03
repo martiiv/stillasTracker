@@ -39,7 +39,7 @@ const scaffoldingMove =
             "quantity": 0
         },
         {
-            "type": "Spire",
+            "type": "Spir",
             "quantity": 0
         },
         {
@@ -65,11 +65,8 @@ export default function InfoModalFunc(props) {
     let jsonProjects
     jsonProjects = queryClient.getQueryData("allProjects")
 
-
-    console.log(jsonProjects)
     let jsonProject = queryClient.getQueryData(["project", props.id])
     console.log(jsonProject)
-    //todo gjør om variablenavn
     const [roomRent, setRoomRent] = useState(scaffoldingMove);
     const [ToProject, setToProject] = useState("");
     const [FromProject, setFromProject] = useState("");
@@ -98,8 +95,11 @@ export default function InfoModalFunc(props) {
 
 
     const AddScaffold = async () => {
+
         await putModel(TRANSFER_SCAFFOLDING, JSON.stringify(move));
         await queryClient.resetQueries(["project", props.id])
+
+
     }
 
     const move = {
@@ -110,8 +110,7 @@ export default function InfoModalFunc(props) {
 
 
     const validFormat = ToProject !== FromProject
-    console.log(ToProject)
-    console.log(FromProject)
+
 
     return (
         <>
