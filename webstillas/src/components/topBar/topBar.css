@@ -5,11 +5,9 @@
 
 
 .button{
-    width: fit-content;
-    height: fit-content;
+    width: 150px;
+    height: 70px;
 }
-
-
 
 .links{
     margin-inside: 50px;
