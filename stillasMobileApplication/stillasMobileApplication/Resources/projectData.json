@@ -1,0 +1,60 @@
+[
+    {
+      "projectID": 420,
+      "projectName": "Ntnu i gjøvik",
+      "latitude": 60.7905060889568,
+      "longitude": 10.681777071532371,
+      "period": {
+          "startDate": "20.02.2020",
+          "endDate": "10.05.2020"
+      },
+      "size": 240,
+      "State": "Active",
+      "adresse":{
+          "gate": "Piazza del Colosseo 1",
+          "postnummer": "0184",
+          "kommune": "Roma",
+          "fylke": "Roma"
+      },
+      "Leier": {
+            "name": "Rome",
+            "number": 639967700
+        },
+        "Scaffolding": {
+            "units":[
+            {
+                "type": "Spire",
+                "quantity": {
+                    "expected": 3241,
+                    "registered":3241
+                }
+            },
+            {
+                "type": "Flooring",
+                "quantity": {
+                    "expected": 500000,
+                    "registered":499211
+                }
+            }
+        ]
+        },
+        "geofence": {
+          "w-position": {
+            "latitude": 60.79077759591496,
+            "longitude":  10.683249543160402
+          },
+          "x-position": {
+            "latitude": 60.79015256651516,
+            "longitude": 10.684424851812308
+          },
+          "y-position":{
+            "latitude": 60.789159847696716,
+            "longitude": 10.68094413003551
+          },
+          "z-position":{
+            "latitude": 60.78963782726421,
+            "longitude": 10.680160590934236
+          }
+      }
+    }
+]
