@@ -1,12 +1,24 @@
+POST URL: http://10.212.138.205:8080/stillastracking/v1/api/gateway/input
+User etc martiiv@stud.ntnu.no
+Nettverk brukernavn martiiv@stud.ntnu.no
+Nettverk passord samme som vanlig
+
+sudo docker build . -t scaffoldingtracker
+sudo docker run -d --name scaffolding0.1 -p 8080:8080 scaffoldingtrackerv0.6
+
+Krisetilfellet:
+
 package endpoints
 
 import (
 	"cloud.google.com/go/firestore"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/ingics/ingics-parser-go/ibs"
 	"github.com/ingics/ingics-parser-go/igs"
+	"google.golang.org/api/iterator"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -42,6 +54,7 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	payloadList := strings.Split(convertedPayload, "\n")
 
 	for i := 0; i < len(payloadList)-1; i++ {
+
 		if m := igs.Parse(payloadList[i]); m != nil {
 			gatewayList = append(gatewayList, m)
 			if bytes, err := hex.DecodeString(m.Payload()); err == nil {
@@ -50,11 +63,11 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 			}
 
 		} else {
-			InfoLogger.Printf("Invalid input message: %v", os.Args[1])
+			fmt.Println("Error: Invalid input message")
+			fmt.Println(os.Args[1])
 		}
 	}
 	idList, batteryList := getTagLists(gatewayList, beaconList)
-
 	for i := range idList {
 
 		batteryVoltage, _ := beaconList[i].BatteryVoltage()
@@ -62,6 +75,8 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 
 		printList = append(printList, "Tag id:"+idList[i]+" Battery voltage: "+battery)
 	}
+	updateTag(idList, batteryList, gatewayList[0].Gateway())
+	updateAmountProject(gatewayList[0].Gateway(), w, idList)
 
 	fmt.Printf("\n-----------------------------------------------------")
 	fmt.Println("\nBeacon payload:")
@@ -70,51 +85,46 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Amount of tags registered: %v \n", len(idList))
 	fmt.Printf("List of tags:\n %v", printList)
 	fmt.Printf("\n-----------------------------------------------------\n")
-
-	updateAmountProject(gatewayList[0].Gateway(), w, idList, batteryList)
 }
 
-func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string, batteryList map[string]float32) {
+func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
 	oldProject := getProjectInfo(w, beaconID)
-	updatedProject := updateRegistered(oldProject, idList, batteryList)
+	updatedProject := updateRegistered(w, oldProject, idList)
 	newMap := make(map[string]interface{})
 
 	j, err := json.Marshal(updatedProject)
 	if err != nil {
 		tool.HandleError(tool.MARSHALLERROR, w)
-		ErrorLogger.Printf("Failed to unmarshal object: %v", updatedProject)
 		return
 	}
 
 	err = json.Unmarshal(j, &newMap)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
-		ErrorLogger.Printf("Failed to unmarshal object: %v", updatedProject)
 		return
 	}
 	var update bool
 	for i := range updatedProject.ScaffoldingArray {
-		doc, err := database.Client.Collection(constants.P_LocationCollection).Doc(constants.P_ProjectDocument).Collection(updatedProject.State).Doc(strconv.Itoa(updatedProject.ProjectID)).Collection(constants.P_StillasType).Doc(updatedProject.ScaffoldingArray[i].Type).Set(database.Ctx,
+		_, err := database.Client.Collection(constants.P_LocationCollection).Doc(constants.P_ProjectDocument).Collection(updatedProject.State).Doc(strconv.Itoa(updatedProject.ProjectID)).Collection(constants.P_StillasType).Doc(updatedProject.ScaffoldingArray[i].Type).Set(database.Ctx,
 			newMap["scaffolding"].([]interface{})[i],
 			firestore.MergeAll)
 
 		if err != nil {
 			tool.HandleError(tool.DATABASEADDERROR, w)
-			ErrorLogger.Printf("Database ADD error on object %v", doc)
 			update = false
 		} else {
 			update = true
 		}
 	}
 	if update == true {
-		DatabaseLogger.Printf("Successfully updated project with gateway id %v\n", beaconID)
+		fmt.Printf("Succsessfully updated project with gateway id %v", beaconID)
 	} else {
-		DatabaseLogger.Printf("Unsuccessfully updated project with gateway id %v\n", beaconID)
+		fmt.Printf("Unsuccsesful update")
 	}
 }
 
@@ -125,52 +135,45 @@ func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
 	data, err := database.GetDocumentData(gatewayCollection.Doc(beaconID))
 	if err != nil {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
-		ErrorLogger.Printf("Could not get document %v from the database", beaconID)
 		return _struct.GetProject{}
 	}
 
 	marshalled, err := json.Marshal(data)
 	if err != nil {
 		tool.HandleError(tool.MARSHALLERROR, w)
-		ErrorLogger.Printf("Marshall error on object %v", data)
 		return _struct.GetProject{}
 	}
 	var gateway _struct.Gateway
 	err = json.Unmarshal(marshalled, &gateway)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
-		ErrorLogger.Printf("Unmarshall error on object %v", marshalled)
 		return _struct.GetProject{}
 	}
 
-	project := ProjectCollection.Collection(constants.P_Active).Doc(string(rune(gateway.ProjectID)))
-	newProject, err := database.GetDocumentData(project)
+	project, err := IterateProjects(gateway.ProjectID, "", "")
 	if err != nil {
-		tool.HandleError(tool.DATABASEREADERROR, w)
-		ErrorLogger.Printf("Error occurred when fetching document %v", gateway.ProjectID)
+		tool.HandleError(tool.NODOCUMENTWITHID, w)
 	}
+	newProject, _ := database.GetDocumentData(project[0])
 	var projectStruct _struct.NewProject
 
 	marshal, err := json.Marshal(newProject)
 	if err != nil {
 		tool.HandleError(tool.MARSHALLERROR, w)
-		ErrorLogger.Printf("Error occurred when marshalling object: %v", newProject)
 		return _struct.GetProject{}
 	}
 	err = json.Unmarshal(marshal, &projectStruct)
 	if err != nil {
 		tool.HandleError(tool.UNMARSHALLERROR, w)
-		ErrorLogger.Printf("Error occurred when unmarshalling object: %v", marshal)
 		return _struct.GetProject{}
 	}
 
 	var completeProject _struct.GetProject
 	completeProject.NewProject = projectStruct
 
-	scaffoldingParts, err := getScaffoldingStruct(project)
+	scaffoldingParts, err := getScaffoldingStruct(project[0])
 	if err != nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
-		ErrorLogger.Printf("Could not find scaffolding parts on project:", project)
 		return _struct.GetProject{}
 	}
 	completeProject.ScaffoldingArray = scaffoldingParts
@@ -194,14 +197,13 @@ func getTagLists(gatewayList []*igs.Message, tagList []*ibs.Payload) ([]string, 
 	return tagIDList, batteryList
 }
 
-func updateRegistered(oldProject _struct.GetProject, idList []string, batteryList map[string]float32) _struct.GetProject {
-	var updatedProject _struct.GetProject
+func updateRegistered(w http.ResponseWriter, oldProject _struct.GetProject, idList []string) _struct.GetProject {
 
+	var updatedProject _struct.GetProject
 	updatedProject.NewProject = oldProject.NewProject
 	updatedProject.ScaffoldingArray = oldProject.ScaffoldingArray
-	projectName := updatedProject.NewProject.ProjectName
 
-	resultList := getTagTypes(idList, projectName, updatedProject.ScaffoldingArray, batteryList)
+	resultList := getTagTypes(w, idList)
 
 	for i := range updatedProject.ScaffoldingArray {
 		scaffoldingType := oldProject.ScaffoldingArray[i].Type
@@ -220,26 +222,65 @@ func updateRegistered(oldProject _struct.GetProject, idList []string, batteryLis
 /*
 
  */
-func getTagTypes(idList []string, projectName string, scaffoldingArray _struct.ScaffoldingArray, batteryList map[string]float32) map[string]int {
+func getTagTypes(w http.ResponseWriter, idList []string) map[string]int {
 	resultList := make(map[string]int)
-	var scaffoldingType string
-
 	for i := range idList {
-		for j := range scaffoldingArray {
-
-			scaffoldingType = scaffoldingArray[j].Type
-			documentPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldingType).Doc(idList[i])
-			_, err := documentPath.Set(database.Ctx, map[string]interface{}{
-				"project":      projectName,
-				"batteryLevel": batteryList[idList[i]],
-			}, firestore.MergeAll)
-			if err != nil {
-				ErrorLogger.Printf("Document with id: %v is not in scaffoldingType collection %n", idList[i], scaffoldingType)
-				break
-			}
-			DatabaseLogger.Printf("Succsessfully updated scaffolding part: %v", idList[i])
+		docRef, err := iterateScaffoldingParts(idList[i])
+		if err != nil {
+			tool.HandleError(tool.NODOCUMENTWITHID, w)
 		}
-		resultList[scaffoldingType] = resultList[scaffoldingType] + 1
+		data, err := database.GetDocumentData(docRef[0])
+		if err != nil {
+			tool.HandleError(tool.DATABASEREADERROR, w)
+		}
+
+		marshalled, _ := json.Marshal(data)
+		if err != nil {
+			tool.HandleError(tool.MARSHALLERROR, w)
+		}
+		var tagInfo _struct.ScaffoldingType
+		err = json.Unmarshal(marshalled, &tagInfo)
+		if err != nil {
+			tool.HandleError(tool.UNMARSHALLERROR, w)
+		}
+		resultList[tagInfo.Type] = resultList[tagInfo.Type] + 1
 	}
 	return resultList
+}
+
+func iterateScaffoldingParts(scaffoldingID string) ([]*firestore.DocumentRef, error) {
+	var documentReferences []*firestore.DocumentRef
+	collection := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collections(database.Ctx)
+
+	for {
+		collRef, err := collection.Next()
+		if err == iterator.Done || err != nil {
+			break
+		}
+		var document *firestore.DocumentIterator
+
+		document = database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(collRef.ID).Where("tagID", "==", scaffoldingID).Documents(database.Ctx)
+		for {
+			documentReference, err := document.Next()
+			if err == iterator.Done {
+				break
+			}
+			documentReferences = append(documentReferences, documentReference.Ref)
+		}
+	}
+
+	if documentReferences != nil {
+		return documentReferences, nil
+	} else {
+		return nil, errors.New("could not find document")
+	}
+}
+
+func updateTag(tagList []string, batteryList map[string]float32, beaconID string) {
+	//TODO Update the project and battery field in the database
+}
+
+func convertBattery(batteryVoltage float32) int {
+
+	return 0
 }

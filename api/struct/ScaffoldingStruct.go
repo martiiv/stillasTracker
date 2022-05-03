@@ -8,10 +8,10 @@ Last edit: Martin Iversen 17.03.2022
 
 //ScaffoldingType will be used when getting info from scaffolding units
 type ScaffoldingType struct {
-	Type         string `json:"type"`
-	Project      string `json:"project"`
-	BatteryLevel int    `json:"batteryLevel"`
-	TagID        string `json:"tagID"`
+	Type         string  `json:"type"`
+	Project      string  `json:"project"`
+	BatteryLevel float32 `json:"batteryLevel"`
+	TagID        string  `json:"tagID"`
 }
 
 //ScaffoldHistory will be used when getting the history of scaffolding parts

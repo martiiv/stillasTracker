@@ -64,13 +64,15 @@ export function MapClass(props) {
     const AddProjectRequest = async () => {
         try {
             await postModel(PROJECTS_URL, JSON.stringify(project))
-            await queryClient.removeQueries("allProjects")
+            await queryClient.refetchQueries("allProjects")
 
         }catch (e){
             console.log(e)
         }
 
     }
+
+    console.log(project.latitude, project.longitude)
 
 
     return (
@@ -81,8 +83,8 @@ export function MapClass(props) {
                     height: "100vh",
                     width: "100vw"
                 }}
-                zoom={[16]}
-                center={[-73.9757752418518, 40.69144210646147]}
+                zoom={[17]}
+                center={[Number(project.longitude), Number(project.latitude)]}
             >
                 <DrawControl
                     position="top-left"
