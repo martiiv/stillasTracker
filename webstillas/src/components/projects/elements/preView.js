@@ -13,6 +13,7 @@ import {
 import img from "./../../mapPage/mapbox-marker-icon-20px-orange.png"
 import {GetDummyData} from "../../../modelData/addData";
 import {useQueryClient} from "react-query";
+import {SpinnerDefault} from "../../Spinner";
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ';
 
@@ -167,7 +168,8 @@ export const PreView = () => {
 
 
     if (allProjectsLoading || projectLoad) {
-        return <h1>Loading</h1>
+        return <SpinnerDefault />
+
     } else {
         //todo fix css on position
         return (
@@ -176,7 +178,7 @@ export const PreView = () => {
                 <div className={"tabs"}>
                     <Tabs>
                         <div label="Kontakt">
-                            {contactInformation(projects)}
+                            {contactInformation(project)}
                         </div>
                         <div label="Stillas-komponenter">
                             <InfoModal id={getProjectID()}/>

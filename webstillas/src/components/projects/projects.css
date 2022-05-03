@@ -8,15 +8,30 @@
     background-color: aquamarine;
 }
 
-.main-project-window{
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.border{
+    width: 5rem;
+    height: 5rem;
+
+}
+
+
+.main-project-window {
     display: flex;
-    flex-wrap: wrap;
 }
 
 .main-sidebar{
     width: 300px;
-    position: static;
-    top: 0;
+    padding-left: 10px;
+    position: initial;
+    top:0;
 }
 
 
@@ -26,15 +41,35 @@
     width: 100%;
 }
 
+
 .grid-container {
     display: inline-grid;
     alignment: center;
-
-    grid-template-columns: 1fr 1fr 1fr;
     column-gap: 80px;
+    grid-auto-rows: minmax(100px, auto);
     row-gap: 20px;
     grid-template-rows: 1fr;
+    justify-content: center;
+}
 
+
+
+@media (min-width: 1301px) and (max-width: 2300px) {
+    .grid-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 800px) and (max-width: 1300px){
+    .grid-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 799px){
+    .grid-container {
+        grid-template-columns: repeat(1, 1fr);
+    }
 }
 
 .input[type=number] {

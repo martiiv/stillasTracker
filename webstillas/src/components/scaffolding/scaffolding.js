@@ -4,6 +4,7 @@ import CardElement from "./elements/scaffoldingCard";
 import {PROJECTS_WITH_SCAFFOLDING_URL, SCAFFOLDING_URL, STORAGE_URL} from "../../modelData/constantsFile";
 import {GetDummyData} from "../../modelData/addData";
 import {useQueryClient} from "react-query";
+import {SpinnerDefault} from "../Spinner";
 /**
  Class that will create an overview of the scaffolding parts
  */
@@ -94,7 +95,7 @@ class ScaffoldingClass extends React.Component {
         return (
             //todo only scroll the scaffolding not the map
             <div>
-                <div>
+                <div className={"sorting"}>
                     <select onChange={(e) =>
                         this.setState({selectedOption: e.target.value})}>
                         <option value={"alphabetic"}>Alfabetisk(A-Å)</option>
@@ -105,7 +106,8 @@ class ScaffoldingClass extends React.Component {
                 </div>
 
 
-                <div className={"grid-container"}>
+                <div className={"all-scaffolding"}>
+                    <div className={"grid-container"}>
                     {result[0].map((e) => {
                         return (
                             <CardElement key={e.type}
@@ -116,7 +118,9 @@ class ScaffoldingClass extends React.Component {
                             />
                         )
                     })}
+                    </div>
                 </div>
+
             </div>
 
         )
@@ -142,7 +146,7 @@ export const Scaffolding = () => {
 
 
     if (LoadingScaffolding || LoadingStorage || LoadingAll) {
-        return <h1>Loading</h1>
+        return <SpinnerDefault />
     } else {
         return <ScaffoldingClass scaffolding = {Scaffolding}
                                  storage = {Storage}

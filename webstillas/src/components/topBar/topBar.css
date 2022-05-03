@@ -1,10 +1,11 @@
 .toolbar{
     background: #F28A04;
-
+    justify-content: space-between;
 }
 
+
 .button{
-    width: 300px;
+    width: fit-content;
     height: fit-content;
 }
 

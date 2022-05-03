@@ -16,7 +16,7 @@ import DropdownItem from "react-bootstrap/DropdownItem";
 class TopBar extends React.Component {
     render() {
         return(
-            <AppBar position="relative">
+            <AppBar position="sticky">
                 <Toolbar className="toolbar" >
                     <Link className="link" to="/prosjekt">
                         <Button className="button">Prosjekter</Button>

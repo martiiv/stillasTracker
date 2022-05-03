@@ -5,6 +5,27 @@
 
 }
 
+.name-btn{
+    display: flex;
+    list-style-type: none;
+    padding: 10px;
+    overflow: hidden;
+}
+
+.btn-delete{
+    height: fit-content;
+    width: fit-content;
+    align-content: center;
+    right: 10px;
+
+}
+
+
+.btn-delete{
+    background-size: cover;
+}
+
+
 .header {
     display: flex;
     justify-content: space-between;

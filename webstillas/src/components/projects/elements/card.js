@@ -6,21 +6,22 @@ import {Link} from "react-router-dom";
 import {PROJECTS_URL} from "../../../modelData/constantsFile";
 import deleteModel from "../../../modelData/deleteProject";
 import {useQueryClient} from "react-query";
-
+import {IconButton} from "@material-ui/core";
+import DeleteIcon from "@material-ui/icons/Delete";
 
 function CardElement(props) {
     const queryClient = useQueryClient()
-
     const DeleteProject = async () => {
-        const deleteBody =
-            [
-                {
-                    id: props.id
-                }
-            ]
-
-        await deleteModel(PROJECTS_URL, (deleteBody)).catch(e => console.log(e)).then(e => console.log("success"))
-        await queryClient.invalidateQueries("allProjects")
+        if (window.confirm("Are you sure you want to delete " + props.name + "?" )){
+            const deleteBody =
+                [
+                    {
+                        id: props.id
+                    }
+                ]
+            await deleteModel(PROJECTS_URL, (deleteBody)).catch(e => console.log(e)).then(e => console.log("success"))
+            await queryClient.invalidateQueries("allProjects")
+        }
     }
 
     return (
@@ -30,7 +31,9 @@ function CardElement(props) {
                     <section className={"header"}>
                         <h3>{props.name}</h3>
                     </section>
-                    <button className={"btn"} onClick={DeleteProject}>Slett</button>
+                    <IconButton className={"btn-delete"} onClick={DeleteProject}>
+                        <DeleteIcon style={{ fontSize: 50 }} />
+                    </IconButton>
                 </div>
 
                 <section className={"image"}>

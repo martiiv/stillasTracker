@@ -1,0 +1,13 @@
+
+.all-scaffolding{
+    display: flex;
+    justify-content: center;
+}
+
+.sorting{
+    position: page;
+    right: 10px;
+    padding-left: 30px;
+    padding-top: 10px;
+
+}
