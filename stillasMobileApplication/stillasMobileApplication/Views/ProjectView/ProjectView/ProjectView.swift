@@ -91,7 +91,7 @@ struct ProjectView: View {
     @State var maxProjectSize = 1000
     @State var projectState = "Active"
     @State var projectCounty = "Innlandet"
-    
+    @State private var isLoading = true
     var body: some View {
         VStack {
         NavigationView {
@@ -104,7 +104,7 @@ struct ProjectView: View {
                     }
                     .navigationTitle("Projects")*/
                     List(searchResults, id: \.projectID) { project in
-                        NavigationLink(destination: ProjectDetailView(project: project), label: {
+                        NavigationLink(destination: ProjectDetailView(projects: projects, project: project), label: {
                             ProjectRow(project: project) }
                         )
                     }
@@ -220,6 +220,20 @@ struct ProjectView: View {
         case .county:
             return projects.filter { filterArrArea.contains($0.address.county)}
         }
+    }
+}
+
+struct ActivityIndicator: UIViewRepresentable {
+
+    @Binding var isAnimating: Bool
+    let style: UIActivityIndicatorView.Style
+
+    func makeUIView(context: UIViewRepresentableContext<ActivityIndicator>) -> UIActivityIndicatorView {
+        return UIActivityIndicatorView(style: style)
+    }
+
+    func updateUIView(_ uiView: UIActivityIndicatorView, context: UIViewRepresentableContext<ActivityIndicator>) {
+        isAnimating ? uiView.startAnimating() : uiView.stopAnimating()
     }
 }
 

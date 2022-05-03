@@ -12,6 +12,7 @@ struct ProjectDetailView: View {
     @Environment(\.colorScheme) var colorScheme
     @State private var isShowingSheet = false
         
+    var projects: [Project]
     var project: Project
     
     let sizeSelections = ["Scaffolding", "Project Info"]
@@ -46,7 +47,7 @@ struct ProjectDetailView: View {
                         }
                     case "Scaffolding":
                         VStack {
-                            ScaffoldingView(scaffolding: project.scaffolding!)
+                            ScaffoldingView(projects: projects, scaffolding: project.scaffolding!)
                         }
                     default:
                         Text("Found none")

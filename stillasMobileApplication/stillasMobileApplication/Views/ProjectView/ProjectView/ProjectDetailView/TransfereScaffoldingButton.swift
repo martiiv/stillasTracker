@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct TransfereScaffoldingButton: View {
+    var projects: [Project]
     @Environment(\.colorScheme) var colorScheme
     var scaffolding: Scaffolding
     @Binding var isShowingSheet: Bool
@@ -27,7 +28,7 @@ struct TransfereScaffoldingButton: View {
         .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: 0, y: 10)
         .sheet(isPresented: $isShowingSheet,
                onDismiss: didDismiss) {
-            TransfereScaffolding(scaffolding: scaffolding, isShowingSheet: $isShowingSheet)
+            TransfereScaffolding(projects: projects, scaffolding: scaffolding, isShowingSheet: $isShowingSheet)
         }
     }
     

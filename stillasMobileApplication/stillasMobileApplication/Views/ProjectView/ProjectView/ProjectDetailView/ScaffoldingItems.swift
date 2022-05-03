@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ScaffoldingItems: View {
+    var projects: [Project]
     var gridItemLayout = [GridItem(.flexible()), GridItem(.flexible())]
     var scaffolding: [Scaffolding]
     @Binding var isShowingSheet: Bool
@@ -16,7 +17,7 @@ struct ScaffoldingItems: View {
         ScrollView (.vertical) {
             LazyVGrid (columns: gridItemLayout, spacing: 10) {
                 ForEach(scaffolding, id: \.type) { scaffolding in
-                    NavigationLink(destination: ScaffoldingDetails(scaffolding: scaffolding, isShowingSheet: $isShowingSheet),
+                    NavigationLink(destination: ScaffoldingDetails(projects: projects, scaffolding: scaffolding, isShowingSheet: $isShowingSheet),
                                    label: { ScaffoldingItem(scaffolding: scaffolding)
                     })
                     .listStyle(.grouped)

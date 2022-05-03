@@ -8,11 +8,12 @@
 import SwiftUI
 
 struct ScaffoldingView: View {
+    var projects: [Project]
     var scaffolding: [Scaffolding]
     @State var isShowingSheet: Bool = false
     var body: some View {
         VStack {
-            ScaffoldingItems(scaffolding: scaffolding, isShowingSheet: $isShowingSheet)
+            ScaffoldingItems(projects: projects, scaffolding: scaffolding, isShowingSheet: $isShowingSheet)
         }
     }
 }
