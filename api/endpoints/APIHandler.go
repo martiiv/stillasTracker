@@ -1,7 +1,6 @@
 package endpoints
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -22,8 +21,6 @@ const baseURL = "/stillastracking/v1/api"
 //Handle Function starts when launching program, function forwards the request to the appropriate endpoint
 func Handle() {
 	router := mux.NewRouter()
-
-	//router.HandleFunc(baseURL+"/unit", ScaffoldingRequest) //DELETE, POST, GET
 
 	//Scaffolding endpoint
 	router.Path(baseURL+"/unit").HandlerFunc(ScaffoldingRequest).Queries("type", "{type}").Queries("id", "{id}") //GET POST PUT DELETE
@@ -57,7 +54,6 @@ func Handle() {
 	router.HandleFunc(baseURL+"/gateway/input", UpdatePosition)
 
 	http.Handle("/", router)
-	fmt.Println("MQTT Server initializing...")
 	log.Println(http.ListenAndServe(getPort(), nil))
 }
 
