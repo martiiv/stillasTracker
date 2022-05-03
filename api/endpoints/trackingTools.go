@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"github.com/ingics/ingics-parser-go/ibs"
 	"github.com/ingics/ingics-parser-go/igs"
-	"google.golang.org/api/iterator"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	tool "stillasTracker/api/apiTools"
@@ -84,7 +84,7 @@ func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string
 	w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 
 	oldProject := getProjectInfo(w, beaconID)
-	updatedProject := updateRegistered(w, oldProject, idList, batteryList)
+	updatedProject := updateRegistered(oldProject, idList, batteryList)
 	newMap := make(map[string]interface{})
 
 	j, err := json.Marshal(updatedProject)
@@ -184,12 +184,14 @@ func getTagLists(gatewayList []*igs.Message, tagList []*ibs.Payload) ([]string, 
 	return tagIDList, batteryList
 }
 
-func updateRegistered(w http.ResponseWriter, oldProject _struct.GetProject, idList []string, batteryList map[string]float32) _struct.GetProject {
+func updateRegistered(oldProject _struct.GetProject, idList []string, batteryList map[string]float32) _struct.GetProject {
 	var updatedProject _struct.GetProject
 
 	updatedProject.NewProject = oldProject.NewProject
 	updatedProject.ScaffoldingArray = oldProject.ScaffoldingArray
-	resultList := getTagTypes(w, idList, updatedProject.ProjectName, batteryList)
+	projectName := updatedProject.NewProject.ProjectName
+
+	resultList := getTagTypes(idList, projectName, updatedProject.ScaffoldingArray, batteryList)
 
 	for i := range updatedProject.ScaffoldingArray {
 		scaffoldingType := oldProject.ScaffoldingArray[i].Type
@@ -208,30 +210,23 @@ func updateRegistered(w http.ResponseWriter, oldProject _struct.GetProject, idLi
 /*
 
  */
-func getTagTypes(w http.ResponseWriter, idList []string, projectName string, batteryList map[string]float32) map[string]int {
-	collection := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collections(database.Ctx)
+func getTagTypes(idList []string, projectName string, scaffoldingArray _struct.ScaffoldingArray, batteryList map[string]float32) map[string]int {
 	resultList := make(map[string]int)
 	var scaffoldingType string
-	for i := range idList {
-		for {
-			collRef, err := collection.Next()
-			if err == iterator.Done || err != nil {
-				break
-			}
-			var document *firestore.DocumentSnapshot
 
-			document, err = database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(collRef.ID).Doc(idList[i]).Get(database.Ctx)
-			if err != nil {
-				break
-			}
-			_, err = document.Ref.Set(database.Ctx, map[string]interface{}{
+	for i := range idList {
+		for j := range scaffoldingArray {
+
+			scaffoldingType = scaffoldingArray[j].Type
+			documentPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldingType).Doc(idList[i])
+			_, err := documentPath.Set(database.Ctx, map[string]interface{}{
 				"project":      projectName,
 				"batteryLevel": batteryList[idList[i]],
 			}, firestore.MergeAll)
 			if err != nil {
-				tool.HandleError(tool.NODOCUMENTSINDATABASE, w)
+				log.Printf("Document with id: %v is not in scaffoldingType collection %n", idList[i], scaffoldingType)
+				break
 			}
-			scaffoldingType = collRef.ID
 		}
 		resultList[scaffoldingType] = resultList[scaffoldingType] + 1
 	}
