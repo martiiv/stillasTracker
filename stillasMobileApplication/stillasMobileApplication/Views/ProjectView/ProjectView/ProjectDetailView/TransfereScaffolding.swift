@@ -37,7 +37,7 @@ struct TransfereScaffolding: View {
     
     var body: some View {
         VStack {
-            FormView(projects: projects, scaffolding: scaffolding)
+            FormView(isShowingSheet: $isShowingSheet, projects: projects, scaffolding: scaffolding)
                 .navigationTitle(Text("Transfere \(scaffolding.type)"))
 
                 /*
@@ -130,7 +130,8 @@ struct FormView: View {
     enum Field: Int, CaseIterable {
         case input
     }
-    
+    @Binding var isShowingSheet: Bool
+
     @FocusState var focusedField: Field?
 
     var projects: [Project]
@@ -149,7 +150,10 @@ struct FormView: View {
     @State var selectedIndex: Int = -1
 
     @State private var confirmationMessage = ""
+    @State private var confirmationTitle = ""
     @State private var showingConfirmation = false
+    @State private var transfereMessage = ""
+    @State private var transfereConfirmation: Bool = false
     @State var pickedFromID: Int = 0
     @State var pickedToID: Int = 0
 
@@ -248,8 +252,6 @@ struct FormView: View {
                             }
                     }
                     .padding()
-
-                    Text("Chosen number is \(anumber == "" ? "nothing yet" : anumber)")
                 }
             }
             .overlay(alignment: .bottom) {
@@ -258,7 +260,8 @@ struct FormView: View {
                 Button(action: {
                     Task {
                         if !empty {
-                        await transfereScaffoldingUnit(pickedFromID: Int(exactly: pickedFromID)!, pickedToID: Int(exactly: pickedToID)!, transfereAmount: Int(anumber)!)
+                            transfereMessage = "Transfere \(Int(anumber)!)x \(scaffolding.type) from \(pickerSelectionFrom) to \(pickerSelectionTo)?"
+                            transfereConfirmation = true
                         }
                     }
                     
@@ -273,11 +276,34 @@ struct FormView: View {
             }
             .ignoresSafeArea(.keyboard)
             .navigationTitle(Text("Transfere \(scaffolding.type)"))
+            .alert(isPresented: $showingConfirmation) {
+                Alert(
+                    title: Text(confirmationTitle),
+                    message: Text(confirmationMessage),
+                    dismissButton: .default(Text("OK")) {
+                        isShowingSheet = false
+                        showingConfirmation = false
+                    }
+                )
+            }
         }
-        .alert("Success!", isPresented: $showingConfirmation) {
-            Button("OK") { }
-        } message: {
-            Text(confirmationMessage)
+        .alert(isPresented: $transfereConfirmation) {
+            Alert(
+                title: Text("Are you sure you want to proceed?"),
+                message: Text(transfereMessage),
+                primaryButton: .default(Text("Yes")) {
+                    transfereConfirmation = false
+                    Task {
+                        if !empty {
+                            await transfereScaffoldingUnit(pickedFromID: Int(exactly: pickedFromID)!, pickedToID: Int(exactly: pickedToID)!, transfereAmount: Int(anumber)!)
+                        }
+                    }
+                    // showingConfirmation = true
+                },
+                secondaryButton: .cancel() {
+                    transfereConfirmation = false
+                }
+            )
         }
     }
     
@@ -319,15 +345,13 @@ struct FormView: View {
             
             if let response = response as? HTTPURLResponse {
                 if response.statusCode == 200 {
-                    // TODO: Need to remove or fix?
-                    do {
-                        let decodedOrder = try JSONDecoder().decode(Scaff.self, from: data!)
-                        confirmationMessage = "You have successfully transfered \(decodedOrder.scaffold[0].quantity)x \(decodedOrder.scaffold[0].type) from project \(decodedOrder.fromProjectID) to project \(decodedOrder.toProjectID)!"
-                    showingConfirmation = true
-                    } catch {
-                        print("\(response.statusCode) CODE")
-                    }
+                    confirmationTitle = "Success!"
+                    confirmationMessage = "Successfully transfered \(body.scaffold[0].quantity)x \(body.scaffold[0].type) from project \(body.fromProjectID) to project \(body.toProjectID)!"
+                } else {
+                    confirmationTitle = "Failed!"
+                    confirmationMessage = "Failed to transfere \(body.scaffold[0].quantity)x \(body.scaffold[0].type) from project \(body.fromProjectID) to project \(body.toProjectID)!"
                 }
+                showingConfirmation = true
             }
         }
         task.resume()
