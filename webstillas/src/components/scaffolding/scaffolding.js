@@ -28,11 +28,10 @@ class ScaffoldingClass extends React.Component {
         arr.forEach((x)=>{
             // Checking if there is any object in arr2
             // which contains the key value
-            if(arr2.some((val)=>{ return val[key] === x[key] })){
-
+            if(arr2.some((val)=>{return val[key] === x[key]})){
                 // If yes! then increase the occurrence by 1
                 arr2.forEach((k)=>{
-                    if(k[key] === x[key]){
+                    if(k[key] !== x[key]){
                         k["occurrence"]++
                     }
                 })
@@ -56,11 +55,10 @@ class ScaffoldingClass extends React.Component {
         const scaffoldVar = {
             scaffolding: []
         };
-        for(var i in scaffold) {
-            var scaff = scaffold[i];
-            for (var j in storage){
-                var stor = storage[j];
-
+        for(var scaffoldIndex of scaffold) {
+            var scaff = scaffoldIndex;
+            for (var storageIndex of storage){
+                var stor = storageIndex;
                 if (stor.type.toLowerCase() === scaff.type.toLowerCase()){
                     scaffoldVar.scaffolding.push({
                         "type"          :scaff.type,
@@ -79,10 +77,8 @@ class ScaffoldingClass extends React.Component {
         const {scaffolding, storage, selectedOption} = this.state;
 
         const objectArr = this.countObjects(scaffolding, "type")
-
-
         const scaffoldingObject = this.scaffoldingAndStorage(objectArr, storage)
-
+        console.log(scaffoldingObject);
         const result = Object.keys(scaffoldingObject).map((key) => scaffoldingObject[key]);
 
         if (selectedOption === "ascending") {
@@ -109,6 +105,7 @@ class ScaffoldingClass extends React.Component {
                 <div className={"all-scaffolding"}>
                     <div className={"grid-container"}>
                     {result[0].map((e) => {
+
                         return (
                             <CardElement key={e.type}
                                          type={e.type}

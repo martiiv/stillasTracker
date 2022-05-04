@@ -12,7 +12,7 @@ import { ReactQueryDevtools } from 'react-query/devtools'
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
-import {UserAuthContextProvider} from "./context/UserAuthContext";
+import {UserAuthContextProvider, useUserAuth} from "./context/UserAuthContext";
 
 
 
@@ -25,10 +25,10 @@ function App() {
                 <TopBar/>
                 <Routes>
                     <Route path="/prosjekt/*" element={<ProtectedRoute> <Project /></ProtectedRoute>} />
-                    <Route path="/kart" element={ <MapPage />} />
-                    <Route path="/stillas" element={ <Scaffolding />} />
-                    <Route path="/project/:id" element={<PreView />} />
-                    <Route path="/logistics" element={<Logistic />} />
+                    <Route path="/kart" element={<ProtectedRoute> <MapPage /></ProtectedRoute>} />
+                    <Route path="/stillas" element={<ProtectedRoute> <Scaffolding /></ProtectedRoute>} />
+                    <Route path="/project/:id" element={<ProtectedRoute> <PreView /></ProtectedRoute>} />
+                    <Route path="/logistics" element={<ProtectedRoute> <Logistic /></ProtectedRoute>} />
                     <Route path="/" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
                 </Routes>

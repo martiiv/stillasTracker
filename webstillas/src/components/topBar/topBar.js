@@ -6,15 +6,17 @@ import {
 import {Link} from "react-router-dom";
 import {DropdownButton} from "react-bootstrap";
 import DropdownItem from "react-bootstrap/DropdownItem";
-
+import {useUserAuth} from "../../context/UserAuthContext";
 /**
  Class that will create a topbar for the application.
  */
 
 //Todo make list instead of toolbar
     //se hva andre nettsider har gjort
-class TopBar extends React.Component {
-    render() {
+const TopBar = () => {
+
+        const { logOut } = useUserAuth();
+
         return(
             <AppBar position="sticky">
                 <Toolbar className="toolbar" >
@@ -36,12 +38,12 @@ class TopBar extends React.Component {
                                     size="sm"
                     >
                         <DropdownItem href="#/action-1">Bruker Informasjon</DropdownItem>
-                        <DropdownItem>Logg ut</DropdownItem>
+                        <DropdownItem onClick={logOut}>Logg ut</DropdownItem>
                     </DropdownButton>
                 </Toolbar>
             </AppBar>
         );
-    }
+
 }
 
 export default TopBar;
