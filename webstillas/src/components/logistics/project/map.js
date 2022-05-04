@@ -8,7 +8,7 @@ import {useQueryClient} from "react-query";
 
 const Map = ReactMapboxGl({
     accessToken:
-        "pk.eyJ1IjoiZmFrZXVzZXJnaXRodWIiLCJhIjoiY2pwOGlneGI4MDNnaDN1c2J0eW5zb2ZiNyJ9.mALv0tCpbYUPtzT7YysA2g"
+        "pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ"
 });
 
 export function MapClass(props) {
@@ -80,7 +80,7 @@ export function MapClass(props) {
             <Map
                 style="mapbox://styles/mapbox/streets-v9" // eslint-disable-line
                 containerStyle={{
-                    height: "100vh",
+                    height: "93vh",
                     width: "100vw"
                 }}
                 zoom={[17]}
