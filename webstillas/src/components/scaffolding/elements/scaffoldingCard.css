@@ -4,6 +4,10 @@
     alignment: center;
 }
 
+.scaffoldingElement{
+    padding-bottom: 100px;
+}
+
 .card{
     width: 400px;
 }
@@ -18,6 +22,7 @@
 
 
 .image{
-    alignment: center;
+    align-items: center;
+    object-fit: contain;
 }
 

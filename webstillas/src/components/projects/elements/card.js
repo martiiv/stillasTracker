@@ -36,7 +36,7 @@ function CardElement(props) {
                     </IconButton>
                 </div>
 
-                <section className={"image"}>
+                <section className={"image-project"}>
                     <img src={img} alt={""}/>
                 </section>
                 <section className={"information-highlights-cta"}>

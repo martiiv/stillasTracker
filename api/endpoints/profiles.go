@@ -13,7 +13,6 @@ import (
 	"stillasTracker/api/constants"
 	"stillasTracker/api/database"
 	_struct "stillasTracker/api/struct"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -104,7 +103,7 @@ func createProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := strconv.Itoa(employee.EmployeeID)           //Converts the employee id to string
+	id := employee.EmployeeID                         //Converts the employee id to string
 	_, err = iterateProfiles(employee.EmployeeID, "") //Iterates through the profiles using the id
 	if err == nil {
 		tool.HandleError(tool.CouldNotAddSameID, w)
@@ -158,9 +157,9 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	employee := employeeStruct[constants.U_employeeID].(float64) //Defines the employee id
+	employee := employeeStruct[constants.U_employeeID].(string) //Defines the employee id
 
-	documentReference, err := iterateProfiles(int(employee), "") //Finds the profile using the id
+	documentReference, err := iterateProfiles(employee, "") //Finds the profile using the id
 	if err != nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
@@ -215,8 +214,8 @@ func deleteProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, num := range deleteID { //Iterates through the profiles
-		document, err := iterateProfiles(num.Id, "")
+	for _, profile := range deleteID { //Iterates through the profiles
+		document, err := iterateProfiles(profile.Id, "")
 		if err != nil {
 			tool.HandleError(tool.CouldNotDelete, w)
 			return
@@ -346,7 +345,7 @@ func getUserByName(w http.ResponseWriter, r *http.Request) {
 
 	queryMap := r.URL.Query()
 
-	documentReference, err = iterateProfiles(0, queryMap.Get(constants.U_nameURL)) //Gets the profile with the appropriate name
+	documentReference, err = iterateProfiles("", queryMap.Get(constants.U_nameURL)) //Gets the profile with the appropriate name
 	if err != nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
@@ -392,13 +391,9 @@ func getIndividualUserByID(w http.ResponseWriter, r *http.Request) {
 	var err error
 	queryMap := mux.Vars(r)
 
-	intID, err := strconv.Atoi(queryMap[constants.U_idURL]) //Converts the query id to int
-	if err != nil {
-		tool.HandleError(tool.INVALIDREQUEST, w)
-		return
-	}
+	id := queryMap[constants.U_idURL] //Converts the query id to int
 
-	documentReference, err = iterateProfiles(intID, "") //Gets the documents with the id
+	documentReference, err = iterateProfiles(id, "") //Gets the documents with the id
 	if err != nil {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
@@ -418,7 +413,7 @@ func getIndividualUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if employee.EmployeeID == 0 {
+	if employee.EmployeeID == "" {
 		tool.HandleError(tool.COULDNOTFINDDATA, w)
 		return
 	}
@@ -430,7 +425,7 @@ func getIndividualUserByID(w http.ResponseWriter, r *http.Request) {
 }
 
 //iterateProjects will iterate through every project in active, inactive and upcoming projects.
-func iterateProfiles(id int, name string) ([]*firestore.DocumentRef, error) {
+func iterateProfiles(id string, name string) ([]*firestore.DocumentRef, error) {
 	var documentReferences []*firestore.DocumentRef
 
 	collection := baseCollection.Collections(database.Ctx)
@@ -490,7 +485,7 @@ func checkUpdate(update map[string]interface{}) bool {
 	}
 
 	fields := []string{constants.U_name,
-		constants.U_email, constants.U_admin, constants.U_employeeID, constants.U_phone}
+		constants.U_email, constants.U_admin, constants.U_Role, constants.U_employeeID, constants.U_phone}
 	if employeeID {
 		for _, field := range fields {
 			for f := range update {
@@ -553,7 +548,7 @@ func checkStruct(body []byte) bool {
 		return false
 	}
 
-	_, idFormat := userMap[constants.U_employeeID].(float64)
+	_, idFormat := userMap[constants.U_employeeID].(string)
 	_, phoneFormat := userMap[constants.U_phone].(float64)
 	roles := []string{constants.U_Admin, constants.U_Installer, constants.U_Storage}
 	var roleFormat bool
@@ -621,7 +616,7 @@ func checkDeleteBody(bytes []byte) bool {
 	}
 
 	for _, m := range deleteID { //Checks that it is in the appropriate format
-		_, errDelete := m[constants.U_idURL].(float64)
+		_, errDelete := m[constants.U_idURL].(string)
 		if !errDelete {
 			return false
 		}
