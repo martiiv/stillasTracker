@@ -143,7 +143,7 @@ func getProjectInfo(w http.ResponseWriter, beaconID string) _struct.GetProject {
 		return _struct.GetProject{}
 	}
 
-	project := ProjectCollection.Collection(constants.P_Active).Doc(string(rune(gateway.ProjectID)))
+	project := ProjectCollection.Collection(constants.P_Active).Doc(strconv.Itoa(gateway.ProjectID))
 	newProject, err := database.GetDocumentData(project)
 	if err != nil {
 		tool.HandleError(tool.DATABASEREADERROR, w)
@@ -201,7 +201,7 @@ func updateRegistered(oldProject _struct.GetProject, idList []string, batteryLis
 	updatedProject.ScaffoldingArray = oldProject.ScaffoldingArray
 	projectName := updatedProject.NewProject.ProjectName
 
-	resultList := getTagTypes(idList, projectName, updatedProject.ScaffoldingArray, batteryList)
+	resultList := getTagTypes(idList, projectName, oldProject.ScaffoldingArray, batteryList)
 
 	for i := range updatedProject.ScaffoldingArray {
 		scaffoldingType := oldProject.ScaffoldingArray[i].Type
@@ -223,23 +223,30 @@ func updateRegistered(oldProject _struct.GetProject, idList []string, batteryLis
 func getTagTypes(idList []string, projectName string, scaffoldingArray _struct.ScaffoldingArray, batteryList map[string]float32) map[string]int {
 	resultList := make(map[string]int)
 	var scaffoldingType string
-
+	//TODO FIKSE D HER
 	for i := range idList {
-		for j := range scaffoldingArray {
 
+		for j := range scaffoldingArray {
+			fmt.Printf("%v", j)
 			scaffoldingType = scaffoldingArray[j].Type
 			documentPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldingType).Doc(idList[i])
-			_, err := documentPath.Set(database.Ctx, map[string]interface{}{
-				"project":      projectName,
-				"batteryLevel": batteryList[idList[i]],
-			}, firestore.MergeAll)
+			_, err := documentPath.Update(database.Ctx, []firestore.Update{
+				{
+					Path:  "project",
+					Value: projectName,
+				}, {
+					Path:  "batteryLevel",
+					Value: batteryList[idList[i]],
+				},
+			})
 			if err != nil {
 				ErrorLogger.Printf("Document with id: %v is not in scaffoldingType collection %n", idList[i], scaffoldingType)
-				break
+			} else if err == nil {
+				DatabaseLogger.Printf("Succsessfully updated scaffolding part: %v", idList[i])
+				resultList[scaffoldingType] = resultList[scaffoldingType] + 1
 			}
-			DatabaseLogger.Printf("Succsessfully updated scaffolding part: %v", idList[i])
 		}
-		resultList[scaffoldingType] = resultList[scaffoldingType] + 1
 	}
+	fmt.Printf("%v", resultList)
 	return resultList
 }
