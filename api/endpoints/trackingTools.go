@@ -60,12 +60,12 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 		batteryVoltage, _ := beaconList[i].BatteryVoltage()
 		battery := strconv.FormatFloat(float64(batteryVoltage), 'E', -1, 32)
 
-		printList = append(printList, "Tag id:"+idList[i]+" Battery voltage: "+battery)
+		printList = append(printList, "\nTag id:"+idList[i]+" Battery voltage: "+battery+"\n")
 	}
 
 	fmt.Printf("\n-----------------------------------------------------")
 	fmt.Println("\nBeacon payload:")
-	fmt.Printf("Time of POST: %v \n", time.Now().Format("20060102150405"))
+	fmt.Printf("Time of POST: %v \n", time.Now().Format(time.RFC822))
 	fmt.Printf("Gateway: %v\n", gatewayList[0].Gateway())
 	fmt.Printf("Amount of tags registered: %v \n", len(idList))
 	fmt.Printf("List of tags:\n %v", printList)
