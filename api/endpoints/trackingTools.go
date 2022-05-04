@@ -65,7 +65,7 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("\n-----------------------------------------------------")
 	fmt.Println("\nBeacon payload:")
-	fmt.Printf("Time of POST: %v \n", time.Now())
+	fmt.Printf("Time of POST: %v \n", time.Now().Format("20060102150405"))
 	fmt.Printf("Gateway: %v\n", gatewayList[0].Gateway())
 	fmt.Printf("Amount of tags registered: %v \n", len(idList))
 	fmt.Printf("List of tags:\n %v", printList)
@@ -223,11 +223,9 @@ func updateRegistered(oldProject _struct.GetProject, idList []string, batteryLis
 func getTagTypes(idList []string, projectName string, scaffoldingArray _struct.ScaffoldingArray, batteryList map[string]float32) map[string]int {
 	resultList := make(map[string]int)
 	var scaffoldingType string
-	//TODO FIKSE D HER
 	for i := range idList {
 
 		for j := range scaffoldingArray {
-			fmt.Printf("%v", j)
 			scaffoldingType = scaffoldingArray[j].Type
 			documentPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldingType).Doc(idList[i])
 			_, err := documentPath.Update(database.Ctx, []firestore.Update{
@@ -247,6 +245,5 @@ func getTagTypes(idList []string, projectName string, scaffoldingArray _struct.S
 			}
 		}
 	}
-	fmt.Printf("%v", resultList)
 	return resultList
 }
