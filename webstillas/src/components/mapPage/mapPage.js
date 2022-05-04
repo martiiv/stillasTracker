@@ -54,24 +54,6 @@ function MapPageClass(props) {
 
         </Map>
 
-
-
-
-        /*<Map
-            style="mapbox://styles/mapbox/streets-v9" // eslint-disable-line
-            containerStyle={{
-                height: "93vh",
-                width: "100vw"
-            }}
-            zoom={[17]}
-            center={[lng, lat]}
-            >
-            <Layer
-                type="symbol"
-                layout={{ "icon-image": img }}>
-                <Feature coordinates={[-0.13235092163085938,51.518250335096376]}/>
-            </Layer>
-        </Map>*/
     );
 
 }

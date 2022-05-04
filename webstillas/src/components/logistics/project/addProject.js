@@ -2,13 +2,11 @@ import React, {useCallback, useRef, useState} from 'react'
 import {MapClass} from "./map";
 import MapboxAutocomplete from "react-mapbox-autocomplete";
 import 'mapbox-gl/dist/mapbox-gl.css'
-import 'react-map-gl-geocoder/dist/mapbox-gl-geocoder.css'
-import Geocoder from "react-map-gl-geocoder/src";
 
 
 
 
-export default function AddProjectFunc(string) {
+export default function AddProjectFunc() {
 
     const mapAccess = {
         // Thanks to SomeSoftwareTeam (https://github.com/SomeSoftwareTeam/some-react-app/blob/acd17860b8b1f51edefa4e18486cc1fb07afff70/src/components/SomeComponent.js)
