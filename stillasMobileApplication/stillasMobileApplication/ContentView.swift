@@ -20,25 +20,12 @@ struct ContentView: View {
     @EnvironmentObject var viewModel: AppViewModel
     
     var body: some View {
-        NavigationView {
+        ZStack {
             if viewModel.signedIn {
-                VStack {
-                    Text("You are signed in!")
-                    
-                    Button (action: {
-                        viewModel.signOut()
-                    }, label: {
-                        Text("Sign out")
-                            .frame(width: 150, height: 50)
-                            .background(Color.gray)
-                            .foregroundColor(Color.blue)
-                            .padding()
-                    })
-                }
+                NavigationBarBottom()
             } else {
                 SignInView()
             }
-            
         }
         .onAppear {
             viewModel.signedIn = viewModel.isSignedIn

@@ -24,7 +24,8 @@ struct ProfileView: View {
  */
 struct ProfileDetails: View {
     @EnvironmentObject var modelData: ModelData
-    
+    @EnvironmentObject var viewModel: AppViewModel
+
     var user: User
     
     /// Retrieves the user from the json object with ID equal to the object passed into the voew
@@ -38,7 +39,6 @@ struct ProfileDetails: View {
             MapView()
                 .ignoresSafeArea(edges: .top)
                 .frame(height: 300)
-        
             /// CircleImage responsible for displaying the user profile image
             CircleImage(image: user.image)
                 .offset(y: -130)
@@ -70,15 +70,27 @@ struct ProfileDetails: View {
                     Text("\(user.dateOfBirth)")
                         .foregroundColor(.secondary)
                 }
-        
-                Spacer()
             }
             .padding()
             
-        Spacer()
+            Spacer()
+            
+            Button (action: {
+                viewModel.signOut()
+            }) {
+                Text("Sign out")
+                    .frame(width: 150, height: 50, alignment: .center)
+            }
+            .foregroundColor(.white)
+            .background(Color.blue)
+            .cornerRadius(10)
+            
+            Spacer()
+                .frame(height:50)  // limit spacer size by applying a frame
         }
         .navigationTitle(user.name)
         .navigationBarTitleDisplayMode(.inline)
+        .ignoresSafeArea(edges: .top)
     }
 }
 
