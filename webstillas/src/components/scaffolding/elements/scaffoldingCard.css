@@ -1,7 +1,6 @@
 .img{
     height: 250px;
     width: 300px;
-    alignment: center;
 }
 
 .scaffoldingElement{
@@ -22,7 +21,6 @@
 
 
 .image{
-    align-items: center;
-    object-fit: contain;
+    align-self: center;
 }
 

@@ -10,6 +10,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const { logIn } = useUserAuth();
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -19,7 +20,7 @@ const Login = () => {
       await logIn(email, password);
       navigate("/prosjekt");
     } catch (err) {
-      setError(err.message);
+      setError("Feil brukernavn eller passord. \nVennligst prøv igjen");
     }
   };
 

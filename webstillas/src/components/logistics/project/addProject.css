@@ -1,5 +1,32 @@
-.date-add-project{
+.add-card{
     display: flex;
-    position: relative;
-    float: left;
+    justify-content: center;
+    padding-top: 3%;
+}
+
+
+.information{
+    padding-right: 50px;
+}
+
+.btn-on-map{
+    top: 0;
+    right: 0;
+}
+
+.form-group{
+    width: 500px;
+}
+
+.general-information{
+    display: flex;
+}
+
+.search {
+    margin-bottom: 1.5rem;
+}
+
+
+.submit-btn{
+    margin-top: 50px;
 }

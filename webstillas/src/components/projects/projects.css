@@ -8,6 +8,13 @@
     background-color: aquamarine;
 }
 
+.form-select{
+    width: fit-content;
+}
+
+.calender{
+    position: absolute;
+}
 
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
@@ -28,7 +35,7 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 .main-sidebar{
-    width: 300px;
+    width: 600px;
     padding-left: 10px;
     position: initial;
     top:0;

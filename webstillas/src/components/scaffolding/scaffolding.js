@@ -90,19 +90,20 @@ class ScaffoldingClass extends React.Component {
         }
         return (
             //todo only scroll the scaffolding not the map
-            <div>
-                <div className={"sorting"}>
-                    <select onChange={(e) =>
-                        this.setState({selectedOption: e.target.value})}>
-                        <option value={"alphabetic"}>Alfabetisk(A-Å)</option>
-                        <option value={"ascending"}>Stigende</option>
-                        <option value={"descending"}>Synkende</option>
-                    </select>
-                    <p>Sorter</p>
-                </div>
+            <div className={"scaffolding"}>
 
 
                 <div className={"all-scaffolding"}>
+                    <div className={"sorting"}>
+                        <p>Sorter:</p>
+                        <select className={"form-select"} onChange={(e) =>
+                            this.setState({selectedOption: e.target.value})}>
+                            <option value={"alphabetic"}>Alfabetisk(A-Å)</option>
+                            <option value={"ascending"}>Stigende</option>
+                            <option value={"descending"}>Synkende</option>
+                        </select>
+                    </div>
+
                     <div className={"grid-container"}>
                     {result[0].map((e) => {
 

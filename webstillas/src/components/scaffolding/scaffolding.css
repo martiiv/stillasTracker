@@ -1,13 +1,21 @@
 
 .all-scaffolding{
-    display: flex;
-    justify-content: center;
+    display: grid;
+    justify-items: center;
+
 }
 
+
 .sorting{
-    position: page;
-    right: 10px;
-    padding-left: 30px;
-    padding-top: 10px;
+    display: flow;
+    padding-top: 40px;
+    padding-bottom: 20px;
+    float: left;
+}
+
+.form-select{
+    width: 300px;
+    padding-right: 20px;
+
 
 }
