@@ -17,7 +17,8 @@ import {SpinnerDefault} from "../../Spinner";
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ';
 
-class PreViewClass extends React.Component{
+//Todo refactor class to function
+class PreViewClass extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -56,53 +57,36 @@ class PreViewClass extends React.Component{
                 .setLngLat([data.longitude, data.latitude])
                 .addTo(map);
 
-        }catch (e) {
+        } catch (e) {
             console.log(e)
         }
 
     }
 
 
-
-
-    getProjectID(){
+    getProjectID() {
         const pathSplit = window.location.href.split("/")
         return pathSplit[pathSplit.length - 1]
     }
-
-
-
 
 
     render() {
         return (
             <div className={"preView-Project-Main"}>
                 <div ref={this.mapContainer} className="map-container-project"/>
-                {/* <div className={"tabs"}>
-                    <Tabs>
-                        <div label="Kontakt">
-                            {this.contactInformation()}
-                        </div>
-                        <div label="Stillas-komponenter">
-                            <InfoModal id={this.getProjectID()}/>
-                            {this.scaffoldingComponents()}
-                        </div>
-                    </Tabs>
-                </div>*/}
             </div>
         )
     }
 }
 
-function getProjectID(){
+function getProjectID() {
     const pathSplit = window.location.href.split("/")
     return pathSplit[pathSplit.length - 1]
 }
 
 
-function scaffoldingComponents(data){
-
-    return(
+function scaffoldingComponents(data) {
+    return (
         <div className={"grid-container-project-scaffolding"}>
             {data.scaffolding.map((e) => {
                 return (
@@ -119,9 +103,8 @@ function scaffoldingComponents(data){
 }
 
 
-
-function contactInformation(project){
-    return(
+function contactInformation(project) {
+    return (
         <section className={"contact-highlights-cta"}>
             <div className={"information-highlights"}>
                 <ul className={"contact-list"}>
@@ -135,7 +118,8 @@ function contactInformation(project){
                     </li>
                     <li className={"horizontal-list-contact"}>
                         <span className={"left-contact-text"}>Adresse</span>
-                        <span className={"right-contact-text"}>{project[0].address.street}, {project[0].address.zipcode} {project[0].address.municipality}</span>
+                        <span
+                            className={"right-contact-text"}>{project[0].address.street}, {project[0].address.zipcode} {project[0].address.municipality}</span>
                     </li>
                     <li className={"horizontal-list-contact"}>
                         <span className={"left-contact-text"}>E-mail</span>
@@ -143,7 +127,8 @@ function contactInformation(project){
                     </li>
                     <li className={"horizontal-list-contact"}>
                         <span className={"left-contact-text"}>Periode</span>
-                        <span className={"right-contact-text"}>{project[0].period.startDate} to {project[0].period.endDate}  </span>
+                        <span
+                            className={"right-contact-text"}>{project[0].period.startDate} to {project[0].period.endDate}  </span>
                     </li>
                 </ul>
             </div>
@@ -152,23 +137,25 @@ function contactInformation(project){
 }
 
 
-
 export const PreView = () => {
     const queryClient = useQueryClient()
 
-    const {isLoading: projectLoad, data: project} = GetDummyData(["project", getProjectID()], PROJECTS_URL_WITH_ID + getProjectID() + WITH_SCAFFOLDING_URL)
+    const {
+        isLoading: projectLoad,
+        data: project
+    } = GetDummyData(["project", getProjectID()], PROJECTS_URL_WITH_ID + getProjectID() + WITH_SCAFFOLDING_URL)
     let projects
     let allProjectsLoading
     if (queryClient.getQueryData("allProjects") !== undefined) {
         projects = queryClient.getQueryData("allProjects")
     }
-        const {isLoading: allProjects, data} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
-        projects = data
-        allProjectsLoading = allProjects
+    const {isLoading: allProjects, data} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
+    projects = data
+    allProjectsLoading = allProjects
 
 
     if (allProjectsLoading || projectLoad) {
-        return <SpinnerDefault />
+        return <SpinnerDefault/>
 
     } else {
         //todo fix css on position

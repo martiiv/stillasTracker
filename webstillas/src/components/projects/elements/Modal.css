@@ -1,11 +1,35 @@
 
-
-.modal-width{
-    width: 70%;
-}
-
 .input-transfer-scaffolding{
     flood-color: #9f9e9e;
 }
 
+
+
+.scaffoldingElement-modal{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding-bottom: 50px;
+    justify-items: center;
+}
+
+@media (max-width: 1200px) {
+    .scaffoldingElement-modal {
+        grid-template-columns: 1fr;
+    }
+}
+
+.modal-header{
+    margin-top: 50px;
+}
+
+
+.transfer-options{
+    padding-bottom: 20px;
+}
+
+
+.card{
+    width: 400px;
+    margin-bottom: 20px;
+}
 

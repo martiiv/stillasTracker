@@ -5,6 +5,7 @@ import {PROJECTS_WITH_SCAFFOLDING_URL, SCAFFOLDING_URL, STORAGE_URL} from "../..
 import {GetDummyData} from "../../modelData/addData";
 import {useQueryClient} from "react-query";
 import {SpinnerDefault} from "../Spinner";
+
 /**
  Class that will create an overview of the scaffolding parts
  */
@@ -91,8 +92,6 @@ class ScaffoldingClass extends React.Component {
         return (
             //todo only scroll the scaffolding not the map
             <div className={"scaffolding"}>
-
-
                 <div className={"all-scaffolding"}>
                     <div className={"sorting"}>
                         <p className = {"input-sorting-text"}>Sorter på:</p>

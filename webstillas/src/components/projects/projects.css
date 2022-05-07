@@ -51,12 +51,12 @@ input[type=number]::-webkit-outer-spin-button {
 
 .grid-container {
     display: inline-grid;
-    alignment: center;
+    align-self: center;
     column-gap: 80px;
     grid-auto-rows: minmax(100px, auto);
     row-gap: 20px;
     grid-template-rows: 1fr;
-    justify-content: center;
+    justify-self: center;
 }
 
 
