@@ -4,6 +4,7 @@ import {PROJECTS_WITH_SCAFFOLDING_URL} from "../../modelData/constantsFile";
 import {GetDummyData} from "../../modelData/addData";
 import ReactMapboxGl, {ScaleControl, Source, Layer, Marker, ZoomControl} from "react-mapbox-gl";
 import img from "./mapbox-marker-icon-20px-orange.png"
+import {NavigationControl} from "react-map-gl";
 
 
 const Map = ReactMapboxGl({
@@ -55,6 +56,8 @@ function MapPageClass(props) {
             <ZoomControl
                 position="top-right"
             />
+
+
             <ScaleControl/>
         </Map>
 

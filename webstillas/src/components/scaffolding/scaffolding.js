@@ -95,7 +95,7 @@ class ScaffoldingClass extends React.Component {
 
                 <div className={"all-scaffolding"}>
                     <div className={"sorting"}>
-                        <p>Sorter:</p>
+                        <p className = {"input-sorting-text"}>Sorter på:</p>
                         <select className={"form-select"} onChange={(e) =>
                             this.setState({selectedOption: e.target.value})}>
                             <option value={"alphabetic"}>Alfabetisk(A-Å)</option>

@@ -20,12 +20,14 @@ import auth from "./firebase";
 const queryClient = new QueryClient()
 
 function App() {
-
     return (
+        //Authorisation of user
         <UserAuthContextProvider>
+            {//Caching provider client
+            }
             <QueryClientProvider client={queryClient}>
-                <TopBar/>
-                <Routes>
+                <TopBar/> {/*Topbar for the user to navigate throughout the webpage}*/}
+                <Routes> {/*Router that creates the routes the user is able to navigate*/}
                     <Route path="/prosjekt/*" element={<ProtectedRoute> <Project/></ProtectedRoute>}/>
                     <Route path="/kart" element={<ProtectedRoute> <MapPage/></ProtectedRoute>}/>
                     <Route path="/stillas" element={<ProtectedRoute> <Scaffolding/></ProtectedRoute>}/>
@@ -34,7 +36,7 @@ function App() {
                     <Route path="/" element={<Login/>}/>
                     <Route path="/signup" element={<Signup/>}/>
                 </Routes>
-                <ReactQueryDevtools initialIsOpen={false} position='bottom-right'/>
+                <ReactQueryDevtools initialIsOpen={true} />
             </QueryClientProvider>
         </UserAuthContextProvider>
 

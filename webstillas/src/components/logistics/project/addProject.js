@@ -3,6 +3,7 @@ import {MapClass} from "./map";
 import MapboxAutocomplete from "react-mapbox-autocomplete";
 import 'mapbox-gl/dist/mapbox-gl.css'
 import "./addProject.css"
+import {Alert} from "react-bootstrap";
 
 export default function AddProjectFunc() {
 
@@ -34,7 +35,7 @@ export default function AddProjectFunc() {
 
     const [errors, setErrors] = useState({
         projectName: '',
-        address: '',
+        address: "",
         name: "",
         number: "",
         email: "",
@@ -161,8 +162,7 @@ export default function AddProjectFunc() {
                 setErrors({...errors, projectName: (valid.projectNameValid ? '' : ' is too short')})
                 break;
             case 'size':
-
-                setValid({...valid, sizeValid: (value >= 1)})
+                setValid({...valid, sizeValid: (Number(value) > 0)})
                 setErrors({...errors, size: (valid.sizeValid ? '' : ' cannot be 0')})
                 break;
             default:
@@ -286,8 +286,8 @@ export default function AddProjectFunc() {
     const finalProject = {
         projectID: projectDetails.projectID,
         projectName: projectDetails.projectName,
-        latitude: projectDetails.latitude,
-        longitude: projectDetails.longitude,
+        latitude: Number(projectDetails.latitude),
+        longitude: Number(projectDetails.longitude),
         state: projectDetails.state,
         size: (size.size),
         period: {
@@ -309,7 +309,7 @@ export default function AddProjectFunc() {
     }
 
 
-    let formsValid
+    let formsValid = false
     if (valid.countyValid && valid.streetValid && valid.zipcodeValid && valid.municipalityValid
         && valid.dateValid && valid.sizeValid && valid.projectNameValid && valid.emailValid && valid.nameValid
         && valid.numberValid
@@ -319,7 +319,7 @@ export default function AddProjectFunc() {
 
 
 
-
+console.log(address)
 
     const contactInformation = () => {
 
@@ -328,7 +328,7 @@ export default function AddProjectFunc() {
                 <h3>Contact Information</h3>
                 <hr/>
                 <div className={"input-with-text"}>
-                    <p>Name</p>
+                    <p className={"input-field-text"}>Name</p>
                     <input
                         className = {"form-control"}
                         type={"text"}
@@ -337,9 +337,13 @@ export default function AddProjectFunc() {
                         placeholder={"Enter Customer Name"}
                         onChange={handleUserInputCustomer}
                     />
+                    <p className={"error-message"}>
+                        {(errors.name === "" || valid.nameValid) ?  null: <Alert variant="danger">{errors.name}</Alert> }
+
+                    </p>
                 </div>
                 <div className={"input-with-text"}>
-                    <p>Number</p>
+                    <p className={"input-field-text"}>Number</p>
                     <input
                         className = {"form-control"}
 
@@ -350,17 +354,25 @@ export default function AddProjectFunc() {
                            placeholder={"Enter Customer Number"}
                            onChange={handleUserInputCustomer}
                     />
+                    <p className={"error-message"}>
+                        {(errors.number === "" || valid.numberValid) ?  null: <Alert variant="danger">{errors.number}</Alert> }
+                    </p>
+
                 </div>
-                <div className={"input-with-text"}>
-                    <p>Email</p>
+                <div className={"input-with-email"}>
+                    <p className={"input-field-text"}>Email</p>
                     <input
                         className = {"form-control"}
-                        type={"text"}
+                        type={"email"}
                         required
                         name={"email"}
                         placeholder={"Enter Customer Email"}
                         onChange={handleUserInputCustomer}
                     />
+                    <p className={"error-message"}>
+                        {(errors.email === "" || valid.emailValid) ?  null: <Alert variant="danger">{errors.email}</Alert> }
+                    </p>
+
                 </div>
             </div>
         )
@@ -371,6 +383,7 @@ export default function AddProjectFunc() {
 
 
 
+    console.log(valid)
 
 
     if (!mapPage) {
@@ -382,9 +395,8 @@ export default function AddProjectFunc() {
                 <hr/>
                 <div>
                     <div className={"test"}>
-                        <div className="row">
-                            <div className="col">
-                                <div className={`form-group`}>
+                        <div className={"address-name"}>
+                                <div className={"input-with-text"}>
                                     <p className={"input-field-text"}>Project Name </p>
                                     <input
                                         className = {"form-control name"}
@@ -393,75 +405,91 @@ export default function AddProjectFunc() {
                                         name={"projectName"}
                                         placeholder={"Project Name"}
                                         onChange={handleUserInputProjectDetails}
+                                    />
+                                    <p className={"error-message"}>
+                                        {(errors.projectName === "" || valid.projectNameValid) ?  null: <Alert variant="danger">{errors.projectName}</Alert> }
+                                    </p>
 
-                                    />
                                 </div>
+
+                            <div className={"input-with-text"}>
+                                <p className={"input-field-text"}>Project size</p>
+                                <input type={"number"}
+                                       min={0}
+                                       required
+                                       name={"size"}
+                                       placeholder={"Size"}
+                                       className = {"form-control number"}
+                                       onChange={handleUserInputProjectDetails}/>
+                                <p className={"error-message"}>
+                                    {(errors.size === "" || valid.sizeValid) ?  null: <Alert variant="danger">{errors.size}</Alert> }
+                                </p>
+
                             </div>
-                            <div className="col">
-                                <div>
-                                    <p className={"input-field-text"}>Address</p>
-                                    <MapboxAutocomplete
-                                        inputClass='form-control search'
-                                        publicKey={mapAccess.mapboxApiAccessToken}
-                                        onSuggestionSelect={_suggestionSelect}
-                                        country="no"
-                                        resetSearch={false}
-                                        placeholder="Search Address..."
-                                        queryParams={queryParams}
-                                    />
-                                </div>
-                            </div>
+
 
                         </div>
-
                         <div className={"date-add-project"}>
                             <div className="row">
                                 <div className="col">
-                                    <p className={"input-field-text"}>Project start date</p>
+                                    <p className={"input-field-text"}>Start date</p>
                                     <input type={"date"}
                                            required
                                            name={"startDate"}
                                            placeholder={"Start Date"}
                                            className={"input-text-add"}
                                            onChange={handleUserInputPeriod}/>
+                                    <p className={"error-message"}>
+                                        {(errors.date === "" || valid.dateValid) ?  null: <Alert variant="danger">{errors.date}</Alert> }
+
+                                    </p>
+
                                 </div>
                                 <div className="col">
-                                    <p className={"input-field-text"}>Project end date</p>
+                                    <p className={"input-field-text"}>End date</p>
                                     <input type={"date"}
                                            required
                                            name={"endDate"}
                                            placeholder={"End Date"}
                                            className={"input-text-add"}
                                            onChange={handleUserInputPeriod}/>
+                                    <p className={"error-message"}>
+                                        {(errors.date === "" || valid.dateValid) ?  null: <Alert variant="danger">{errors.date}</Alert> }
+                                    </p>
+
                                 </div>
                             </div>
                         </div>
                         <div className="col">
-                            <p className={"input-field-text"}>Project size</p>
+                            <div className={"input-with-text"}>
+                                <p className={"input-field-text"}>Address</p>
+                                <MapboxAutocomplete
+                                    inputClass='form-control address'
+                                    publicKey={mapAccess.mapboxApiAccessToken}
+                                    onSuggestionSelect={_suggestionSelect}
 
-                            <input type={"number"}
-                                   min={0}
-                                   required
-                                   name={"size"}
-                                   placeholder={"Size"}
-                                   className={"input-text-add"}
-                                   onChange={handleUserInputProjectDetails}/>
+                                    country="no"
+                                    resetSearch={false}
+                                    placeholder="Search Address..."
+                                    queryParams={queryParams}
+                                />
+
+                                <p className={"error-message"}>
+                                    {(errors.address === "" || valid.streetValid) ?  null: <Alert variant="danger">{errors.address}</Alert> }
+                                </p>
+                            </div>
                         </div>
-
-
-                        <hr/>
                         {contactInformation()}
 
                     </div>
                 </div>
-                <button className={"submit-btn"} type={"submit"} onClick={() => nextPage()}>Next</button>
                 </article>
+                <MapClass props={finalProject}
+                          valid ={formsValid}
 
-                <MapClass props={finalProject}/>
+                />
             </div>
         )
-    } else {
-        return
     }
 }
 

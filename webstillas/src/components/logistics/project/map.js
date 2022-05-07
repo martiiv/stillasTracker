@@ -60,12 +60,13 @@ export function MapClass(props) {
         }
         console.log(geofence)
         project = {...project, geofence}
-
     }
 
 
     const AddProjectRequest = async () => {
         try {
+            console.log(JSON.stringify(project))
+
             await postModel(PROJECTS_URL, JSON.stringify(project))
             await queryClient.refetchQueries("allProjects")
 
@@ -74,7 +75,6 @@ export function MapClass(props) {
         }
 
     }
-
 
     return (
         <div className="App">
@@ -108,7 +108,7 @@ export function MapClass(props) {
                     />
                 </Map>
             </div>
-            <button disabled={!ok} onClick={AddProjectRequest}>Add Project</button>
+            <button className={"confirm-btn"} disabled={!ok || !props.valid} onClick={AddProjectRequest}>Add Project</button>
         </div>
     );
 
