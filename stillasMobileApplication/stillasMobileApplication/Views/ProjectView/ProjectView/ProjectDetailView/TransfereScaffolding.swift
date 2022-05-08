@@ -39,61 +39,6 @@ struct TransfereScaffolding: View {
         VStack {
             FormView(isShowingSheet: $isShowingSheet, projects: projects, scaffolding: scaffolding)
                 .navigationTitle(Text("Transfere \(scaffolding.type)"))
-
-                /*
-                Text("Transfere \(scaffolding.type) from \(projectFrom) to \(projectTo)")
-                VStack(alignment: .leading) {
-                    Text("From project")
-                        .font(.system(size: 20, weight: .bold, design: .default))
-                    
-                    FormView(projects: projects)
-
-                    
-                    Section {
-                        Picker("Project", selection: $projectFrom) {
-                            ForEach(projects.sorted { $0.projectName < $1.projectName }, id: \.projectID) { project in
-                                Text(project.projectName)
-                            }
-                        }
-                        .border(.secondary)
-                    
-                    }
-                    
-                    Text("To project")
-                        .font(.system(size: 20, weight: .bold, design: .default))
-                    Section {
-
-                        Picker("Project", selection: $projectTo) {
-                            ForEach(projects.sorted { $0.projectName < $1.projectName }, id: \.projectID) { project in
-                                Text(project.projectName)
-                            }
-                        }
-                        .padding(.horizontal, 5)
-                        .background(RoundedRectangle(cornerRadius: 5).stroke(Color.secondary, lineWidth: 2))
-                        .foregroundColor(Color.white)
-                        .contentShape(Rectangle())
-                        .background(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
-                        .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: 0, y: 2)
-                        .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: 0, y: 10)
-                    }
-                    
-                    Section {
-                        TextField("Amount", value: $quantity, format: .number)
-                            .keyboardType(.decimalPad)
-                    }
-
-                    
-                }
-                .padding(.horizontal, 30)
-                
-                Button("Transfere scaffolding unit") {
-                    Task {
-                        await transfereScaffoldingUnit()
-                    }
-                }
-                .padding()
-                
-                //FormView(projects: projects)*/
             }
     }
     
@@ -104,24 +49,233 @@ struct TransfereScaffolding: View {
 
 struct ScaffoldingDetails: View {
     var projects: [Project]
+    @Environment(\.colorScheme) var colorScheme
 
     var scaffolding: Scaffolding
     @Binding var isShowingSheet: Bool
+    
+    let dateNow = Date()
 
     var body: some View {
+        
+        Divider()
+            .padding(.vertical, 10)
+        
         TransfereScaffoldingButton(projects: projects, scaffolding: scaffolding, isShowingSheet: $isShowingSheet)
         
-        VStack {
-            ScrollView(.vertical) {
+        Divider()
+            .padding(.vertical, 10)
+        
+        Text("History of \(scaffolding.type)".capitalizingFirstLetter())
+            .font(Font.title.bold())
+            .frame(alignment: .leading)
+        
+        ScrollView(.vertical) {
+            VStack (alignment: .leading){
                 HStack {
-                    Text("Left")
+                    VStack {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
+                        .frame(width: UIScreen.screenWidth / 2.3 , height: 60)
+                        .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: -2, y: 2)
+                        .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: -10, y: 10)
+                        .overlay(VStack {
+                            Text(Date(), style: .date)
+                                .foregroundColor(Color.gray)
+                            HStack {
+                                VStack {
+                                    Text(String(format: "%d", scaffolding.quantity.expected))
+                                        .font(.system(size: 15))
+                                    Text("EXPECTED")
+                                        .foregroundColor(.gray)
+                                        .font(.system(size: 10))
+                                }
+                                VStack {
+                                    amountOfScaffoldingRegistered(expected: scaffolding.quantity.expected, registered: scaffolding.quantity.registered)
+                                    Text("REGISTERED")
+                                        .foregroundColor(.gray)
+                                        .font(.system(size: 10))
+                                }
+                            }
+                        })
+                        .padding(.leading)
+                        .padding(.vertical, 35)
+                        .ignoresSafeArea()
+                        
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
+                        .frame(width: UIScreen.screenWidth / 2.3 , height: 60)
+                        .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: -2, y: 2)
+                        .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: -10, y: 10)
+                        .overlay(VStack {
+                            Text(Calendar.current.date(byAdding: .day, value: -2, to: dateNow)!, style: .date)
+                                .foregroundColor(Color.gray)
+                            HStack {
+                                VStack {
+                                    Text(String(format: "%d", scaffolding.quantity.expected))
+                                        .font(.system(size: 15))
+                                    Text("EXPECTED")
+                                        .foregroundColor(.gray)
+                                        .font(.system(size: 10))
+                                }
+                                VStack {
+                                    amountOfScaffoldingRegistered(expected: scaffolding.quantity.expected, registered: scaffolding.quantity.registered)
+                                    Text("REGISTERED")
+                                        .foregroundColor(.gray)
+                                        .font(.system(size: 10))
+                                }
+                            }
+                        })
+                        .padding(.leading)
+                        .padding(.vertical, 35)
+                        .ignoresSafeArea()
+                        
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
+                        .frame(width: UIScreen.screenWidth / 2.3 , height: 60)
+                        .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: -2, y: 2)
+                        .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: -10, y: 10)
+                        .overlay(VStack {
+                            Text(Calendar.current.date(byAdding: .day, value: -4, to: dateNow)!, style: .date)
+                                .foregroundColor(Color.gray)
+                            HStack {
+                                VStack {
+                                    Text(String(format: "%d", scaffolding.quantity.expected))
+                                        .font(.system(size: 15))
+                                    Text("EXPECTED")
+                                        .foregroundColor(.gray)
+                                        .font(.system(size: 10))
+                                }
+                                VStack {
+                                    amountOfScaffoldingRegistered(expected: scaffolding.quantity.expected, registered: scaffolding.quantity.registered)
+                                    Text("REGISTERED")
+                                        .foregroundColor(.gray)
+                                        .font(.system(size: 10))
+                                }
+                            }
+                        })
+                        .padding(.leading)
+                        .padding(.vertical, 35)
+                        .ignoresSafeArea()
+                    }
+                    
                     Divider()
                         .frame(width: 3, height: 400, alignment: .center)
                         .background(Color.gray)
-                    Text("Right")
+                        .padding(.top)
+                        .offset(y: 30)
+                    
+                    VStack {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
+                        .frame(width: UIScreen.screenWidth / 2.3 , height: 60)
+                        .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: 2, y: 2)
+                        .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: 10, y: 10)
+                        .overlay(VStack {
+                            Text(Calendar.current.date(byAdding: .day, value: -1, to: dateNow)!, style: .date)
+                                .foregroundColor(Color.gray)
+                            HStack {
+                                VStack {
+                                    Text(String(format: "%d", scaffolding.quantity.expected))
+                                        .font(.system(size: 15))
+                                    Text("EXPECTED")
+                                        .foregroundColor(.gray)
+                                        .font(.system(size: 10))
+                                }
+                                VStack {
+                                    amountOfScaffoldingRegistered(expected: scaffolding.quantity.expected, registered: scaffolding.quantity.registered)
+                                        .font(.system(size: 15))
+                                    Text("REGISTERED")
+                                        .foregroundColor(.gray)
+                                        .font(.system(size: 10))
+                                }
+                            }
+                        })
+                        .offset(y: 70)
+                        .padding(.trailing)
+                        .padding(.vertical, 35)
+                        .ignoresSafeArea()
+                        
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
+                        .frame(width: UIScreen.screenWidth / 2.3 , height: 60)
+                        .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: 2, y: 2)
+                        .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: 10, y: 10)
+                        .overlay(VStack {
+                            Text(Calendar.current.date(byAdding: .day, value: -3, to: dateNow)!, style: .date)
+                                .foregroundColor(Color.gray)
+                            HStack {
+                                VStack {
+                                    Text(String(format: "%d", scaffolding.quantity.expected))
+                                        .font(.system(size: 15))
+                                    Text("EXPECTED")
+                                        .foregroundColor(.gray)
+                                        .font(.system(size: 10))
+                                }
+                                VStack {
+                                    amountOfScaffoldingRegistered(expected: scaffolding.quantity.expected, registered: scaffolding.quantity.registered)
+                                        .font(.system(size: 15))
+                                    Text("REGISTERED")
+                                        .foregroundColor(.gray)
+                                        .font(.system(size: 10))
+                                }
+                            }
+                        })
+                        .offset(y: 70)
+                        .padding(.trailing)
+                        .padding(.vertical, 35)
+                        .ignoresSafeArea()
+                        
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
+                        .frame(width: UIScreen.screenWidth / 2.3 , height: 60)
+                        .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: 2, y: 2)
+                        .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: 10, y: 10)
+                        .overlay(VStack {
+                            Text(Calendar.current.date(byAdding: .day, value: -5, to: dateNow)!, style: .date)
+                                .foregroundColor(Color.gray)
+                            HStack {
+                                VStack {
+                                    Text(String(format: "%d", scaffolding.quantity.expected))
+                                        .font(.system(size: 15))
+                                    Text("EXPECTED")
+                                        .foregroundColor(.gray)
+                                        .font(.system(size: 10))
+                                }
+                                VStack {
+                                    amountOfScaffoldingRegistered(expected: scaffolding.quantity.expected, registered: scaffolding.quantity.registered)
+                                        .font(.system(size: 15))
+                                    Text("REGISTERED")
+                                        .foregroundColor(.gray)
+                                        .font(.system(size: 10))
+                                }
+                            }
+                        })
+                        .offset(y: 70)
+                        .padding(.trailing)
+                        .padding(.vertical, 35)
+                        .ignoresSafeArea()
+                    }
                 }
             }
         }
+        .navigationTitle(Text("\(scaffolding.type)".capitalizingFirstLetter()))
+    }
+}
+
+func amountOfScaffoldingRegistered(expected: Int, registered: Int) -> Text {
+    if (registered >= Int(Double(expected) * 0.95) && registered <= Int(Double(expected))) {
+        return Text(String(format: "%d", registered)).foregroundColor(Color.green)
+            .font(.system(size: 15))
+    } else if ((registered < Int(Double(expected) * 0.95)) && (registered >= Int(Double(expected) * 0.8))) {
+        return Text(String(format: "%d", registered)).foregroundColor(Color.yellow)
+            .font(.system(size: 15))
+    } else if (registered > Int(Double(expected))) {
+        return Text(String(format: "%d", registered)).foregroundColor(Color.purple)
+            .font(.system(size: 15))
+    } else {
+        return Text(String(format: "%d", registered)).foregroundColor(Color.red)
+            .font(.system(size: 15))
     }
 }
 
@@ -139,6 +293,8 @@ struct FormView: View {
     @State private var pickerSelectionFrom: String = ""
     @State private var pickerSelectionTo: String = ""
 
+    @State private var pickerSelectionFromNotPicked: Bool = true
+    
     @State private var searchTerm: String = ""
 
     @State private var empty = false
@@ -181,6 +337,7 @@ struct FormView: View {
                         .onChange(of: pickerSelectionFrom) { pick in
                             tempIntFrom = projects.firstIndex(where: { $0.projectName == pick })!
                             pickedFromID = projects[tempIntFrom].projectID
+                            pickerSelectionFromNotPicked = false
                         }
                         ForEach(filteredProjects, id: \.projectID) { project in
                             Text("\(project.projectName)").tag("\(project.projectName)")
@@ -224,10 +381,12 @@ struct FormView: View {
                     HStack {
                         Text("Manual entry")
                         TextField("Input number", text: $anumber)
+                            .disabled(pickerSelectionFromNotPicked)
                             //.modifier(ClearButton(text: $anumber))
                             .onChange(of: anumber) {
-                                tem = projects[tempIntFrom].scaffolding![projects[tempIntFrom].scaffolding!.firstIndex(where: { $0.type == scaffolding.type})!].quantity.expected
-                                if $0.isEmpty || Int($0) ?? 0 > tem {
+                                tem = (projects[tempIntFrom].scaffolding![projects[tempIntFrom].scaffolding!.firstIndex(where: { $0.type == scaffolding.type}) ?? 0].quantity.expected)
+                                
+                                if $0.isEmpty || Int($0) ?? -1 > tem {
                                     empty = true
                                 } else {
                                     empty = false
