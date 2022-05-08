@@ -89,6 +89,7 @@ export default function InfoModalFunc(props) {
 
     //todo add a note to the user if the transaction was a success or a fail.
     const AddScaffold = async () => {
+        console.log(JSON.stringify(move))
         await putModel(TRANSFER_SCAFFOLDING, JSON.stringify(move));
         await queryClient.resetQueries(["project", props.id]).then(() => handleClose())
     }
