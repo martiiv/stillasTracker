@@ -32,7 +32,7 @@ function CardElement(props) {
                         <h3>{props.name}</h3>
                     </section>
                     <IconButton className={"btn-delete"} onClick={DeleteProject}>
-                        <DeleteIcon style={{ fontSize: 50 }} />
+                        <DeleteIcon style={{ fontSize: 50, float: "right" }} />
                     </IconButton>
                 </div>
 

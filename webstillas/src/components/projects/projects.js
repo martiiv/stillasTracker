@@ -46,22 +46,7 @@ export function Project(){
         return new Date(dateArray[2] + '-' + dateArray[1] + '-' + dateArray[0])
     }
 
-    const selectionRange = {
-        startDate: new Date(),
-        endDate: new Date(),
-        key: 'selection',
-    }
 
-
-    const handleSelect = (ranges) => {
-        console.log(ranges);
-        // {
-        //   selection: {
-        //     startDate: [native Date Object],
-        //     endDate: [native Date Object],
-        //   }
-        // }
-    }
 
     const {isLoading, data} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
     if (isLoading) {
@@ -73,9 +58,9 @@ export function Project(){
             <div className={"main-project-window"}>
 
                     <div className={"main-sidebar"} >
-                        <div>
-                            <p>Status</p>
-                            <select className={"form-select"} onChange={(e) =>
+                        <div className={"search-filter"}>
+                            <p className = {"input-sorting-text"}>Status</p>
+                            <select className={"form-select options"} onChange={(e) =>
                                 setSelectedOption(e.target.value)}>
                                 <option defaultValue="">Velg her</option>
                                 <option value={"Active"}>Aktiv</option>
@@ -83,7 +68,9 @@ export function Project(){
                                 <option value={"Upcoming"}>Kommende</option>
                             </select>
                         </div>
-                        <form className={"filter-content-search"}>
+                        <div className={"search-filter"}>
+                            <p className = {"input-sorting-text"}>Prosjekt navn: </p>
+
                             <input
                                 className={"form-control"}
                                 type="text"
@@ -92,41 +79,32 @@ export function Project(){
                                    onChange={e => {
                                        setSearchName(e.target.value)
                                    }}/>
-                        </form>
-                        <form className={"filter-content-input"}>
-                            <p>Stillsmengde: </p>
-                            <input
-                                className={"form-control"}
-                                type="number"
-                                placeholder={"Fra"}
-                                   min={0}
-                                   onWheel={(e) => e.prototype}
-                                   onChange={e => setFromSize(Number(e.target.value))}
-                                   />
-                            <input
-                                className={"form-control"}
-
-                                type="number"
-                                   placeholder={"Til"}
-                                   min={0}
-                                   onChange={e => {
-                                       setToSize(Number(e.target.value))
-                                   }}
-                                   />
-                        </form>
-
-
-                       {/* <DateRangePicker
-                            startDate={startDate}
-                            endDate={endDate}
-                            onDatesChange={handleDatesChange}
-                            focusedInput={focusedInput}
-                            onFocusChange={focusedInput => setFocusedInput(focusedInput)}
-
-                        />*/}
+                        </div>
+                        <div className={"search-filter"}>
+                            <p className = {"input-sorting-text"}>Stillsmengde: </p>
+                            <div className={"search-filter size"}>
+                                <input
+                                    className={"form-control size-search"}
+                                    type="number"
+                                    placeholder={"Fra"}
+                                    min={0}
+                                    onWheel={(e) => e.prototype}
+                                    onChange={e => setFromSize(Number(e.target.value))}
+                                />
+                                <input
+                                    className={"form-control size-search"}
+                                    type="number"
+                                    placeholder={"Til"}
+                                    min={0}
+                                    onChange={e => {
+                                        setToSize(Number(e.target.value))
+                                    }}
+                                />
+                            </div>
+                        </div>
                     </div>
-                    <div className={"grid-container"}>
-
+                <div>
+                    <div className={"projects-display"}>
                         {data.filter(data => (data.projectName.toLowerCase()).includes(searchName.toLowerCase()))
                             .filter(data => {
                                 if (fromSize !== 0) {
@@ -186,8 +164,11 @@ export function Project(){
                                     </div>
                                 );
                             })}
+
                     </div>
                 </div>
+            </div>
+
         );
     }
 }
