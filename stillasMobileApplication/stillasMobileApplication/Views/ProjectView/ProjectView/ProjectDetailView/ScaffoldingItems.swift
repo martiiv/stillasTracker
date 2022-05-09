@@ -17,7 +17,7 @@ struct ScaffoldingItems: View {
         ScrollView (.vertical) {
             LazyVGrid (columns: gridItemLayout, spacing: 10) {
                 ForEach(scaffolding, id: \.type) { scaffolding in
-                    NavigationLink(destination: ScaffoldingDetails(projects: projects, scaffolding: scaffolding, isShowingSheet: $isShowingSheet),
+                    NavigationLink(destination: HistoryOfScaffolding(projects: projects, scaffolding: scaffolding, isShowingSheet: $isShowingSheet),
                                    label: { ScaffoldingItem(scaffolding: scaffolding)
                     })
                     .listStyle(.grouped)
