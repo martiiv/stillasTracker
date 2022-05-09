@@ -9,19 +9,6 @@ import SwiftUI
 import Foundation
 import Combine
 
-// MARK: - Scaff
-struct Scaff: Codable {
-    let scaffold: [Move]
-    let toProjectID, fromProjectID: Int
-}
-
-// MARK: - Move
-struct Move: Codable {
-    let type: String
-    let quantity: Int
-}
-
-
 struct TransfereScaffolding: View {
     var projects: [Project]
     @Environment(\.colorScheme) var colorScheme
