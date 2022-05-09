@@ -17,10 +17,6 @@ struct HistoryOfScaffolding: View {
     let dateNow = Date()
 
     var body: some View {
-        //Text("History of \(scaffolding.type)".capitalizingFirstLetter())
-            //.font(Font.title.bold())
-            //.frame(alignment: .leading)
-        
         ScrollView(.vertical) {
             VStack (alignment: .leading){
                 HStack {
@@ -211,8 +207,6 @@ struct HistoryOfScaffolding: View {
             }
         }
         .navigationTitle(Text("History of \(scaffolding.type)".capitalizingFirstLetter()))
-        
-        TransfereScaffoldingButton(projects: projects, scaffolding: scaffolding, isShowingSheet: $isShowingSheet)
     }
 }
 
