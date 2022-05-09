@@ -3,9 +3,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import {Button, Modal} from 'react-bootstrap';
 import img from "../../scaffolding/images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 import putModel from "../../../modelData/putData";
-import {PROJECTS_WITH_SCAFFOLDING_URL, TRANSFER_SCAFFOLDING} from "../../../modelData/constantsFile";
+import {TRANSFER_SCAFFOLDING} from "../../../modelData/constantsFile";
 import {useQueryClient} from "react-query";
-import {GetDummyData} from "../../../modelData/addData";
+import "./Modal.css"
+
+
 
 //https://ordinarycoders.com/blog/article/react-bootstrap-modal
 const scaffoldingMove =
@@ -86,20 +88,10 @@ export default function InfoModalFunc(props) {
     };
 
     //todo add a note to the user if the transaction was a success or a fail.
-    //Todo fix error
-    async function AddScaffolding(){
-        const queryClient = useQueryClient()
-        await putModel(TRANSFER_SCAFFOLDING, JSON.stringify(move));
-        await queryClient.invalidateQueries(["project", props.id]).then(r => handleClose())
-    }
-
-
     const AddScaffold = async () => {
-
+        console.log(JSON.stringify(move))
         await putModel(TRANSFER_SCAFFOLDING, JSON.stringify(move));
-        await queryClient.resetQueries(["project", props.id])
-
-
+        await queryClient.resetQueries(["project", props.id]).then(() => handleClose())
     }
 
     const move = {
@@ -128,10 +120,13 @@ export default function InfoModalFunc(props) {
                     <Modal.Title>Stillas Overføring</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <div className={"scaffoldingElement"}>
-                        <div>
+                    <div className={"scaffoldingElement-modal"}>
+                        <div className={"transfer-options"}>
                             <span>Overfør til prosjekt:</span>
-                            <select value={ToProject} onChange={(e) => setToProject(e.target.value)}>
+                            <select
+                                className={"form-select"}
+                                value={ToProject}
+                                onChange={(e) => setToProject(e.target.value)}>
                                 <option selected defaultValue="">Choose here</option>
                                 <option value={0}>Storage</option>
                                 {jsonProjects.map(e => {
@@ -143,7 +138,9 @@ export default function InfoModalFunc(props) {
                         </div>
                         <div>
                             <span>Overfør fra prosjekt:</span>
-                            <select value={FromProject}
+                            <select
+                                className={"form-select"}
+                                value={FromProject}
                                     onChange={(e) => setFromProject(e.target.value)}>
                                 <option selected defaultValue="">Choose here</option>
                                 <option value={0}>Storage</option>
@@ -156,16 +153,21 @@ export default function InfoModalFunc(props) {
                         </div>
                         {jsonProject[0].scaffolding.map(e => {
                                 return (
-                                    <article className={"card"}>
+                                    <div className={"card"}>
                                         <section className={"header"}>
                                             <h3>{e.type.toUpperCase()}</h3>
                                         </section>
                                         <section className={"image"}>
                                             <img className={"img"} src={img} alt={""}/>
                                         </section>
-                                        <input type="number" min={0} key={"input" + e.type}
+                                        <input
+                                            className={"form-control"}
+                                            placeholder={"Enter quantity of scaffolding parts to transfer"}
+                                            type="number"
+                                            min={0}
+                                            key={"input" + e.type}
                                                onChange={(j) => handleroom(j, e.type)}/>
-                                    </article>
+                                    </div>
                                 )
                             }
                         )}

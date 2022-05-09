@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Form, Alert } from "react-bootstrap";
 import { Button } from "react-bootstrap";
-import GoogleButton from "react-google-button";
 import { useUserAuth } from "../context/UserAuthContext";
 
 const Login = () => {
@@ -19,7 +18,7 @@ const Login = () => {
       await logIn(email, password);
       navigate("/prosjekt");
     } catch (err) {
-      setError(err.message);
+      setError("Feil brukernavn eller passord. \nVennligst prøv igjen");
     }
   };
 
@@ -27,7 +26,7 @@ const Login = () => {
   return (
     <>
       <div className="p-4 box">
-        <h2 className="mb-3">Firebase Auth Login</h2>
+        <h2 className="mb-3">Stillas Login</h2>
         {error && <Alert variant="danger">{error}</Alert>}
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3" controlId="formBasicEmail">

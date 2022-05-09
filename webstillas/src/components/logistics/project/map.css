@@ -1,0 +1,17 @@
+
+.confirm-btn{
+    background-color: #F28A04;
+    border-radius: 10px;
+    width: 250px;
+    height: 50px;
+    float: right;
+}
+
+.App{
+    display: flow;
+}
+
+.map{
+    padding-bottom: 10px;
+}
+

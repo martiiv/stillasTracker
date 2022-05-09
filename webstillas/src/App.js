@@ -13,6 +13,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import {UserAuthContextProvider, useUserAuth} from "./context/UserAuthContext";
+import auth from "./firebase";
+import AddProjectFunc from "./components/logistics/project/addProject";
+import AddScaffolding from "./components/logistics/scaffold/addScaffolding";
 
 
 
@@ -20,23 +23,31 @@ const queryClient = new QueryClient()
 
 function App() {
     return (
+        //Authorisation of user
         <UserAuthContextProvider>
+            {//Caching provider client
+            }
             <QueryClientProvider client={queryClient}>
-                <TopBar/>
-                <Routes>
-                    <Route path="/prosjekt/*" element={<ProtectedRoute> <Project /></ProtectedRoute>} />
-                    <Route path="/kart" element={<ProtectedRoute> <MapPage /></ProtectedRoute>} />
-                    <Route path="/stillas" element={<ProtectedRoute> <Scaffolding /></ProtectedRoute>} />
-                    <Route path="/project/:id" element={<ProtectedRoute> <PreView /></ProtectedRoute>} />
-                    <Route path="/logistics" element={<ProtectedRoute> <Logistic /></ProtectedRoute>} />
-                    <Route path="/" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
+                <TopBar/> {/*Topbar for the user to navigate throughout the webpage}*/}
+                <Routes> {/*Router that creates the routes the user is able to navigate*/}
+                    <Route path="/prosjekt/*" element={<ProtectedRoute> <Project/></ProtectedRoute>}/>
+                    <Route path="/kart" element={<ProtectedRoute> <MapPage/></ProtectedRoute>}/>
+                    <Route path="/stillas" element={<ProtectedRoute> <Scaffolding/></ProtectedRoute>}/>
+                    <Route path="/project/:id" element={<ProtectedRoute> <PreView/></ProtectedRoute>}/>
+                    <Route path="/logistics" element={<ProtectedRoute> <Logistic/></ProtectedRoute>}/>
+                    <Route path="/" element={<Login/>}/>
+                    <Route path="/signup" element={<Signup/>}/>
+                    <Route path="/addproject/" element={<ProtectedRoute> <AddProjectFunc/></ProtectedRoute>}/>
+                    <Route path="/addscaffolding/" element={<ProtectedRoute> <AddScaffolding/></ProtectedRoute>}/>
+
+
                 </Routes>
-                <ReactQueryDevtools initialIsOpen={false} position='bottom-right' />
+                <ReactQueryDevtools initialIsOpen={true} />
             </QueryClientProvider>
         </UserAuthContextProvider>
 
     );
+
 }
 
 export default App;

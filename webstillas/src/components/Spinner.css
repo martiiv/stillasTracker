@@ -1,7 +1,5 @@
 
-.border{
-    position: absolute;
-    left: 50%;
-    top: 50%;
-
+.spinner{
+    display: flex;
+    justify-content: center;
 }
