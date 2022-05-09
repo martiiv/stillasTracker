@@ -57,18 +57,9 @@ struct ScaffoldingDetails: View {
     let dateNow = Date()
 
     var body: some View {
-        
-        Divider()
-            .padding(.vertical, 10)
-        
-        TransfereScaffoldingButton(projects: projects, scaffolding: scaffolding, isShowingSheet: $isShowingSheet)
-        
-        Divider()
-            .padding(.vertical, 10)
-        
-        Text("History of \(scaffolding.type)".capitalizingFirstLetter())
-            .font(Font.title.bold())
-            .frame(alignment: .leading)
+        //Text("History of \(scaffolding.type)".capitalizingFirstLetter())
+            //.font(Font.title.bold())
+            //.frame(alignment: .leading)
         
         ScrollView(.vertical) {
             VStack (alignment: .leading){
@@ -259,7 +250,9 @@ struct ScaffoldingDetails: View {
                 }
             }
         }
-        .navigationTitle(Text("\(scaffolding.type)".capitalizingFirstLetter()))
+        .navigationTitle(Text("History of \(scaffolding.type)".capitalizingFirstLetter()))
+        
+        TransfereScaffoldingButton(projects: projects, scaffolding: scaffolding, isShowingSheet: $isShowingSheet)
     }
 }
 

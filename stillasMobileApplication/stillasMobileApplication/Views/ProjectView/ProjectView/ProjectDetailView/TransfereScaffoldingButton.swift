@@ -20,10 +20,16 @@ struct TransfereScaffoldingButton: View {
             Text("Transfere Scaffolding")
                 .padding(12)
                 .font(.system(size: 20))
-                .foregroundColor(colorScheme == .dark ? Color(UIColor.black) : Color(UIColor.darkGray))
+                .foregroundColor(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white))
+                .frame(width: 300, height: 50, alignment: .center)
         }
+        .foregroundColor(.white)
+        .background(Color.blue)
+        .cornerRadius(10)
+        .padding(.bottom, 50)
+        
         .contentShape(Rectangle())
-        .background(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
+        //.background(colorScheme == .dark ? Color.blue : Color.blue).cornerRadius(7)
         .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: 0, y: 2)
         .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: 0, y: 10)
         .sheet(isPresented: $isShowingSheet,
