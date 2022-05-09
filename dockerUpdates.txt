@@ -4,7 +4,7 @@ Nettverk brukernavn martiiv@stud.ntnu.no
 Nettverk passord samme som vanlig
 
 sudo docker build . -t scaffoldingtracker
-sudo docker run -d --name scaffolding0.1 -p 8080:8080 scaffoldingtrackerv0.6
+sudo docker run -d --name scaffolding0.4 -p 8080:8080 scaffoldingtracker
 
 Krisetilfellet:
 
