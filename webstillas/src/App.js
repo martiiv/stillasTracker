@@ -14,6 +14,8 @@ import Login from "./components/Login";
 import Signup from "./components/Signup";
 import {UserAuthContextProvider, useUserAuth} from "./context/UserAuthContext";
 import auth from "./firebase";
+import AddProjectFunc from "./components/logistics/project/addProject";
+import AddScaffolding from "./components/logistics/scaffold/addScaffolding";
 
 
 
@@ -35,6 +37,10 @@ function App() {
                     <Route path="/logistics" element={<ProtectedRoute> <Logistic/></ProtectedRoute>}/>
                     <Route path="/" element={<Login/>}/>
                     <Route path="/signup" element={<Signup/>}/>
+                    <Route path="/addproject/" element={<ProtectedRoute> <AddProjectFunc/></ProtectedRoute>}/>
+                    <Route path="/addscaffolding/" element={<ProtectedRoute> <AddScaffolding/></ProtectedRoute>}/>
+
+
                 </Routes>
                 <ReactQueryDevtools initialIsOpen={true} />
             </QueryClientProvider>

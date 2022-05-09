@@ -25,7 +25,6 @@ function CardElement(props) {
     }
 
     return (
-        <div className={"main"}>
             <article className={"card"}>
                 <div className={"name-btn"}>
                     <section className={"header"}>
@@ -95,7 +94,6 @@ function CardElement(props) {
                     </div>
                 </section>
             </article>
-        </div>
     )
 }
 

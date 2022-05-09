@@ -41,9 +41,18 @@ const TopBar = () => {
                     <Link className="link" to="/kart">
                         <Button className="button">Kart</Button>
                     </Link>
-                    <Link className="link" to="/logistics">
+                   {/* <Link className="link" to="/logistics">
                         <Button className="button">Logistikk</Button>
-                    </Link>
+                    </Link>*/}
+
+                    <DropdownButton id="dropdown-button"
+                                    title= {"Logistikk"}
+                                    size="sm"
+
+                    >
+                        <DropdownItem href="/addproject/">Legg til prosjekt</DropdownItem>
+                        <DropdownItem href="/addscaffolding">Legg til stillasdel</DropdownItem>
+                    </DropdownButton>
                     <DropdownButton id="dropdown-button"
                                     title= {"Bruker"}
                                     size="sm"

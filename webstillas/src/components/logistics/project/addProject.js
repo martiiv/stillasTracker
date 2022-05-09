@@ -28,7 +28,7 @@ export default function AddProjectFunc() {
         projectName: '',
         latitude: 0,
         longitude: 0,
-        state: "Active"
+        state: "Inactive"
     })
 
     const [size, setSize] = useState({size: 0})
