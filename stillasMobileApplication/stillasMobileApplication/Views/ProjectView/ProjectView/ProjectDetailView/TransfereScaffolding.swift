@@ -33,22 +33,6 @@ struct TransfereScaffolding: View {
     }
 }
 
-func amountOfScaffoldingRegistered(expected: Int, registered: Int) -> Text {
-    if (registered >= Int(Double(expected) * 0.95) && registered <= Int(Double(expected))) {
-        return Text(String(format: "%d", registered)).foregroundColor(Color.green)
-            .font(.system(size: 15))
-    } else if ((registered < Int(Double(expected) * 0.95)) && (registered >= Int(Double(expected) * 0.8))) {
-        return Text(String(format: "%d", registered)).foregroundColor(Color.yellow)
-            .font(.system(size: 15))
-    } else if (registered > Int(Double(expected))) {
-        return Text(String(format: "%d", registered)).foregroundColor(Color.purple)
-            .font(.system(size: 15))
-    } else {
-        return Text(String(format: "%d", registered)).foregroundColor(Color.red)
-            .font(.system(size: 15))
-    }
-}
-
 /*
 struct TransfereScaffolding_Previews: PreviewProvider {
     static var previews: some View {

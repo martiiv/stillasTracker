@@ -31,19 +31,7 @@ struct ScaffoldingItem: View {
                 .frame(alignment: .center)
 
                 VStack {
-                    if (scaffolding.quantity.registered >= Int(Double(scaffolding.quantity.expected) * 0.95) && scaffolding.quantity.registered <= Int(Double(scaffolding.quantity.expected))) {
-                        Text(String(format: "%d", scaffolding.quantity.registered)).foregroundColor(Color.green)
-                            .font(.system(size: 15))
-                    } else if ((scaffolding.quantity.registered < Int(Double(scaffolding.quantity.expected) * 0.95)) && (scaffolding.quantity.registered >= Int(Double(scaffolding.quantity.expected) * 0.8))) {
-                        Text(String(format: "%d", scaffolding.quantity.registered)).foregroundColor(Color.yellow)
-                            .font(.system(size: 15))
-                    } else if (scaffolding.quantity.registered > Int(Double(scaffolding.quantity.expected))) {
-                        Text(String(format: "%d", scaffolding.quantity.registered)).foregroundColor(Color.purple)
-                            .font(.system(size: 15))
-                    } else {
-                        Text(String(format: "%d", scaffolding.quantity.registered)).foregroundColor(Color.red)
-                            .font(.system(size: 15))
-                    }
+                    amountOfScaffoldingRegistered(expected: scaffolding.quantity.expected, registered: scaffolding.quantity.registered)
                     Text("REGISTERED")
                         .foregroundColor(.gray)
                         .font(.system(size: 10))
@@ -60,6 +48,23 @@ struct ScaffoldingItem: View {
     }
 }
 
+func amountOfScaffoldingRegistered(expected: Int, registered: Int) -> Text {
+    if (registered >= Int(Double(expected) * 0.95) && registered <= Int(Double(expected))) {
+        return Text(String(format: "%d", registered)).foregroundColor(Color.green)
+            .font(.system(size: 15))
+    } else if ((registered < Int(Double(expected) * 0.95)) && (registered >= Int(Double(expected) * 0.8))) {
+        return Text(String(format: "%d", registered)).foregroundColor(Color.yellow)
+            .font(.system(size: 15))
+    } else if (registered > Int(Double(expected))) {
+        return Text(String(format: "%d", registered)).foregroundColor(Color.purple)
+            .font(.system(size: 15))
+    } else {
+        return Text(String(format: "%d", registered)).foregroundColor(Color.red)
+            .font(.system(size: 15))
+    }
+}
+
+/// https://www.hackingwithswift.com/example-code/strings/how-to-capitalize-the-first-letter-of-a-string
 extension String {
     func capitalizingFirstLetter() -> String {
         return prefix(1).capitalized + dropFirst()
