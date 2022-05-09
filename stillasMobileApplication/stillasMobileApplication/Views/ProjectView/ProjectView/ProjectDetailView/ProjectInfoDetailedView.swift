@@ -46,187 +46,166 @@ struct ProjectInfoDetailedView: View {
 
     @Environment(\.colorScheme) var colorScheme
     
-    let projectInfoTitle = "Project Information"
-    let duration = "Duration:"
-    let customer = "Customer:"
-    let amountScaff = "Amount:"
-    let scaffoldingSize = "Size:"
-    let state = "Status:"
-    let address = "Address:"
+    //let projectInfoTitle = "Project Information"
+    let duration = "DURATION"
+    let customer = "CUSTOMER"
+    let amountScaff = "AMOUNT"
+    let scaffoldingSize = "SIZE"
+    let state = "STATUS"
+    let address = "ADDRESS"
+    let contactPerson = "CONTACT PERSON"
+    let phoneNumber = "PHONE NUMBER"
+    let email = "EMAIL"
     
     var body: some View {
         VStack {
-        VStack(alignment: .leading) {
-            Text(projectInfoTitle)
-                .font(.title).bold()
-                .padding(.bottom, 5)
-            
             VStack(alignment: .leading) {
-                VStack(alignment: .leading) {
-                    HStack {
-                        Text(duration)
-                            .font(.body).bold()
-                        
-                        Text("\(project.period.startDate) - \(project.period.endDate)")
-                            .font(.body)
-                    }
-                    
-                    Divider()
-                }
+                //Text(projectInfoTitle)
+                    //.font(.title).bold()
+                    //.padding(.bottom, 5)
                 
-                VStack(alignment: .leading) {
-                    HStack {
-                        // TODO: Add dropdown list?
-                        Text(customer)
-                            .font(.body).bold()
-                        
-                        Text("\(project.customer.name)")
-                            .font(.body)
-                    }
-                
-                    Divider()
-                }
-                
-                VStack(alignment: .leading) {
-                    HStack {
-                        Text(amountScaff)
-                            .font(.body).bold()
-                        
-                        Text("\("ADD INFO TO API")")
-                            .font(.body)
-                    }
-                    
-                    Divider()
-                }
-                
-                VStack(alignment: .leading) {
-                    HStack {
-                        Text(scaffoldingSize)
-                            .font(.body).bold()
-                        
-                        HStack {
-                            Text("\(project.size) m")
-                            + Text("2")
-                                .baselineOffset(6)
-                                .font(.system(size: 12))
-                        }
-                        .font(.body)
-                    }
-                    
-                    Divider()
-                }
-                
-                VStack(alignment: .leading) {
-                    HStack {
-                        Text(state)
-                            .font(.body).bold()
-                        
-                        Text("\(project.state)")
-                            .font(.body)
-                    }
-                    
-                    Divider()
-                }
-                
-                VStack(alignment: .leading) {
-                    HStack {
-                        Text(address)
-                            .font(.body).bold()
-                        Text("\(project.address.street), \(project.address.zipcode) \(project.address.municipality)")
+                    VStack(alignment: .leading) {
+                        VStack {
+                            VStack {
+                                Image(systemName: "square.text.square")
+                                    .resizable()
+                                    .frame(width: 30, height: 30)
+                                    .foregroundColor(.blue)
+                                
+                                Text("Project info")
+                                    .font(Font.system(size: 20).bold())
+                                    .padding(.bottom, 2)
+                                
+                                Text("Below you find the project info for this project.")
+                                    .font(.caption)
+                                    .foregroundColor(Color.gray)
+                                    .padding(.bottom, 5)
+                            }
+                            
+                            VStack {
+                                Text("\(project.customer.name)")
+                                    .font(.body)
+
+                                Text(customer)
+                                    .foregroundColor(.gray)
+                                    .font(.system(size: 15))
+                            }
+                            .padding(.bottom, 5)
+
+                            VStack(alignment: .leading) {
+                                VStack {
+                                    Text("\(project.period.startDate)  -  \(project.period.endDate)")
+                                        .font(.body)
+                                    
+                                    Text(duration)
+                                        .foregroundColor(.gray)
+                                        .font(.system(size: 15))
+                                }
+                            }
+                            .padding(.bottom, 5)
+
+                            VStack {
+                                HStack {
+                                    Text("\(project.size) m")
+                                    + Text("2")
+                                        .baselineOffset(6)
+                                        .font(.system(size: 12))
+                                }
                                 .font(.body)
+
+                                Text(scaffoldingSize)
+                                    .foregroundColor(.gray)
+                                    .font(.system(size: 15))
+                                    .padding(.bottom, 5)
+                            }
+                            
+                            VStack {
+                                Text("\(project.state)")
+                                    .font(.body)
+                                
+                                Text(state)
+                                    .foregroundColor(.gray)
+                                    .font(.system(size: 15))
+                            }
+                        }
                     }
+                    .padding()
+                    .frame(width: (UIScreen.screenWidth / 1.2), alignment: .center)
+                    .contentShape(RoundedRectangle(cornerRadius: 5))
+                    .background(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
+                    .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: 0, y: 2)
+                    .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: 0, y: 10)
+                    
+                    VStack {
+                        VStack {
+                            Image(systemName: "person.circle")
+                                .resizable()
+                                .frame(width: 30, height: 30)
+                                .foregroundColor(.blue)
+                            
+                            Text("Contact info")
+                                .font(Font.system(size: 20).bold())
+                                .padding(.bottom, 2)
+                            
+                            Text("Below you find the contact info for this project.")
+                                .font(.caption)
+                                .foregroundColor(Color.gray)
+                                .padding(.bottom, 5)
+                        }
+                                                
+                        VStack {
+                            Text("\(project.customer.name)")
+                                    .font(.body)
+                            
+                            Text(contactPerson)
+                                .foregroundColor(.gray)
+                                .font(.system(size: 15))
+                        }
+                        .padding(.bottom, 5)
+                        
+                        VStack {
+                            Text("\(project.address.street), \(project.address.zipcode) \(project.address.municipality)")
+                                    .font(.body)
+                            
+                            Text(address)
+                                .foregroundColor(.gray)
+                                .font(.system(size: 15))
+                        }
+                        .padding(.bottom, 5)
+                        
+                        VStack {
+                            Text("\(project.customer.number)")
+                                    .font(.body)
+                            
+                            Text(phoneNumber)
+                                .foregroundColor(.gray)
+                                .font(.system(size: 15))
+                        }
+                        .padding(.bottom, 5)
+
+                        VStack {
+                            Text("\(project.customer.email)")
+                                    .font(.body)
+                            
+                            Text(email)
+                                .foregroundColor(.gray)
+                                .font(.system(size: 15))
+                        }
+                    }
+                    .padding()
+                    .frame(width: (UIScreen.screenWidth / 1.2), alignment: .center)
+                    .contentShape(RoundedRectangle(cornerRadius: 5))
+                    .background(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
+                    .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: 0, y: 2)
+                    .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: 0, y: 10)
                 }
             }
-        }
-        .padding(.horizontal, 20)
+            .padding(.horizontal, 20)
         }
         //ProjectView1()
 
-        }
-    
-    /*
-    var body: some View {
-        let projectInfoTitle = "Project Information"
-        let duration = "Duration:"
-        let customer = "Customer:"
-        let amountScaff = "Amount:"
-        let scaffoldingSize = "Size:"
-        let state = "Status:"
-        let address = "Address:"
-        
-        VStack {
-            VStack(alignment: .leading) {
-                Text(projectInfoTitle)
-                    .font(.title).bold()
-                
-                HStack {
-                    Text(duration)
-                        .font(.body).bold()
-                    
-                    Text("\(project.period.startDate) - \(project.period.endDate)")
-                        .font(.body)
-                }
-                
-                HStack {
-                    Text(customer)
-                        .font(.body).bold()
-                    
-                    Text("\(project.customer.name)")
-                        .font(.body)
-                }
-                
-                HStack {
-                    Text(amountScaff)
-                        .font(.body).bold()
-                    
-                    Text("\("ADD INFO TO API")")
-                        .font(.body)
-                }
-                
-                HStack {
-                    Text(scaffoldingSize)
-                        .font(.body).bold()
-                    
-                    HStack {
-                        Text("\(project.size) m")
-                        + Text("2")
-                            .baselineOffset(6)
-                            .font(.system(size: 12))
-                    }
-                    .font(.body)
-                }
-                
-                HStack {
-                    Text(state)
-                        .font(.body).bold()
-                    
-                    Text("\(project.state)")
-                        .font(.body)
-                }
-                
-                HStack {
-                    Text(address)
-                        .font(.body).bold()
-                    Text("\(project.address.street), \(project.address.zipcode) \(project.address.municipality)")
-                            .font(.body)
-                }
-            }
-            .foregroundColor(Color(UIColor.darkGray))
-            .lineLimit(1)
-            .layoutPriority(100)
-            .frame(width: 350)
-            .scaledToFit()
-            .background(colorScheme == .dark ? Color.white : Color(UIColor.white))
-            .cornerRadius(15)
-            .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: 0, y: 2)
-            .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: 0, y: 10)
-            .overlay(
-                    RoundedRectangle(cornerRadius: 15)
-                        .stroke(colorScheme == .dark ? Color.gray.opacity(0.1) : Color.gray.opacity(0.1), lineWidth: 1)
-                )
-        }
-    }*/
 }
+
 /*
 struct ProjectInfoDetailedView_Previews: PreviewProvider {
     static var previews: some View {

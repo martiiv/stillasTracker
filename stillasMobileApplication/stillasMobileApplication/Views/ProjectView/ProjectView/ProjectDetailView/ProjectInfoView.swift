@@ -8,7 +8,7 @@
 import SwiftUI
 import MapKit
 
-struct ProjectDetailView: View {
+struct ProjectInfoView: View {
     @Environment(\.colorScheme) var colorScheme
     @State private var isShowingSheet = false
         
@@ -43,6 +43,7 @@ struct ProjectDetailView: View {
                     switch selection {
                     case "Project Info":
                         VStack {
+                            //ProjectInfoDetailedView(project: project)
                             ProjectInfoDetailedView(project: project)
                         }
                     case "Scaffolding":

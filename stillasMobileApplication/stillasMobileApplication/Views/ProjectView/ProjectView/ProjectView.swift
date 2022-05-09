@@ -104,7 +104,7 @@ struct ProjectView: View {
                     }
                     .navigationTitle("Projects")*/
                     List(searchResults, id: \.projectID) { project in
-                        NavigationLink(destination: ProjectDetailView(projects: projects, project: project), label: {
+                        NavigationLink(destination: ProjectInfoView(projects: projects, project: project), label: {
                             ProjectRow(project: project) }
                         )
                     }
