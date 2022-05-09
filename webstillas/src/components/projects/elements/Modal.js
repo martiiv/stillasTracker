@@ -158,7 +158,7 @@ export default function InfoModalFunc(props) {
                                             <h3>{e.type.toUpperCase()}</h3>
                                         </section>
                                         <section className={"image"}>
-                                            <img className={"img"} src={img} alt={""}/>
+                                            <img className={"img"} src={require(`../../scaffolding/images/${e.type.charAt(0).toUpperCase() + e.type.slice(1)}.jpg`)} alt={""}></img>
                                         </section>
                                         <input
                                             className={"form-control"}

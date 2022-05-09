@@ -6,20 +6,6 @@ import {PROJECTS_WITH_SCAFFOLDING_URL} from "../../modelData/constantsFile";
 import {GetDummyData} from "../../modelData/addData";
 import {SpinnerDefault} from "../Spinner";
 
-
-
-import 'react-date-range/dist/styles.css'; // main style file
-import 'react-date-range/dist/theme/default.css'; // theme css file
-
-
-import { DateRangePicker } from 'react-date-range';
-
-
-import "react-dates/initialize";
-//import { DateRangePicker } from "react-dates";
-import "react-dates/lib/css/_datepicker.css";
-
-
 /**
  Class that will create an overview of the projects
  */
@@ -41,10 +27,7 @@ export function Project(){
 
 
 
-    const formatDate = (inputDate) => {
-        const dateArray = inputDate.split('-')
-        return new Date(dateArray[2] + '-' + dateArray[1] + '-' + dateArray[0])
-    }
+
 
 
 
@@ -175,3 +158,12 @@ export function Project(){
 
 
 
+export function formatDate (inputDate) {
+    const dateArray = inputDate.split('-')
+    return new Date(dateArray[2] + '-' + dateArray[1] + '-' + dateArray[0])
+}
+
+export function formatDateToString (inputDate) {
+    const dateArray = inputDate.split('-')
+    return (dateArray[2] + '-' + dateArray[1] + '-' + dateArray[0])
+}
