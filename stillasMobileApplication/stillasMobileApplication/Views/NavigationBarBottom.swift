@@ -21,7 +21,7 @@ struct NavigationBarBottom: View {
     var body: some View {
         
         TabView(selection: $selection) {
-            ProjectView()
+            ProjectListView()
                 .tabItem {
                     Label("Project", systemImage: "square.grid.2x2")
                 }

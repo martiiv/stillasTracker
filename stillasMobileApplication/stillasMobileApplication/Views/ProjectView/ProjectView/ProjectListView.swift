@@ -49,8 +49,8 @@ struct ProjectRow: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading) {
-                Text(project.projectName).font(.headline)
-                Text(project.period.startDate + " until " + project.period.endDate).font(.subheadline).foregroundColor(.gray)
+                Text(project.projectName).font(.headline).bold().italic()//.font(.headline)
+                Text(project.period.startDate + "  -  " + project.period.endDate).font(.subheadline).foregroundColor(.gray)
             }
             Spacer()
             Text(String(format: "%d", project.projectID))
@@ -72,11 +72,12 @@ extension BookMark {
 }
 */
 
-struct ProjectView: View {
+struct ProjectListView: View {
     @State var searchQuery = ""
     @State var hasFetchedData = false
     @State var projects = [Project]()
     @State private var showFilterModalView: Bool = false
+    @State private var showAddProjectModalView: Bool = false
     
     @State var sizeSortType: String = "Between"
     @State var filter: FilterType = .none
@@ -126,6 +127,7 @@ struct ProjectView: View {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Button(action: {
                         print("Add project tapped!")
+                        self.showAddProjectModalView.toggle()
                     }) {
                         Label("Add", systemImage: "plus.circle")
                     }
@@ -239,6 +241,6 @@ struct ActivityIndicator: UIViewRepresentable {
 
 struct Project_Previews: PreviewProvider {
     static var previews: some View {
-        ProjectView()
+        ProjectListView()
     }
 }
