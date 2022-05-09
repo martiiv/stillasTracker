@@ -3,7 +3,7 @@ import React from "react";
 function ScaffoldingProject(props){
     return(
         <div className={"scaffoldingElement"}>
-            <article className={"card project-card"}>
+            <article className={"card"}>
                 <section className={"header"}>
                     <h3>{props.type.toUpperCase()}</h3>
                 </section>
@@ -30,11 +30,6 @@ function ScaffoldingProject(props){
                                     </div>
                                 </li>
                         </ul>
-                    </div>
-                </section>
-                <section className={"card-btn"}>
-                    <div className={"card-btns"}>
-                        <button className={"btn"} type={"button"} >Mer informasjon</button>
                     </div>
                 </section>
             </article>
