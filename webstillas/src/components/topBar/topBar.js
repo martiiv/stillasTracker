@@ -8,6 +8,7 @@ import {DropdownButton, NavDropdown} from "react-bootstrap";
 import DropdownItem from "react-bootstrap/DropdownItem";
 import {useUserAuth} from "../../context/UserAuthContext";
 import {auth} from "../../firebase"
+import {orange} from "@material-ui/core/colors";
 
 /**
  Class that will create a topbar for the application.
@@ -45,11 +46,10 @@ const TopBar = () => {
                         <Button className="button">Logistikk</Button>
                     </Link>*/}
 
-                        <NavDropdown id="basic-nav-dropdown"
+                        <NavDropdown id="basic-nav-dropdown1"
                                         title={"Logistikk"}
                                         size="sm"
-                                     style={{textDecorationColor: "black"}}
-
+                                     menuVariant={"dark"}
 
                         >
                             <DropdownItem>
@@ -58,16 +58,16 @@ const TopBar = () => {
                             <DropdownItem>
                                 <Link to={"/addscaffolding/"}>Legg til stillas</Link>
                             </DropdownItem>
-
-
                         </NavDropdown>
+
+
                         <DropdownButton id="dropdown-button"
                                         title={"Bruker"}
                                         size="sm"
 
                         >
                             <DropdownItem>
-                                <Link to={"/addscaffolding/"}>Bruker Informasjon</Link>
+                                <Link to={"/userinfo/"}>Bruker Informasjon</Link>
                             </DropdownItem>
 
                             <DropdownItem onClick={logOut}>Logg ut</DropdownItem>

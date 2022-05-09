@@ -25,7 +25,7 @@ class AddScaffolding extends React.Component{
     scaffoldingInformation(){
         return(
             <div className={"input-information"}>
-                <div>
+                <div className={"input-fields-add"}>
                     <p className = {"input-sorting-text"}>Enter ID</p>
 
                     <input type={"text"}  className={"form-control scaffolding-input"} onChange={event =>
@@ -33,10 +33,10 @@ class AddScaffolding extends React.Component{
                         scaffolding.id = Number(event.target.value);
                         this.setState({scaffolding})}}/>
                 </div>
-                <div>
+                <div className={"input-fields-add"}>
                     <p className = {"input-sorting-text"}>Overfør til prosjekt:</p>
                         <select
-                            className={"form-select"}
+                            className={"form-select scaffolding-input"}
                             value={"Test"}
                                 onChange={(e) =>
                         {const scaffolding = {...this.state.scaffolding};
@@ -74,13 +74,15 @@ class AddScaffolding extends React.Component{
 
     render() {
         return(
-            <div className={"input-fields"}>
-                {this.scaffoldingInformation()}
-                <div className={"btn-add-scaffolding"}>
-                    <button className={"btn"} onClick={() => this.postRequest()}>Legg til</button>
-
+            <div className={"main-add-scaffolding"}>
+                <div className={"info-card"}>
+                    {this.scaffoldingInformation()}
+                    <div className={"btn-add-scaffolding"}>
+                        <button className={"btn"} onClick={() => this.postRequest()}>Legg til</button>
+                    </div>
                 </div>
             </div>
+
 
 
     )
