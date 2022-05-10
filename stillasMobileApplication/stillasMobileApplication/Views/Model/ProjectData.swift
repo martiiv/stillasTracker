@@ -8,22 +8,28 @@
 import SwiftUI
 import Foundation
 
-/**
- ProjectData responsible for loading/decoding the project information from the API
-    To update views when data changes, you make your data model classes observable objects.
- */
 class ProjectData: ObservableObject {
     @Published var projects = [Project]()
+    @Published private var _isLoading: Bool = false
+
+    var isLoading: Bool {
+        get { return _isLoading}
+    }
     
     func loadData(completion:@escaping ([Project]) -> ()) async {
-        guard let url = URL(string: "http://10.212.138.205:8080/stillastracking/v1/api/project") else {
+        _isLoading = true
+        print("One = \(_isLoading)")
+        
+        guard let url = URL(string: "http://10.212.138.205:8080/stillastracking/v1/api/project?scaffolding=true") else {
             print("Invalid url...")
             return
         }
-        URLSession.shared.dataTask(with: url) { data, response, error in
+        URLSession.shared.dataTask(with: url) { [self] data, response, error in
             let projects = try! JSONDecoder().decode([Project].self, from: data!)
             DispatchQueue.main.async {
                 completion(projects)
+                self._isLoading = false
+                print("Two = \(self._isLoading)")
             }
         }.resume()
     }

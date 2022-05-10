@@ -7,27 +7,7 @@
 
 import SwiftUI
 import UIKit
-/*
-struct BookMark: Identifiable {
-    let id = UUID()
-    let name: String
-    let icon: String
-    var items: [BookMark]?
-}
-
-struct ProjectView1: View {
-    let items: [BookMark] = [.example1, .example2, .example3]
-    var body: some View {
-    Section(header: Text("Second List")) {
-         List(items, children: \.items) { row in
-             Image(systemName: row.icon)
-             Text(row.name)
-         }
-     }
-    }
-}*/
  
-
 enum FilterType {
     case none,
          period,
@@ -59,20 +39,9 @@ struct ProjectRow: View {
     }
 }
 
-/*
-extension BookMark {
-    static let apple = BookMark(name: "Apple", icon: "1.circle")
-    static let bbc = BookMark(name: "BBC", icon: "square.and.pencil")
-    static let swift = BookMark(name: "Swfit", icon: "bolt.fill")
-    static let twitter = BookMark(name: "Twitter", icon: "mic")
-
-    static let example1 = BookMark(name: "Favorites", icon: "star", items: [BookMark.apple, BookMark.bbc, BookMark.swift, BookMark.twitter])
-    static let example2 = BookMark(name: "Recent", icon: "timer", items: [BookMark.apple, BookMark.bbc, BookMark.swift, BookMark.twitter])
-    static let example3 = BookMark(name: "Recommended", icon: "hand.thumbsup", items: [BookMark.apple, BookMark.bbc, BookMark.swift, BookMark.twitter])
-}
-*/
-
 struct ProjectListView: View {
+    @ObservedObject var projectData: ProjectData = ProjectData()
+    
     @State var searchQuery = ""
     @State var hasFetchedData = false
     @State var projects = [Project]()
@@ -95,86 +64,94 @@ struct ProjectListView: View {
     @State private var isLoading = true
     var body: some View {
         VStack {
-        NavigationView {
-            Form {
-                Section(header: Text("Alle Prosjekter")) {
-                    /*List(searchResults, id: \.projectID) { project in
-                        NavigationLink(destination: ProjectDetailView(project: project), label: {
-                            ProjectRow(project: project) }
-                        )
+            NavigationView {
+                ZStack {
+                    if projectData.isLoading {
+                        Spacer().frame(height:100)
+                        ProgressView("Laster inn...")
+                            .progressViewStyle(CircularProgressViewStyle(tint: .gray))
+                            .scaleEffect(x: 1.2, y: 1.2, anchor: .center)
+                    } else {
+                        Form {
+                            Section(header: Text("Alle Prosjekter")) {
+                                List(searchResults, id: \.projectID) { project in
+                                    NavigationLink(destination: ProjectInfoView(projects: projects, project: project), label: {
+                                        ProjectRow(project: project) }
+                                    )
+                                }
+                                .navigationTitle("Prosjekter")
+                            }
+                        }
+                        .listStyle(.grouped)
+                        .toolbar {
+                            ToolbarItemGroup(placement: .navigationBarLeading) {
+                                Button(action: {
+                                    print("Filter tapped!")
+                                    self.showFilterModalView.toggle()
+                                }) {
+                                    Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
+                                }
+                            }
+                            
+                            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                                Button(action: {
+                                    print("Add project tapped!")
+                                    self.showAddProjectModalView.toggle()
+                                }) {
+                                    Label("Legg til", systemImage: "plus.circle")
+                                }
+                            }
+                        }
                     }
-                    .navigationTitle("Projects")*/
-                    List(searchResults, id: \.projectID) { project in
-                        NavigationLink(destination: ProjectInfoView(projects: projects, project: project), label: {
-                            ProjectRow(project: project) }
-                        )
-                    }
-                    .navigationTitle("Prosjekter")
-                    //.listStyle(.grouped)
                 }
             }
-            .listStyle(.grouped)
-            .toolbar {
-                ToolbarItemGroup(placement: .navigationBarLeading) {
-                    Button(action: {
-                        print("Filter tapped!")
-                        self.showFilterModalView.toggle()
-                    }) {
-                        Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
-                    }
-                }
-                
-                ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        print("Add project tapped!")
-                        self.showAddProjectModalView.toggle()
-                    }) {
-                        Label("Legg til", systemImage: "plus.circle")
-                    }
+            .task {
+                await projectData.loadData { (projects) in
+                     self.projects = projects
                 }
             }
-        }
-        .task {
-            await ProjectData().loadData { (projects) in
-                 self.projects = projects
+            .sheet(isPresented: $showFilterModalView,
+                   onDismiss: didDismiss) {
+                FilterView(selStartDateBind: $projectStartDate, selEndDateBind: $projectEndDate, projectArea: $projectCounty, projectSize: $projectSize, projectStatus: $projectState, minProjectSize: $minProjectSize, maxProjectSize: $maxProjectSize, sizeSortType: $sizeSortType, filterArr: $filterArr, filterArrArea: $filterArrArea)
+                    .onChange(of: filterArr) { filterVal in
+                        if filterArr.contains("period") {
+                            filter = .period
+                        }
+                        if filterArr.contains("area") {
+                            filter = .county
+                        }
+                        if filterArr.contains("size") && sizeSortType == "Mellom" {
+                            filter = .sizeBetween
+                        } else if filterArr.contains("size") && sizeSortType == "Mindre enn" {
+                            filter = .sizeLessThan
+                        } else if filterArr.contains("size") && sizeSortType == "Større enn" {
+                            filter = .sizeGreaterThan
+                        }
+                        if filterArr.contains("status") {
+                            filter = .state
+                        }
+                        if filterArr.isEmpty {
+                            filter = .none
+                        }
+                    }
+            }
+            .navigationViewStyle(.stack)
+            .searchable(text: $searchQuery, placement: .navigationBarDrawer(displayMode: .always))
+            .refreshable {
+                await projectData.loadData { (projects) in
+                     self.projects = projects
+                }
+                print("Refreshed")
             }
         }
-        .sheet(isPresented: $showFilterModalView,
-               onDismiss: didDismiss) {
-            FilterView(selStartDateBind: $projectStartDate, selEndDateBind: $projectEndDate, projectArea: $projectCounty, projectSize: $projectSize, projectStatus: $projectState, minProjectSize: $minProjectSize, maxProjectSize: $maxProjectSize, sizeSortType: $sizeSortType, filterArr: $filterArr, filterArrArea: $filterArrArea)
-                .onChange(of: filterArr) { filterVal in
-                    if filterArr.contains("period") {
-                        filter = .period
-                    }
-                    if filterArr.contains("area") {
-                        filter = .county
-                    }
-                    if filterArr.contains("size") && sizeSortType == "Mellom" {
-                        filter = .sizeBetween
-                    } else if filterArr.contains("size") && sizeSortType == "Mindre enn" {
-                        filter = .sizeLessThan
-                    } else if filterArr.contains("size") && sizeSortType == "Større enn" {
-                        filter = .sizeGreaterThan
-                    }
-                    if filterArr.contains("status") {
-                        filter = .state
-                    }
-                    if filterArr.isEmpty {
-                        filter = .none
-                    }
-                }
-        }
-        .navigationViewStyle(.stack)
-        .searchable(text: $searchQuery, placement: .navigationBarDrawer(displayMode: .always))
-        .refreshable {
-            print("Refreshed")
-            // TODO: Add action here (retrieve from API again or something)
-        }
-            //ProjectView1()
+        .sheet(isPresented: $showAddProjectModalView, onDismiss: didDismiss){
+            Text("501")
+                .font(.system(size: 40).bold())
+            Text("Not Implemented")
+                .font(.system(size: 30).bold())
         }
     }
     
-    // TODO: Add support for search of filtered items
     var searchResults: [Project] {
         if searchQuery.isEmpty {
             return filteredProjects.sorted { $0.projectName < $1.projectName }
@@ -225,22 +202,10 @@ struct ProjectListView: View {
     }
 }
 
-struct ActivityIndicator: UIViewRepresentable {
-
-    @Binding var isAnimating: Bool
-    let style: UIActivityIndicatorView.Style
-
-    func makeUIView(context: UIViewRepresentableContext<ActivityIndicator>) -> UIActivityIndicatorView {
-        return UIActivityIndicatorView(style: style)
-    }
-
-    func updateUIView(_ uiView: UIActivityIndicatorView, context: UIViewRepresentableContext<ActivityIndicator>) {
-        isAnimating ? uiView.startAnimating() : uiView.stopAnimating()
-    }
-}
-
+/*
 struct Project_Previews: PreviewProvider {
     static var previews: some View {
         ProjectListView()
     }
 }
+*/
