@@ -59,7 +59,6 @@ func Handle() {
 
 	//Gateway POST request endpoint (Only used for registering tags)
 	router.HandleFunc(baseURL+"/gateway/input", UpdatePosition)
-
 	http.Handle("/", router)
 	InfoLogger.Println(http.ListenAndServe(getPort(), nil))
 }
