@@ -15,8 +15,8 @@ struct ProjectInfoView: View {
     var projects: [Project]
     var project: Project
     
-    let sizeSelections = ["Scaffolding", "Project Info"]
-    @State var selection: String = "Project Info"
+    let sizeSelections = ["Stillas", "Prosjekt Info"]
+    @State var selection: String = "Prosjekt Info"
 
     var body: some View {
         ScrollView {
@@ -41,12 +41,12 @@ struct ProjectInfoView: View {
                     Spacer()
                     
                     switch selection {
-                    case "Project Info":
+                    case "Prosjekt Info":
                         VStack {
                             //ProjectInfoDetailedView(project: project)
                             ProjectInfoDetailedView(project: project)
                         }
-                    case "Scaffolding":
+                    case "Stillas":
                         VStack {
                             ScaffoldingView(projects: projects, scaffolding: project.scaffolding!)
                         }

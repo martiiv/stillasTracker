@@ -55,9 +55,9 @@ struct TransfereScaffoldingView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("From project")) {
-                    Picker(selection: $pickerSelectionFrom, label: Text("From project")) {
-                        SearchBar(text: $searchTerm, placeholder: "Search project")
+                Section(header: Text("Fra prosjekt")) {
+                    Picker(selection: $pickerSelectionFrom, label: Text("Fra prosjekt")) {
+                        SearchBar(text: $searchTerm, placeholder: "Søk etter prosjekt")
                         .onAppear {
                             searchTerm = ""
                             anumber.removeAll()
@@ -78,9 +78,9 @@ struct TransfereScaffoldingView: View {
                     }
                 }
                 
-                Section(header: Text("To project")) {
-                    Picker(selection: $pickerSelectionTo, label: Text("To project")) {
-                        SearchBar(text: $searchTerm, placeholder: "Search project")
+                Section(header: Text("Til prosjekt")) {
+                    Picker(selection: $pickerSelectionTo, label: Text("Til prosjekt")) {
+                        SearchBar(text: $searchTerm, placeholder: "Søk etter prosjekt")
                         .onAppear {
                             searchTerm = ""
                         }
@@ -94,9 +94,9 @@ struct TransfereScaffoldingView: View {
                     }
                 }
                 
-                Section (header: Text("Number of \(scaffolding.type)")){
+                Section (header: Text("Antall \(scaffolding.type)")){
                 VStack(alignment: .leading) {
-                        Text("Predefined quantity")
+                        Text("Forhåndsdefinert mengde")
                         Picker("Pick a number", selection: $anumber) {
                             ForEach(commonNumbers, id: \.self) { aNumber in
                                 Image(systemName: "\(aNumber).circle.fill")
@@ -107,8 +107,8 @@ struct TransfereScaffoldingView: View {
                     .padding()
 
                     HStack {
-                        Text("Manual entry")
-                        TextField("Input number", text: $anumber)
+                        Text("Manuell innfylling")
+                        TextField("Input", text: $anumber)
                             .disabled(pickerSelectionFromNotPicked)
                             //.modifier(ClearButton(text: $anumber))
                             .onChange(of: anumber) {
@@ -147,7 +147,7 @@ struct TransfereScaffoldingView: View {
                 Button(action: {
                     Task {
                         if !empty {
-                            transfereMessage = "Transfere \(Int(anumber)!)x \(scaffolding.type) from \(pickerSelectionFrom) to \(pickerSelectionTo)?"
+                            transfereMessage = "Overfør \(Int(anumber)!)x \(scaffolding.type) fra \(pickerSelectionFrom) til \(pickerSelectionTo)?"
                             transfereConfirmation = true
                         }
                     }
@@ -162,7 +162,7 @@ struct TransfereScaffoldingView: View {
                 .padding(.bottom, 50)
             }
             .ignoresSafeArea(.keyboard)
-            .navigationTitle(Text("Transfere \(scaffolding.type)"))
+            .navigationTitle(Text("Overfør \(scaffolding.type)"))
             .alert(isPresented: $showingConfirmation) {
                 Alert(
                     title: Text(confirmationTitle),
@@ -176,9 +176,9 @@ struct TransfereScaffoldingView: View {
         }
         .alert(isPresented: $transfereConfirmation) {
             Alert(
-                title: Text("Are you sure you want to proceed?"),
+                title: Text("Er du sikker på at du vil fortsette?"),
                 message: Text(transfereMessage),
-                primaryButton: .default(Text("Yes")) {
+                primaryButton: .default(Text("Ja")) {
                     transfereConfirmation = false
                     Task {
                         if !empty {
@@ -232,11 +232,11 @@ struct TransfereScaffoldingView: View {
             
             if let response = response as? HTTPURLResponse {
                 if response.statusCode == 200 {
-                    confirmationTitle = "Success!"
-                    confirmationMessage = "Successfully transfered \(body.scaffold[0].quantity)x \(body.scaffold[0].type) from project \(body.fromProjectID) to project \(body.toProjectID)!"
+                    confirmationTitle = "Suksess!"
+                    confirmationMessage = "Overføringen av \(body.scaffold[0].quantity)x \(body.scaffold[0].type) fra prosjekt \(body.fromProjectID) til prosjekt \(body.toProjectID) var en suksess!"
                 } else {
-                    confirmationTitle = "Failed!"
-                    confirmationMessage = "Failed to transfere \(body.scaffold[0].quantity)x \(body.scaffold[0].type) from project \(body.fromProjectID) to project \(body.toProjectID)!"
+                    confirmationTitle = "Mislykket!"
+                    confirmationMessage = "Overføringen av \(body.scaffold[0].quantity)x \(body.scaffold[0].type) fra prosjekt \(body.fromProjectID) til prosjekt \(body.toProjectID) feilet!"
                 }
                 showingConfirmation = true
             }

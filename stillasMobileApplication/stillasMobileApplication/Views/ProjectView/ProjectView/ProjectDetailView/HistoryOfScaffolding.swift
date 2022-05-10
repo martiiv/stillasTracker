@@ -33,13 +33,13 @@ struct HistoryOfScaffolding: View {
                                 VStack {
                                     Text(String(format: "%d", scaffolding.quantity.expected))
                                         .font(.system(size: 15))
-                                    Text("EXPECTED")
+                                    Text("FORVENTET")
                                         .foregroundColor(.gray)
                                         .font(.system(size: 10))
                                 }
                                 VStack {
                                     amountOfScaffoldingRegistered(expected: scaffolding.quantity.expected, registered: scaffolding.quantity.registered)
-                                    Text("REGISTERED")
+                                    Text("REGISTRERT")
                                         .foregroundColor(.gray)
                                         .font(.system(size: 10))
                                 }
@@ -61,13 +61,13 @@ struct HistoryOfScaffolding: View {
                                 VStack {
                                     Text(String(format: "%d", scaffolding.quantity.expected))
                                         .font(.system(size: 15))
-                                    Text("EXPECTED")
+                                    Text("FORVENTET")
                                         .foregroundColor(.gray)
                                         .font(.system(size: 10))
                                 }
                                 VStack {
                                     amountOfScaffoldingRegistered(expected: scaffolding.quantity.expected, registered: scaffolding.quantity.registered)
-                                    Text("REGISTERED")
+                                    Text("REGISTRERT")
                                         .foregroundColor(.gray)
                                         .font(.system(size: 10))
                                 }
@@ -89,13 +89,13 @@ struct HistoryOfScaffolding: View {
                                 VStack {
                                     Text(String(format: "%d", scaffolding.quantity.expected))
                                         .font(.system(size: 15))
-                                    Text("EXPECTED")
+                                    Text("FORVENTET")
                                         .foregroundColor(.gray)
                                         .font(.system(size: 10))
                                 }
                                 VStack {
                                     amountOfScaffoldingRegistered(expected: scaffolding.quantity.expected, registered: scaffolding.quantity.registered)
-                                    Text("REGISTERED")
+                                    Text("REGISTRERT")
                                         .foregroundColor(.gray)
                                         .font(.system(size: 10))
                                 }
@@ -125,14 +125,14 @@ struct HistoryOfScaffolding: View {
                                 VStack {
                                     Text(String(format: "%d", scaffolding.quantity.expected))
                                         .font(.system(size: 15))
-                                    Text("EXPECTED")
+                                    Text("FORVENTET")
                                         .foregroundColor(.gray)
                                         .font(.system(size: 10))
                                 }
                                 VStack {
                                     amountOfScaffoldingRegistered(expected: scaffolding.quantity.expected, registered: scaffolding.quantity.registered)
                                         .font(.system(size: 15))
-                                    Text("REGISTERED")
+                                    Text("REGISTRERT")
                                         .foregroundColor(.gray)
                                         .font(.system(size: 10))
                                 }
@@ -155,14 +155,14 @@ struct HistoryOfScaffolding: View {
                                 VStack {
                                     Text(String(format: "%d", scaffolding.quantity.expected))
                                         .font(.system(size: 15))
-                                    Text("EXPECTED")
+                                    Text("FORVENTET")
                                         .foregroundColor(.gray)
                                         .font(.system(size: 10))
                                 }
                                 VStack {
                                     amountOfScaffoldingRegistered(expected: scaffolding.quantity.expected, registered: scaffolding.quantity.registered)
                                         .font(.system(size: 15))
-                                    Text("REGISTERED")
+                                    Text("REGISTRERT")
                                         .foregroundColor(.gray)
                                         .font(.system(size: 10))
                                 }
@@ -185,14 +185,14 @@ struct HistoryOfScaffolding: View {
                                 VStack {
                                     Text(String(format: "%d", scaffolding.quantity.expected))
                                         .font(.system(size: 15))
-                                    Text("EXPECTED")
+                                    Text("FORVENTET")
                                         .foregroundColor(.gray)
                                         .font(.system(size: 10))
                                 }
                                 VStack {
                                     amountOfScaffoldingRegistered(expected: scaffolding.quantity.expected, registered: scaffolding.quantity.registered)
                                         .font(.system(size: 15))
-                                    Text("REGISTERED")
+                                    Text("REGISTRERT")
                                         .foregroundColor(.gray)
                                         .font(.system(size: 10))
                                 }
@@ -206,7 +206,7 @@ struct HistoryOfScaffolding: View {
                 }
             }
         }
-        .navigationTitle(Text("History of \(scaffolding.type)".capitalizingFirstLetter()))
+        .navigationTitle(Text("Historie for \(scaffolding.type)".capitalizingFirstLetter()))
     }
 }
 

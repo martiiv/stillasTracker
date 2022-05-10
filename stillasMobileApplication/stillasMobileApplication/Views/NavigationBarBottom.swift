@@ -23,19 +23,19 @@ struct NavigationBarBottom: View {
         TabView(selection: $selection) {
             ProjectListView()
                 .tabItem {
-                    Label("Project", systemImage: "square.grid.2x2")
+                    Label("Prosjekt", systemImage: "square.grid.2x2")
                 }
                 .tag(Tab.project)
             
             MapView()
                 .tabItem {
-                    Label("Map", systemImage: "map")
+                    Label("Kart", systemImage: "map")
                 }
                 .tag(Tab.map)
                 
             ProfileView()
                 .tabItem {
-                    Label("Profile", systemImage: "person.crop.circle")
+                    Label("Profil", systemImage: "person.crop.circle")
                 }
                 .tag(Tab.profile)
         }

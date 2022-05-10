@@ -56,7 +56,7 @@ struct ProfileDetails: View {
                     Text("MBStillas")
                         //.font(.subheadline)
                     Spacer()
-                    Text("Role: \(user.role)")
+                    Text("Rolle: \(user.role)")
                         //.font(.subheadline)
                 }
                 //.font(.subheadline)
@@ -65,7 +65,7 @@ struct ProfileDetails: View {
                 Divider()
 
                 VStack {
-                    Text("Date of birth")
+                    Text("Fødselsdato")
                         .font(.title2)
                     Text("\(user.dateOfBirth)")
                         .foregroundColor(.secondary)
@@ -78,7 +78,7 @@ struct ProfileDetails: View {
             Button (action: {
                 viewModel.signOut()
             }) {
-                Text("Sign out")
+                Text("Logg av")
                     .frame(width: 150, height: 50, alignment: .center)
             }
             .foregroundColor(.white)

@@ -17,7 +17,7 @@ struct TransfereScaffoldingButton: View {
         Button {
             isShowingSheet.toggle()
         } label: {
-            Text("Transfere Scaffolding")
+            Text("Overfør Stillas")
                 .padding(12)
                 .font(.system(size: 20))
                 .foregroundColor(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white))

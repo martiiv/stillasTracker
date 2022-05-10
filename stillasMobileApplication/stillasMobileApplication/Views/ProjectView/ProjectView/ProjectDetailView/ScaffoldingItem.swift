@@ -24,7 +24,7 @@ struct ScaffoldingItem: View {
                 VStack {
                     Text(String(format: "%d", scaffolding.quantity.expected)).foregroundColor(.black)
                         .font(.system(size: 15))
-                    Text("EXPECTED")
+                    Text("FORVENTET")
                         .foregroundColor(.gray)
                         .font(.system(size: 10))
                 }
@@ -32,7 +32,7 @@ struct ScaffoldingItem: View {
 
                 VStack {
                     amountOfScaffoldingRegistered(expected: scaffolding.quantity.expected, registered: scaffolding.quantity.registered)
-                    Text("REGISTERED")
+                    Text("REGISTRERT")
                         .foregroundColor(.gray)
                         .font(.system(size: 10))
                 }

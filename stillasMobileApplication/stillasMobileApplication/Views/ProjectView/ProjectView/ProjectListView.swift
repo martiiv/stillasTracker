@@ -79,7 +79,7 @@ struct ProjectListView: View {
     @State private var showFilterModalView: Bool = false
     @State private var showAddProjectModalView: Bool = false
     
-    @State var sizeSortType: String = "Between"
+    @State var sizeSortType: String = "Mellom"
     @State var filter: FilterType = .none
     @State var filterArr: [String] = []
     @State var filterArrArea: [String] = []
@@ -97,7 +97,7 @@ struct ProjectListView: View {
         VStack {
         NavigationView {
             Form {
-                Section(header: Text("All Projects")) {
+                Section(header: Text("Alle Prosjekter")) {
                     /*List(searchResults, id: \.projectID) { project in
                         NavigationLink(destination: ProjectDetailView(project: project), label: {
                             ProjectRow(project: project) }
@@ -109,7 +109,7 @@ struct ProjectListView: View {
                             ProjectRow(project: project) }
                         )
                     }
-                    .navigationTitle("Projects")
+                    .navigationTitle("Prosjekter")
                     //.listStyle(.grouped)
                 }
             }
@@ -129,7 +129,7 @@ struct ProjectListView: View {
                         print("Add project tapped!")
                         self.showAddProjectModalView.toggle()
                     }) {
-                        Label("Add", systemImage: "plus.circle")
+                        Label("Legg til", systemImage: "plus.circle")
                     }
                 }
             }
@@ -149,11 +149,11 @@ struct ProjectListView: View {
                     if filterArr.contains("area") {
                         filter = .county
                     }
-                    if filterArr.contains("size") && sizeSortType == "Between" {
+                    if filterArr.contains("size") && sizeSortType == "Mellom" {
                         filter = .sizeBetween
-                    } else if filterArr.contains("size") && sizeSortType == "Less Than" {
+                    } else if filterArr.contains("size") && sizeSortType == "Mindre enn" {
                         filter = .sizeLessThan
-                    } else if filterArr.contains("size") && sizeSortType == "Greater Than" {
+                    } else if filterArr.contains("size") && sizeSortType == "Større enn" {
                         filter = .sizeGreaterThan
                     }
                     if filterArr.contains("status") {

@@ -22,7 +22,7 @@ struct FilterProjectSize: View {
     @Binding var selection: String
     //@State var swipeHorizontalDirection: SwipeHorizontalDirection = .none { didSet { print(swipeHorizontalDirection) } }
 
-    let sizeSelections = ["Less Than", "Between", "Greater Than"]
+    let sizeSelections = ["Mindre enn", "Mellom", "Større enn"]
 
     var body: some View {
         
@@ -39,7 +39,7 @@ struct FilterProjectSize: View {
                 Spacer()
                 
                 switch selection {
-                case "Less Than":
+                case "Mindre enn":
                     SizeLessThanFilter(sizeFilterActive: $sizeFilterActive, scoreFrom: scoreFrom, scoreFromBind: $scoreFromBind)
                         .onChange(of: scoreFrom) { val in
                             scoreFromBind = val
@@ -54,7 +54,7 @@ struct FilterProjectSize: View {
                                                     selection = "Between"
                                                 }
                         }).transition(.asymmetric(insertion: .scale, removal: .opacity))*/
-                case "Between":
+                case "Mellom":
                     SizeBetweenFilter(sizeFilterActive: $sizeFilterActive, scoreFrom: scoreFrom, scoreFromBind: $scoreFromBind, scoreTo: scoreTo, scoreToBind: $scoreToBind)
                         .onChange(of: scoreTo) { val in
                             scoreToBind = val
@@ -64,7 +64,7 @@ struct FilterProjectSize: View {
                             scoreFromBind = val
                             sizeFilterActive = true
                         }
-                case "Greater Than":
+                case "Større enn":
                     SizeGreaterThanFilter(sizeFilterActive: $sizeFilterActive, scoreTo: scoreTo, scoreToBind: $scoreToBind)
                         .onChange(of: scoreFrom) { val in
                             scoreFromBind = val

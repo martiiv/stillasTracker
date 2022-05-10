@@ -46,15 +46,14 @@ struct ProjectInfoDetailedView: View {
 
     @Environment(\.colorScheme) var colorScheme
     
-    //let projectInfoTitle = "Project Information"
-    let duration = "DURATION"
-    let customer = "CUSTOMER"
-    let amountScaff = "AMOUNT"
-    let scaffoldingSize = "SIZE"
+    let duration = "VARIGHET"
+    let customer = "KUNDE"
+    let amountScaff = "MENGDE"
+    let scaffoldingSize = "STØRRELSE"
     let state = "STATUS"
-    let address = "ADDRESS"
-    let contactPerson = "CONTACT PERSON"
-    let phoneNumber = "PHONE NUMBER"
+    let address = "ADRESSE"
+    let contactPerson = "KONTAKT PERSON"
+    let phoneNumber = "MOBILNUMMER"
     let email = "EMAIL"
     
     var body: some View {
@@ -72,11 +71,11 @@ struct ProjectInfoDetailedView: View {
                                     .frame(width: 30, height: 30)
                                     .foregroundColor(.blue)
                                 
-                                Text("Project info")
+                                Text("Prosjekt info")
                                     .font(Font.system(size: 20).bold())
                                     .padding(.bottom, 2)
                                 
-                                Text("Below you find the project info for this project.")
+                                Text("Nedenfor finner du informasjon om dette prosjektet.")
                                     .font(.caption)
                                     .foregroundColor(Color.gray)
                                     .padding(.bottom, 5)
@@ -143,11 +142,11 @@ struct ProjectInfoDetailedView: View {
                                 .frame(width: 30, height: 30)
                                 .foregroundColor(.blue)
                             
-                            Text("Contact info")
+                            Text("Kontakt info")
                                 .font(Font.system(size: 20).bold())
                                 .padding(.bottom, 2)
                             
-                            Text("Below you find the contact info for this project.")
+                            Text("Nedenfor finner du kontaktinformasjonen til kunden.")
                                 .font(.caption)
                                 .foregroundColor(Color.gray)
                                 .padding(.bottom, 5)

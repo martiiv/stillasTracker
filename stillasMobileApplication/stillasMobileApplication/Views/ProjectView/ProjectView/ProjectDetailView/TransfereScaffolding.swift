@@ -24,7 +24,7 @@ struct TransfereScaffolding: View {
     var body: some View {
         VStack {
             TransfereScaffoldingView(isShowingSheet: $isShowingSheet, projects: projects, scaffolding: scaffolding)
-                .navigationTitle(Text("Transfere \(scaffolding.type)"))
+                .navigationTitle(Text("Overfør \(scaffolding.type)"))
             }
     }
     
