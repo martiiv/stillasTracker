@@ -24,6 +24,6 @@ export default function postModel(url, body) {
             }
         });
 
-        xhr.send(body);
+        xhr.send(JSON.stringify(body));
     });
 }

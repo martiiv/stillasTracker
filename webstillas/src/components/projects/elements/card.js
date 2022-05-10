@@ -6,36 +6,42 @@ import {Link} from "react-router-dom";
 import {PROJECTS_URL} from "../../../modelData/constantsFile";
 import deleteModel from "../../../modelData/deleteProject";
 import {useQueryClient} from "react-query";
-
+import {IconButton} from "@material-ui/core";
+import DeleteIcon from "@material-ui/icons/Delete";
 
 function CardElement(props) {
     const queryClient = useQueryClient()
-
     const DeleteProject = async () => {
-        const deleteBody =
-            [
-                {
-                    id: props.id
-                }
-            ]
-
-        await deleteModel(PROJECTS_URL, (deleteBody)).catch(e => console.log(e)).then(e => console.log("success"))
-        await queryClient.invalidateQueries("allProjects")
+        if (window.confirm("Are you sure you want to delete " + props.name + "?" )){
+            const deleteBody =
+                [
+                    {
+                        id: props.id
+                    }
+                ]
+            await deleteModel(PROJECTS_URL, (deleteBody)).catch(e => console.log(e)).then(e => console.log("success"))
+            await queryClient.invalidateQueries("allProjects")
+        }
     }
 
     return (
-        <div className={"main"}>
             <article className={"card"}>
                 <div className={"name-btn"}>
                     <section className={"header"}>
                         <h3>{props.name}</h3>
                     </section>
-                    <button className={"btn"} onClick={DeleteProject}>Slett</button>
+                    <div className={"btn-delete"}>
+                        <IconButton  onClick={DeleteProject}>
+                            <DeleteIcon style={{ fontSize: 50}} />
+                        </IconButton>
+                    </div>
+
                 </div>
 
-                <section className={"image"}>
+                <section className={"image-project"}>
                     <img src={img} alt={""}/>
                 </section>
+
                 <section className={"information-highlights-cta"}>
                     <div className={"information-highlights"}>
                         <ul className={"information-list"}>
@@ -92,7 +98,6 @@ function CardElement(props) {
                     </div>
                 </section>
             </article>
-        </div>
     )
 }
 

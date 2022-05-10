@@ -2,67 +2,66 @@ import React, {useState} from "react";
 import {Button, Modal} from "react-bootstrap";
 import img from "../images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 import {Link} from "react-router-dom";
-import { useQueryClient} from 'react-query'
+import {useQueryClient} from 'react-query'
+import {GetDummyData} from "../../../modelData/addData";
+import {PROJECTS_WITH_SCAFFOLDING_URL} from "../../../modelData/constantsFile";
+import "./Modalscaffolding.css"
 
 
 function ScaffoldingInProject(type, projects) {
     const queryClient = useQueryClient()
-    let dataProjects = queryClient.getQueryData("allProjects")
-    const result = dataProjects.map((element) => {
-        return {
-            ...element, scaffolding: element.scaffolding.filter((subElement) =>
-                subElement.type.toLowerCase() === type.toLowerCase() && subElement.Quantity.expected !== 0)
-        }
-    })
-    const results = result.filter(element => Object.keys(element.scaffolding).length !== 0)
 
-    return (
-        results.map(e => {
+    const {isLoading, data} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
+    if (isLoading){
+        return <h1>Loading</h1>
+    }else {
+        const result = data.map((element) => {
+            return {
+                ...element, scaffolding: element.scaffolding.filter((subElement) =>
+                    subElement.type.toLowerCase() === type.toLowerCase() && subElement.Quantity.expected !== 0)
+            }
+        })
+        const results = result.filter(element => Object.keys(element.scaffolding).length !== 0)
+
+        return (
+            results.map(e => {
                 return (
-                    <article key={e.projectID} className={"project-card-long"}>
-                        <section className={"header"}>
+                    <div key={e.projectID} className={"card-scaffolding"}>
+                        <div className={"img-and-name"}>
                             <h3>{e.projectName.toUpperCase()}</h3>
-                        </section>
-                        <div className={"main-body-project-card"}>
-                            <section className={"information-highlights-cta"}>
-                                <div className={"information-highlights"}>
-                                    <ul className={"information-list"}>
-                                        <li className={"horizontal-list"}>
-                                            <div className={"highlightText"}>
-                                                <span>{e.scaffolding[0].Quantity.expected}</span>
-                                            </div>
-                                            <div className={"highlightText-caption"}>
-                                                <span>Expected</span>
-                                            </div>
-                                        </li>
-                                        <li className={"horizontal-list"}>
-                                            <div className={"highlightText"}>
-                                                <span>{e.period.endDate}</span>
-                                            </div>
-                                            <div className={"highlightText-caption"}>
-                                                <span>Return date</span>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </section>
-                            <div>
-                                <section className={"image"}>
-                                    <img className={"img"} src={img} alt={""}/>
-                                </section>
-                                <section className={"card-btn"}>
-                                    <div className={"card-btns"}>
-                                        <Link className={"btn"} to={"/project/" + e.projectID}>More Information</Link>
+                            <img className={"img"} src={img} alt={""}/>
+                        </div>
+                        <div className={"list-and-btn"}>
+                            <ul className={"information-list"}>
+                                <li className={"horizontal-list"}>
+                                    <div className={"highlightText"}>
+                                        <span>{e.scaffolding[0].Quantity.expected}</span>
                                     </div>
-                                </section>
+                                    <div className={"highlightText-caption"}>
+                                        <span>Expected</span>
+                                    </div>
+                                </li>
+                                <li className={"horizontal-list"}>
+                                    <div className={"highlightText"}>
+                                        <span>{e.period.endDate}</span>
+                                    </div>
+                                    <div className={"highlightText-caption"}>
+                                        <span>Return date</span>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div className={"scaffolding-btn"}>
+                                <Link className={"btn"} to={"/project/" + e.projectID}>Mer infromasjon</Link>
                             </div>
                         </div>
                         <hr/>
-                    </article>
+
+                    </div>
                 )
-            }
+                }
+            )
         )
-    )
+    }
 }
 
 

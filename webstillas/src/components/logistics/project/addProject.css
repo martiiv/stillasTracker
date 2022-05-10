@@ -1,0 +1,69 @@
+.add-card{
+    display: flex;
+    justify-content: center;
+    padding-top: 3%;
+}
+
+
+.information{
+    padding-right: 50px;
+}
+
+.btn-on-map{
+    top: 0;
+    right: 0;
+}
+
+.form-group{
+    width: 500px;
+    gap: 2px;
+    padding-bottom: 10px;
+}
+
+.general-information{
+    display: flex;
+}
+
+.input-field-text{
+    margin-bottom: 0;
+    font-weight: lighter;
+    font-size: 15px;
+}
+
+.name{
+    padding-top: -2px;
+    width: 400px;
+
+}
+
+
+
+.address-name{
+    display: flex;
+    position: center;
+}
+
+.submit-btn{
+    margin-top: 50px;
+}
+
+.input-with-email{
+    padding-bottom: 50px;
+    padding-right: 20px;
+
+}
+
+.input-with-text{
+    padding-bottom: 10px;
+    padding-right: 20px;
+}
+
+.date-add-project{
+    padding-bottom: 15px;
+
+}
+
+
+.error-message{
+
+}

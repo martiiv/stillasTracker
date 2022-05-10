@@ -1,14 +1,13 @@
 .toolbar{
     background: #F28A04;
-
+    justify-content: space-between;
 }
+
 
 .button{
-    width: 300px;
-    height: fit-content;
+    width: 150px;
+    height: 70px;
 }
-
-
 
 .links{
     margin-inside: 50px;
@@ -17,3 +16,4 @@
 .appbar{
     position: fixed;
 }
+

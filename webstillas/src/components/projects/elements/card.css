@@ -2,7 +2,22 @@
     border-radius: 8px;
     height: 10%;
     position: static;
+    justify-items: center;
 
+}
+
+
+.name-btn{
+    display: flex;
+    list-style-type: none;
+    padding: 10px;
+    overflow: hidden;
+}
+
+.btn-delete{
+    height: fit-content;
+    width: fit-content;
+    background-size: cover;
 }
 
 .header {
@@ -11,7 +26,9 @@
     padding: 24px;
 }
 
-.image {
+.image-project {
+    padding-right: 10px;
+    padding-left: 10px;
     -webkit-padding-after: 16px;
     display: flex;
     flex-direction: column;
@@ -34,7 +51,7 @@
 }
 .horizontal-list-contact{
     list-style-type: none;
-    padding: 10px;
+    padding-top: 10px;
     overflow: hidden;
 }
 
@@ -48,9 +65,6 @@
     border-left: 1px solid;
     border-left-color: gray;
 }
-
-
-
 
 .card-btn{
     padding: 0 24px 24px;
@@ -100,4 +114,9 @@
 
 .information-highlights{
     padding-right: 35px;
+    padding-bottom: 30px;
+}
+
+.preview-info{
+    width: 500px;
 }

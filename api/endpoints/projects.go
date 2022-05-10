@@ -594,10 +594,6 @@ func transferProject(w http.ResponseWriter, r *http.Request) {
 		tool.HandleError(tool.NODOCUMENTWITHID, w)
 		return
 	}
-	if len(fromLocation) != len(newLocation) {
-		tool.HandleError(tool.COULDNOTFINDDATA, w)
-		return
-	}
 
 	var sub = map[string]interface{}{}
 	var add = map[string]interface{}{}
@@ -660,7 +656,7 @@ func getScaffoldingFromProject(input int, scaffold _struct.InputScaffolding) ([]
 	documentPath := tool.CreatePath(strings.Split(newPath[0].Path, "/")[5:])
 
 	for _, s := range scaffold {
-		iter := database.Client.Doc(documentPath).Collection(constants.P_StillasType).Where(constants.P_Type, "==", strings.ToLower(s.Type)).Documents(database.Ctx)
+		iter := database.Client.Doc(documentPath).Collection(constants.P_StillasType).Where(constants.P_Type, "==", (s.Type)).Documents(database.Ctx)
 		for {
 			doc, err := iter.Next()
 			if err == iterator.Done {
@@ -725,7 +721,7 @@ func addScaffolding(documentPath *firestore.DocumentRef, batch *firestore.WriteB
 		scaffoldingTypeDocument := scaffoldingCollection.Doc(scaffoldingType)
 
 		scaffoldingStruct := _struct.Scaffolding{
-			Type: strings.ToLower(scaffoldingType),
+			Type: scaffoldingType,
 			Quantity: _struct.Quantity{
 				Expected:   0,
 				Registered: 0,

@@ -12,14 +12,12 @@ Will run the api
 Version 0.1
 Last update 08.03.2022 Martin Iversen
 */
+
 func main() {
-	fmt.Println("Starting API")
+	fmt.Printf("Starting API")
 
 	database.DatabaseConnection()
-	fmt.Println("Started database")
-
-	fmt.Println("Initializing MQTT Server")
-	//mqtt.InitializeMQTTClient()
+	fmt.Printf("Started database")
 
 	endpoints.Handle()
 }

@@ -1,6 +1,7 @@
 import React from 'react'
 import postModel from "../../../modelData/postModel";
 import {SCAFFOLDING_URL} from "../../../modelData/constantsFile";
+import "./addScaffolding.css"
 
 class AddScaffolding extends React.Component{
     constructor(props) {
@@ -23,17 +24,21 @@ class AddScaffolding extends React.Component{
 
     scaffoldingInformation(){
         return(
-            <div className={"input-fields"}>
-                <div>
-                    <input type={"text"}  className={"input-text-add"} onChange={event =>
+            <div className={"input-information"}>
+                <div className={"input-fields-add"}>
+                    <p className = {"input-sorting-text"}>Enter ID</p>
+
+                    <input type={"text"}  className={"form-control scaffolding-input"} onChange={event =>
                     {const scaffolding = {...this.state.scaffolding};
                         scaffolding.id = Number(event.target.value);
                         this.setState({scaffolding})}}/>
-                    <p>Enter ID</p>
                 </div>
-                <div>
-                    <span>Overfør til prosjekt:</span>
-                        <select value={"Test"} onChange={(e) =>
+                <div className={"input-fields-add"}>
+                    <p className = {"input-sorting-text"}>Overfør til prosjekt:</p>
+                        <select
+                            className={"form-select scaffolding-input"}
+                            value={"Test"}
+                                onChange={(e) =>
                         {const scaffolding = {...this.state.scaffolding};
                             scaffolding.type = e.target.value;
                             this.setState({scaffolding})}}>
@@ -69,10 +74,15 @@ class AddScaffolding extends React.Component{
 
     render() {
         return(
-            <div>
-                {this.scaffoldingInformation()}
-                <button onClick={() => this.postRequest()}>Next</button>
+            <div className={"main-add-scaffolding"}>
+                <div className={"info-card"}>
+                    {this.scaffoldingInformation()}
+                    <div className={"btn-add-scaffolding"}>
+                        <button className={"btn"} onClick={() => this.postRequest()}>Legg til</button>
+                    </div>
+                </div>
             </div>
+
 
 
     )

@@ -1,7 +1,7 @@
 package _struct
 
 type Employee struct {
-	EmployeeID int `json:"employeeID"`
+	EmployeeID string `json:"employeeID"`
 	Name       struct {
 		FirstName string `json:"firstName"`
 		LastName  string `json:"lastName"`
@@ -17,5 +17,5 @@ type Employee struct {
 }
 
 type ProfileDelete []struct {
-	Id int `json:"id"`
+	Id string `json:"id"`
 }

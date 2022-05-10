@@ -4,6 +4,8 @@ import CardElement from "./elements/scaffoldingCard";
 import {PROJECTS_WITH_SCAFFOLDING_URL, SCAFFOLDING_URL, STORAGE_URL} from "../../modelData/constantsFile";
 import {GetDummyData} from "../../modelData/addData";
 import {useQueryClient} from "react-query";
+import {SpinnerDefault} from "../Spinner";
+
 /**
  Class that will create an overview of the scaffolding parts
  */
@@ -27,11 +29,10 @@ class ScaffoldingClass extends React.Component {
         arr.forEach((x)=>{
             // Checking if there is any object in arr2
             // which contains the key value
-            if(arr2.some((val)=>{ return val[key] === x[key] })){
-
+            if(arr2.some((val)=>{return val[key] === x[key]})){
                 // If yes! then increase the occurrence by 1
                 arr2.forEach((k)=>{
-                    if(k[key] === x[key]){
+                    if(k[key] !== x[key]){
                         k["occurrence"]++
                     }
                 })
@@ -55,11 +56,10 @@ class ScaffoldingClass extends React.Component {
         const scaffoldVar = {
             scaffolding: []
         };
-        for(var i in scaffold) {
-            var scaff = scaffold[i];
-            for (var j in storage){
-                var stor = storage[j];
-
+        for(var scaffoldIndex of scaffold) {
+            var scaff = scaffoldIndex;
+            for (var storageIndex of storage){
+                var stor = storageIndex;
                 if (stor.type.toLowerCase() === scaff.type.toLowerCase()){
                     scaffoldVar.scaffolding.push({
                         "type"          :scaff.type,
@@ -78,10 +78,8 @@ class ScaffoldingClass extends React.Component {
         const {scaffolding, storage, selectedOption} = this.state;
 
         const objectArr = this.countObjects(scaffolding, "type")
-
-
         const scaffoldingObject = this.scaffoldingAndStorage(objectArr, storage)
-
+        console.log(scaffoldingObject);
         const result = Object.keys(scaffoldingObject).map((key) => scaffoldingObject[key]);
 
         if (selectedOption === "ascending") {
@@ -93,20 +91,21 @@ class ScaffoldingClass extends React.Component {
         }
         return (
             //todo only scroll the scaffolding not the map
-            <div>
-                <div>
-                    <select onChange={(e) =>
-                        this.setState({selectedOption: e.target.value})}>
-                        <option value={"alphabetic"}>Alfabetisk(A-Å)</option>
-                        <option value={"ascending"}>Stigende</option>
-                        <option value={"descending"}>Synkende</option>
-                    </select>
-                    <p>Sorter</p>
-                </div>
+            <div className={"scaffolding"}>
+                <div className={"all-scaffolding"}>
+                    <div className={"sorting"}>
+                        <p className = {"input-sorting-text"}>Sorter på:</p>
+                        <select className={"form-select"} onChange={(e) =>
+                            this.setState({selectedOption: e.target.value})}>
+                            <option value={"alphabetic"}>Alfabetisk(A-Å)</option>
+                            <option value={"ascending"}>Stigende</option>
+                            <option value={"descending"}>Synkende</option>
+                        </select>
+                    </div>
 
-
-                <div className={"grid-container"}>
+                    <div className={"grid-container"}>
                     {result[0].map((e) => {
+
                         return (
                             <CardElement key={e.type}
                                          type={e.type}
@@ -116,7 +115,9 @@ class ScaffoldingClass extends React.Component {
                             />
                         )
                     })}
+                    </div>
                 </div>
+
             </div>
 
         )
@@ -142,7 +143,7 @@ export const Scaffolding = () => {
 
 
     if (LoadingScaffolding || LoadingStorage || LoadingAll) {
-        return <h1>Loading</h1>
+        return <SpinnerDefault />
     } else {
         return <ScaffoldingClass scaffolding = {Scaffolding}
                                  storage = {Storage}

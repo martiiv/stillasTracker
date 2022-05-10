@@ -1,0 +1,10 @@
+[
+    {
+        "id": 232,
+        "name": "Ola Nordmann",
+        "dateOfBirth": "01.04.1988",
+        "role": "Storage",
+        "admin": false,
+        "imageName": "UserProfile"
+    }
+]

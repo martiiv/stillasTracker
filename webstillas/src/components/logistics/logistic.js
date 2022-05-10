@@ -8,7 +8,9 @@ class Logistic extends React.Component{
 
     render() {
         return(
-            <Tabs>
+            <AddProjectFunc />
+
+      /*  <Tabs>
                 <div label="Legg til Prosjekt">
                     <AddProjectFunc />
                 </div>
@@ -18,7 +20,7 @@ class Logistic extends React.Component{
                 <div label="Leggt til Stillasdel ">
                     <AddScaffolding />
                 </div>
-            </Tabs>
+            </Tabs>*/
         )
     }
 }
