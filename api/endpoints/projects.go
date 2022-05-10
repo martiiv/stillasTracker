@@ -656,7 +656,7 @@ func getScaffoldingFromProject(input int, scaffold _struct.InputScaffolding) ([]
 	documentPath := tool.CreatePath(strings.Split(newPath[0].Path, "/")[5:])
 
 	for _, s := range scaffold {
-		iter := database.Client.Doc(documentPath).Collection(constants.P_StillasType).Where(constants.P_Type, "==", strings.ToTitle(s.Type)).Documents(database.Ctx)
+		iter := database.Client.Doc(documentPath).Collection(constants.P_StillasType).Where(constants.P_Type, "==", (s.Type)).Documents(database.Ctx)
 		for {
 			doc, err := iter.Next()
 			if err == iterator.Done {

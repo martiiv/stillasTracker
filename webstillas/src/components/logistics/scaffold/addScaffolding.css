@@ -1,8 +1,12 @@
 .scaffolding-input{
+    display: flex;
+    justify-content: center;
     width: 400px;
 }
 
 .btn-add-scaffolding{
+    display: flex;
+    justify-content: center;
     padding-top: 20px;
 }
 
@@ -11,8 +15,16 @@
     margin-left: 35%;
     margin-top: 10%;
     width: 500px;
-    background-color: #9f9e9e;
     align-content: center;
 
 }
 
+.input-fields-add{
+    padding-bottom: 20px;
+    justify-content: center;
+}
+
+.main-add-scaffolding{
+    margin-left: 35%;
+    margin-top: 7%;
+}

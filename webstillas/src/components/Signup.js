@@ -4,6 +4,8 @@ import { Form, Alert } from "react-bootstrap";
 import { Button } from "react-bootstrap";
 import { useUserAuth } from "../context/UserAuthContext";
 import postModel from "../modelData/postModel";
+import {formatDate, formatDateToString} from "./projects/projects";
+
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -11,6 +13,7 @@ const Signup = () => {
   const [role, setRole] = useState("");
   const [phone, setPhone] = useState(0);
   const [admin, setAdmin] = useState(false);
+  const [birthDay, setBirthDay] = useState("");
 
   const [error, setError] = useState("");
   const [password, setPassword] = useState("");
@@ -22,33 +25,36 @@ const Signup = () => {
     e.preventDefault();
     setError("");
     try {
-      const newUser = await signUp(email, password);
-
-      //Todo Add user in API
-      console.log(newUser.user.uid)
-      const user =
-      {
-        "employeeID": newUser.user.uid,
-          "name": {
-        "firstName": firstName,
-            "lastName": lastName
-      },
-        "role": role,
-          "phone": phone,
-          "email": email,
-          "admin": admin
-      }
-
-      await postModel("http://localhost:8080/stillastracking/v1/api/user", user)
-          .then(() => navigate("/"))
-          .catch(e => console.log(e))
-
+      signUp(email, password).then(newUser => {
+        console.log(newUser.user.uid)
+        const user =
+            {
+              "employeeID": newUser.user.uid,
+              "name": {
+                "firstName": firstName,
+                "lastName": lastName
+              },
+              "role": role,
+              "phone": phone,
+              "email": email,
+              "admin": admin,
+              "dateOfBirth": birthDay
+            }
+        console.log(JSON.stringify(user))
+        postModel("user", user)
+            .then(() => navigate("/"))
+            .catch(e => console.log(e))
+      })
     } catch (err) {
       setError(err.message);
     }
   };
 
 
+
+
+
+  console.log(birthDay)
 
   return (
     <>
@@ -94,6 +100,9 @@ const Signup = () => {
 
             </Form.Select>
           </Form.Group>
+
+          <label htmlFor="startDate">Birthday</label>
+          <input type="date" onChange={(event) => setBirthDay(formatDateToString(event.target.value))}/>
 
           <Form.Group className="mb-3" controlId="formBasicEmail">
             <Form.Control
