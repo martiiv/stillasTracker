@@ -2,13 +2,10 @@ import React, {useCallback, useRef, useState} from 'react'
 import {MapClass} from "./map";
 import MapboxAutocomplete from "react-mapbox-autocomplete";
 import 'mapbox-gl/dist/mapbox-gl.css'
-import 'react-map-gl-geocoder/dist/mapbox-gl-geocoder.css'
-import Geocoder from "react-map-gl-geocoder/src";
+import "./addProject.css"
+import {Alert} from "react-bootstrap";
 
-
-
-
-export default function AddProjectFunc(string) {
+export default function AddProjectFunc() {
 
     const mapAccess = {
         // Thanks to SomeSoftwareTeam (https://github.com/SomeSoftwareTeam/some-react-app/blob/acd17860b8b1f51edefa4e18486cc1fb07afff70/src/components/SomeComponent.js)
@@ -17,12 +14,12 @@ export default function AddProjectFunc(string) {
     };
 
 
-    const [address, setAddress] = useState({street: "", zipcode: 0 ,municipality: "", county: ""})
+    const [address, setAddress] = useState({street: "", zipcode: 0, municipality: "", county: ""})
 
 
     const [period, setPeriod] = useState({startDate: "", endDate: ""})
 
-    const [customer, setCustomer] = useState({name: "",email: ""})
+    const [customer, setCustomer] = useState({name: "", email: ""})
 
     const [customerNumber, setCustomerNumber] = useState({number: 0})
 
@@ -31,19 +28,16 @@ export default function AddProjectFunc(string) {
         projectName: '',
         latitude: 0,
         longitude: 0,
-        state: "Active"
+        state: "Inactive"
     })
 
     const [size, setSize] = useState({size: 0})
 
     const [errors, setErrors] = useState({
         projectName: '',
-        street: '',
-        zipcode: "",
-        municipality: "",
-        county: "",
+        address: "",
         name: "",
-        number: 0,
+        number: "",
         email: "",
         size: "",
         date: ""
@@ -59,7 +53,6 @@ export default function AddProjectFunc(string) {
         numberValid: false,
         emailValid: false,
         sizeValid: false,
-        formValid: false,
         dateValid: false
     })
 
@@ -80,7 +73,7 @@ export default function AddProjectFunc(string) {
         const name = e.target.name;
         const value = e.target.value;
         if (name.toLowerCase() === "number") {
-            setCustomerNumber({...customerNumber,  [name]: parseInt(value, 10)});
+            setCustomerNumber({...customerNumber, [name]: parseInt(value, 10)});
             validateFieldProjectCustomer(name, (value))
         }
         validateFieldProjectCustomer(name, value)
@@ -100,23 +93,24 @@ export default function AddProjectFunc(string) {
         return dateArray[2] + '-' + dateArray[1] + '-' + dateArray[0]
     }
 
-    const validateFieldProjectAddress = (fieldName, value) => {
-        switch (fieldName) {
-            case 'street':
-                setValid({...valid, streetValid: (value.length >= 2)})
+    const validateFieldProjectAddress = (field, value) => {
+        switch (field) {
+            case "street":
+                setValid({...valid, streetValid: value.length > 3})
                 setErrors({...errors, street: (valid.streetValid ? '' : ' is too short')})
                 break;
-            case 'zipcode':
-                setValid({...valid, zipcodeValid: (value.length === 4)})
+            case "zipcode":
+                setValid({...valid, zipcodeValid: ((value.length) === 4)})
                 setErrors({...errors, zipcode: (valid.zipcodeValid ? '' : ' needs to be of length 4')});
                 break;
             case 'municipality':
-                //Todo validate
-                setValid({...valid, municipalityValid: true})
+                setValid({...valid, municipalityValid: (value !== undefined)})
+                setErrors({...errors, municipalityErr: (valid.municipalityValid ? '' : 'Not a valid municipality')});
+
                 break;
             case 'county':
-                //Todo validate
-                setValid({...valid, countyValid: true})
+                setValid({...valid, countyValid: (value !== undefined)})
+                setErrors({...errors, countyErr: (valid.countyValid ? '' : 'Not a valid county')});
                 break;
             default:
                 break;
@@ -127,7 +121,7 @@ export default function AddProjectFunc(string) {
         switch (fieldName) {
             case 'name':
                 setValid({...valid, nameValid: (value.length >= 2)})
-                setErrors({...errors, street: (valid.nameValid ? '' : 'No valid name')})
+                setErrors({...errors, name: (valid.nameValid ? '' : 'No valid name')})
                 break;
             case 'number':
                 setValid({
@@ -168,8 +162,7 @@ export default function AddProjectFunc(string) {
                 setErrors({...errors, projectName: (valid.projectNameValid ? '' : ' is too short')})
                 break;
             case 'size':
-
-                setValid({...valid, sizeValid: (value >= 1)})
+                setValid({...valid, sizeValid: (Number(value) > 0)})
                 setErrors({...errors, size: (valid.sizeValid ? '' : ' cannot be 0')})
                 break;
             default:
@@ -187,7 +180,6 @@ export default function AddProjectFunc(string) {
     }
 
 
-
     const [mapPage, setMapPage] = useState(false)
 
     const nextPage = () => {
@@ -195,66 +187,96 @@ export default function AddProjectFunc(string) {
 
     }
 
-
-
-
     const queryParams = {
         country: "no",
         place_type: "address"
     };
-
 
     const parseReverseGeo = async (geoData, lat, long) => {
         let street, postcode, region, place
         await fetch("https://api.mapbox.com/geocoding/v5/mapbox.places/" + long + "," + lat + ".json?access_token=pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ")
             .then(res => res.json())
             .then(res => {
-                console.log(res)
+
+                    let validStreet, validZip, validCounty, validMunicipality
                     for (const re of res.features) {
-                        console.log(re.place_type[0]);
-                        console.log(re);
-                        if (re.place_type[0] === "address" || re.place_type[0] === "poi") {
-                            street =  re.text
-                        } else if (re.place_type[0] === "postcode") {
-                            postcode =  re.text
-                        } else if (re.place_type[0] === "region") {
-                            region =  re.text
-                        } else if (re.place_type[0] === "place") {
-                            place =  re.text                        }
+                        console.log((re.place_type[0]))
+                        switch (re.place_type[0]) {
+
+                            case "address": {
+                                street = re.text
+                                if ((re.text.length > 3)) {
+                                    validStreet = true
+                                }
+                            }
+                                break;
+                            case "poi": {
+                                street = re.text
+                                if ((re.text.length > 3)) {
+                                    validStreet = true
+                                }
+
+                            }
+                                break;
+                            case "postcode": {
+                                postcode = re.text
+                                if ((re.text.length === 4)) {
+                                    validZip = true
+                                }
+
+                            }
+                                break;
+                            case ("region"): {
+                                region = re.text
+                                if ((re.text.length !== undefined)) {
+                                    validCounty = true
+                                }
+                            }
+                                break;
+                            case ("place") : {
+                                place = re.text
+                                if ((re.text.length !== undefined)) {
+                                    validMunicipality = true
+                                }
+
+                            }
+                                break;
+                            default:
+                                console.log("Ikke validert")
+                        }
+
                     }
-                    setAddress({street: street, county: region, municipality: place, zipcode: postcode})
+
+                    if (validStreet && validZip && validCounty && validMunicipality) {
+                        setValid({
+                            ...valid,
+                            countyValid: validCounty,
+                            municipalityValid: validMunicipality,
+                            zipcodeValid: validZip,
+                            streetValid: validStreet
+                        })
+                        if (region === "Oslo") {
+                            setAddress({
+                                ...address,
+                                street: street,
+                                county: region,
+                                municipality: region,
+                                zipcode: postcode
+                            })
+                        } else {
+                            setAddress({...address, street: street, county: region, municipality: place, zipcode: postcode})
+                        }
+                    } else {
+                        setErrors({...errors, address: "You have entered an invalid address"})
+                    }
+
+
                 }
-            ).then( () => setProjectDetails({...projectDetails,
+            ).then(() => setProjectDetails({
+                ...projectDetails,
                 longitude: long,
                 latitude: lat
             }))
-
-
-
-           /* if (geoData !== null){
-                const dataArr = geoData.split(",")
-                console.log(dataArr.length)
-                if (dataArr.length === 3) {
-                    const zipAndCity = dataArr[1].split(" ")
-                    if (zipAndCity.length === 3){
-                        setAddress({
-                            zipcode: Number(zipAndCity[1]),
-                            municipality: zipAndCity[2],
-                            street: dataArr[0],
-                            county: dataArr[2]
-                        })
-                        setProjectDetails({...projectDetails,
-                            latitude: Number(lat),
-                            longitude: Number(long)
-                        })
-                    }else{
-                        console.log("feil format")
-                    }
-
-                }
-
-
-            }*/
     }
 
     const _suggestionSelect = async (result, lat, long, country) => {
@@ -264,20 +286,20 @@ export default function AddProjectFunc(string) {
     const finalProject = {
         projectID: projectDetails.projectID,
         projectName: projectDetails.projectName,
-        latitude: projectDetails.latitude,
-        longitude: projectDetails.longitude,
+        latitude: Number(projectDetails.latitude),
+        longitude: Number(projectDetails.longitude),
         state: projectDetails.state,
         size: (size.size),
         period: {
             startDate: period.startDate,
             endDate: period.endDate
         },
-        customer:{
+        customer: {
             name: customer.name,
             number: customerNumber.number,
             email: customer.email,
         },
-        address:{
+        address: {
             street: address.street,
             zipcode: String(address.zipcode),
             municipality: address.municipality,
@@ -285,116 +307,189 @@ export default function AddProjectFunc(string) {
         }
 
     }
-    console.log(finalProject);
+
+
+    let formsValid = false
+    if (valid.countyValid && valid.streetValid && valid.zipcodeValid && valid.municipalityValid
+        && valid.dateValid && valid.sizeValid && valid.projectNameValid && valid.emailValid && valid.nameValid
+        && valid.numberValid
+    ) {
+        formsValid = true
+    }
+
+
+
+console.log(address)
+
+    const contactInformation = () => {
+
+        return(
+            <div>
+                <h3>Contact Information</h3>
+                <hr/>
+                <div className={"input-with-text"}>
+                    <p className={"input-field-text"}>Name</p>
+                    <input
+                        className = {"form-control"}
+                        type={"text"}
+                        required
+                        name={"name"}
+                        placeholder={"Enter Customer Name"}
+                        onChange={handleUserInputCustomer}
+                    />
+                    <p className={"error-message"}>
+                        {(errors.name === "" || valid.nameValid) ?  null: <Alert variant="danger">{errors.name}</Alert> }
+
+                    </p>
+                </div>
+                <div className={"input-with-text"}>
+                    <p className={"input-field-text"}>Number</p>
+                    <input
+                        className = {"form-control"}
+
+                        type={"number"}
+                           min={0}
+                           required
+                           name={"number"}
+                           placeholder={"Enter Customer Number"}
+                           onChange={handleUserInputCustomer}
+                    />
+                    <p className={"error-message"}>
+                        {(errors.number === "" || valid.numberValid) ?  null: <Alert variant="danger">{errors.number}</Alert> }
+                    </p>
+
+                </div>
+                <div className={"input-with-email"}>
+                    <p className={"input-field-text"}>Email</p>
+                    <input
+                        className = {"form-control"}
+                        type={"email"}
+                        required
+                        name={"email"}
+                        placeholder={"Enter Customer Email"}
+                        onChange={handleUserInputCustomer}
+                    />
+                    <p className={"error-message"}>
+                        {(errors.email === "" || valid.emailValid) ?  null: <Alert variant="danger">{errors.email}</Alert> }
+                    </p>
+
+                </div>
+            </div>
+        )
+    }
+
+
+
+
+
+
+    console.log(valid)
+
 
     if (!mapPage) {
         return (
-            <div className={"general-information"}>
-
+            <div className={"add-card"}>
+                <article className={"information"}>
                 <h1>Add project</h1>
+                <h2>Generelt</h2>
                 <hr/>
-                <form>
-                    <div className={"input-fields"}>
-                        <div className={`form-group`}>
-                            <input type={"text"}
-                                   required
-                                   name={"projectName"}
-                                   placeholder={"Project Name"}
-                                   className={"input-text-add"}
-                                   onChange={handleUserInputProjectDetails}
+                <div>
+                    <div className={"test"}>
+                        <div className={"address-name"}>
+                                <div className={"input-with-text"}>
+                                    <p className={"input-field-text"}>Project Name </p>
+                                    <input
+                                        className = {"form-control name"}
+                                        type={"text"}
+                                        required
+                                        name={"projectName"}
+                                        placeholder={"Project Name"}
+                                        onChange={handleUserInputProjectDetails}
+                                    />
+                                    <p className={"error-message"}>
+                                        {(errors.projectName === "" || valid.projectNameValid) ?  null: <Alert variant="danger">{errors.projectName}</Alert> }
+                                    </p>
 
-                            />
-                            <p>Enter Project Name</p>
+                                </div>
+
+                            <div className={"input-with-text"}>
+                                <p className={"input-field-text"}>Project size</p>
+                                <input type={"number"}
+                                       min={0}
+                                       required
+                                       name={"size"}
+                                       placeholder={"Size"}
+                                       className = {"form-control number"}
+                                       onChange={handleUserInputProjectDetails}/>
+                                <p className={"error-message"}>
+                                    {(errors.size === "" || valid.sizeValid) ?  null: <Alert variant="danger">{errors.size}</Alert> }
+                                </p>
+
+                            </div>
+
+
                         </div>
-                        <hr/>
-                        <div>
-                            <MapboxAutocomplete
-                                publicKey={mapAccess.mapboxApiAccessToken}
-                                onSuggestionSelect={_suggestionSelect}
-
-                                country="no"
-                                resetSearch={false}
-                                placeholder="Search Address..."
-                                queryParams={queryParams}
-
-                            />
-
-
-
-
-                            <p>Enter Address</p>
-                        </div>
-                        <hr/>
                         <div className={"date-add-project"}>
-                            <div>
-                                <input type={"date"}
-                                       required
-                                       name={"startDate"}
-                                       placeholder={"Start Date"}
-                                       className={"input-text-add"}
-                                       onChange={handleUserInputPeriod}/>
-                                <p>Enter Start date</p>
+                            <div className="row">
+                                <div className="col">
+                                    <p className={"input-field-text"}>Start date</p>
+                                    <input type={"date"}
+                                           required
+                                           name={"startDate"}
+                                           placeholder={"Start Date"}
+                                           className={"input-text-add"}
+                                           onChange={handleUserInputPeriod}/>
+                                    <p className={"error-message"}>
+                                        {(errors.date === "" || valid.dateValid) ?  null: <Alert variant="danger">{errors.date}</Alert> }
+
+                                    </p>
+
+                                </div>
+                                <div className="col">
+                                    <p className={"input-field-text"}>End date</p>
+                                    <input type={"date"}
+                                           required
+                                           name={"endDate"}
+                                           placeholder={"End Date"}
+                                           className={"input-text-add"}
+                                           onChange={handleUserInputPeriod}/>
+                                    <p className={"error-message"}>
+                                        {(errors.date === "" || valid.dateValid) ?  null: <Alert variant="danger">{errors.date}</Alert> }
+                                    </p>
+
+                                </div>
                             </div>
-                            <div>
-                                <input type={"date"}
-                                       required
-                                       name={"endDate"}
-                                       placeholder={"End Date"}
-                                       className={"input-text-add"}
-                                       onChange={handleUserInputPeriod}/>
-                                <p>Enter end Date</p>
+                        </div>
+                        <div className="col">
+                            <div className={"input-with-text"}>
+                                <p className={"input-field-text"}>Address</p>
+                                <MapboxAutocomplete
+                                    inputClass='form-control address'
+                                    publicKey={mapAccess.mapboxApiAccessToken}
+                                    onSuggestionSelect={_suggestionSelect}
+
+                                    country="no"
+                                    resetSearch={false}
+                                    placeholder="Search Address..."
+                                    queryParams={queryParams}
+                                />
+
+                                <p className={"error-message"}>
+                                    {(errors.address === "" || valid.streetValid) ?  null: <Alert variant="danger">{errors.address}</Alert> }
+                                </p>
                             </div>
                         </div>
-                        <hr/>
-                        <div>
-                            <input type={"number"}
-                                   min={0}
-                                   required
-                                   name={"size"}
-                                   placeholder={"Size"}
-                                   className={"input-text-add"}
-                                   onChange={handleUserInputProjectDetails}/>
-                            <p>Enter size</p>
-                        </div>
-                        <hr/>
-                        <div>
-                            <input type={"text"}
-                                   required
-                                   name={"name"}
-                                   placeholder={"Project Name"}
-                                   className={"input-text-add"}
-                                   onChange={handleUserInputCustomer}
-                            />
-                            <p>Enter Customer Name</p>
-                        </div>
-                        <div>
-                            <input type={"number"}
-                                   min={0}
-                                   required
-                                   name={"number"}
-                                   placeholder={"Project Name"}
-                                   className={"input-text-add"}
-                                   onChange={handleUserInputCustomer}
-                            />
-                            <p>Enter Customer Number</p>
-                        </div>
-                        <div>
-                            <input type={"text"}
-                                   required
-                                   name={"email"}
-                                   placeholder={"Project Name"}
-                                   className={"input-text-add"}
-                                   onChange={handleUserInputCustomer}
-                            />
-                            <p>Enter Customer Email</p>
-                        </div>
+                        {contactInformation()}
+
                     </div>
-                </form>
-                <button type={"submit"} onClick={() => nextPage()}>Next</button>
+                </div>
+                </article>
+                <MapClass props={finalProject}
+                          valid ={formsValid}
+
+                />
             </div>
         )
-    } else {
-        return <MapClass props = {finalProject}/>
     }
 }
 

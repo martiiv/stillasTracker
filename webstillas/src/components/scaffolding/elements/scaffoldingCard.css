@@ -1,11 +1,6 @@
 .img{
     height: 250px;
     width: 300px;
-    alignment: center;
-}
-
-.card{
-    width: 400px;
 }
 
 .highlightText{
@@ -18,6 +13,6 @@
 
 
 .image{
-    alignment: center;
+    align-self: center;
 }
 

@@ -5,6 +5,7 @@ import {Link} from "react-router-dom";
 import {useQueryClient} from 'react-query'
 import {GetDummyData} from "../../../modelData/addData";
 import {PROJECTS_WITH_SCAFFOLDING_URL} from "../../../modelData/constantsFile";
+import "./Modalscaffolding.css"
 
 
 function ScaffoldingInProject(type, projects) {
@@ -24,48 +25,39 @@ function ScaffoldingInProject(type, projects) {
 
         return (
             results.map(e => {
-                    return (
-                        <article key={e.projectID} className={"project-card-long"}>
-                            <section className={"header"}>
-                                <h3>{e.projectName.toUpperCase()}</h3>
-                            </section>
-                            <div className={"main-body-project-card"}>
-                                <section className={"information-highlights-cta"}>
-                                    <div className={"information-highlights"}>
-                                        <ul className={"information-list"}>
-                                            <li className={"horizontal-list"}>
-                                                <div className={"highlightText"}>
-                                                    <span>{e.scaffolding[0].Quantity.expected}</span>
-                                                </div>
-                                                <div className={"highlightText-caption"}>
-                                                    <span>Expected</span>
-                                                </div>
-                                            </li>
-                                            <li className={"horizontal-list"}>
-                                                <div className={"highlightText"}>
-                                                    <span>{e.period.endDate}</span>
-                                                </div>
-                                                <div className={"highlightText-caption"}>
-                                                    <span>Return date</span>
-                                                </div>
-                                            </li>
-                                        </ul>
+                return (
+                    <div key={e.projectID} className={"card-scaffolding"}>
+                        <div className={"img-and-name"}>
+                            <h3>{e.projectName.toUpperCase()}</h3>
+                            <img className={"img"} src={img} alt={""}/>
+                        </div>
+                        <div className={"list-and-btn"}>
+                            <ul className={"information-list"}>
+                                <li className={"horizontal-list"}>
+                                    <div className={"highlightText"}>
+                                        <span>{e.scaffolding[0].Quantity.expected}</span>
                                     </div>
-                                </section>
-                                <div>
-                                    <section className={"image"}>
-                                        <img className={"img"} src={img} alt={""}/>
-                                    </section>
-                                    <section className={"card-btn"}>
-                                        <div className={"card-btns"}>
-                                            <Link className={"btn"} to={"/project/" + e.projectID}>More Information</Link>
-                                        </div>
-                                    </section>
-                                </div>
+                                    <div className={"highlightText-caption"}>
+                                        <span>Expected</span>
+                                    </div>
+                                </li>
+                                <li className={"horizontal-list"}>
+                                    <div className={"highlightText"}>
+                                        <span>{e.period.endDate}</span>
+                                    </div>
+                                    <div className={"highlightText-caption"}>
+                                        <span>Return date</span>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div className={"scaffolding-btn"}>
+                                <Link className={"btn"} to={"/project/" + e.projectID}>Mer infromasjon</Link>
                             </div>
-                            <hr/>
-                        </article>
-                    )
+                        </div>
+                        <hr/>
+
+                    </div>
+                )
                 }
             )
         )

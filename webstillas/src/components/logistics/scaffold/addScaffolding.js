@@ -1,6 +1,7 @@
 import React from 'react'
 import postModel from "../../../modelData/postModel";
 import {SCAFFOLDING_URL} from "../../../modelData/constantsFile";
+import "./addScaffolding.css"
 
 class AddScaffolding extends React.Component{
     constructor(props) {
@@ -23,17 +24,21 @@ class AddScaffolding extends React.Component{
 
     scaffoldingInformation(){
         return(
-            <div className={"input-fields"}>
+            <div className={"input-information"}>
                 <div>
-                    <input type={"text"}  className={"input-text-add"} onChange={event =>
+                    <p className = {"input-sorting-text"}>Enter ID</p>
+
+                    <input type={"text"}  className={"form-control scaffolding-input"} onChange={event =>
                     {const scaffolding = {...this.state.scaffolding};
                         scaffolding.id = Number(event.target.value);
                         this.setState({scaffolding})}}/>
-                    <p>Enter ID</p>
                 </div>
                 <div>
-                    <span>Overfør til prosjekt:</span>
-                        <select value={"Test"} onChange={(e) =>
+                    <p className = {"input-sorting-text"}>Overfør til prosjekt:</p>
+                        <select
+                            className={"form-select"}
+                            value={"Test"}
+                                onChange={(e) =>
                         {const scaffolding = {...this.state.scaffolding};
                             scaffolding.type = e.target.value;
                             this.setState({scaffolding})}}>
@@ -69,9 +74,12 @@ class AddScaffolding extends React.Component{
 
     render() {
         return(
-            <div>
+            <div className={"input-fields"}>
                 {this.scaffoldingInformation()}
-                <button onClick={() => this.postRequest()}>Next</button>
+                <div className={"btn-add-scaffolding"}>
+                    <button className={"btn"} onClick={() => this.postRequest()}>Legg til</button>
+
+                </div>
             </div>
 
 

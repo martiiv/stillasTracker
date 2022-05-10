@@ -2,7 +2,12 @@
     border-radius: 8px;
     height: 10%;
     position: static;
+    justify-items: center;
 
+}
+
+.body {
+    background: black;
 }
 
 .name-btn{
@@ -30,9 +35,12 @@
     display: flex;
     justify-content: space-between;
     padding: 24px;
+
 }
 
-.image {
+.image-project {
+    padding-right: 10px;
+    padding-left: 10px;
     -webkit-padding-after: 16px;
     display: flex;
     flex-direction: column;
@@ -55,7 +63,7 @@
 }
 .horizontal-list-contact{
     list-style-type: none;
-    padding: 10px;
+    padding-top: 10px;
     overflow: hidden;
 }
 
@@ -121,4 +129,5 @@
 
 .information-highlights{
     padding-right: 35px;
+    padding-bottom: 30px;
 }

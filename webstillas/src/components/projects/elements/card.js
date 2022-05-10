@@ -25,18 +25,17 @@ function CardElement(props) {
     }
 
     return (
-        <div className={"main"}>
             <article className={"card"}>
                 <div className={"name-btn"}>
                     <section className={"header"}>
                         <h3>{props.name}</h3>
                     </section>
                     <IconButton className={"btn-delete"} onClick={DeleteProject}>
-                        <DeleteIcon style={{ fontSize: 50 }} />
+                        <DeleteIcon style={{ fontSize: 50, float: "right" }} />
                     </IconButton>
                 </div>
 
-                <section className={"image"}>
+                <section className={"image-project"}>
                     <img src={img} alt={""}/>
                 </section>
                 <section className={"information-highlights-cta"}>
@@ -95,7 +94,6 @@ function CardElement(props) {
                     </div>
                 </section>
             </article>
-        </div>
     )
 }
 

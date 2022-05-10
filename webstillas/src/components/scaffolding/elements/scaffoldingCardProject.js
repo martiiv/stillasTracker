@@ -1,4 +1,3 @@
-import img from "../images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 import React from "react";
 
 function ScaffoldingProject(props){
@@ -9,7 +8,7 @@ function ScaffoldingProject(props){
                     <h3>{props.type.toUpperCase()}</h3>
                 </section>
                 <section className={"image"}>
-                    <img className={"img"} src={img} alt={""}/>
+                    <img className={"img"} src={require(`../images/${props.type.charAt(0).toUpperCase() + props.type.slice(1)}.jpg`)} alt={""}></img>
                 </section>
                 <section className={"information-highlights-cta"}>
                     <div className={"information-highlights"}>
@@ -31,11 +30,6 @@ function ScaffoldingProject(props){
                                     </div>
                                 </li>
                         </ul>
-                    </div>
-                </section>
-                <section className={"card-btn"}>
-                    <div className={"card-btns"}>
-                        <button className={"btn"} type={"button"} >Mer informasjon</button>
                     </div>
                 </section>
             </article>
