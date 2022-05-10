@@ -5,6 +5,8 @@ import {Route, Routes} from "react-router-dom";
 import {PROJECTS_WITH_SCAFFOLDING_URL} from "../../modelData/constantsFile";
 import {GetDummyData} from "../../modelData/addData";
 import {SpinnerDefault} from "../Spinner";
+import DatePicker from "react-datepicker"
+
 
 /**
  Class that will create an overview of the projects
@@ -53,7 +55,6 @@ export function Project(){
                         </div>
                         <div className={"search-filter"}>
                             <p className = {"input-sorting-text"}>Prosjekt navn: </p>
-
                             <input
                                 className={"form-control"}
                                 type="text"
@@ -85,6 +86,24 @@ export function Project(){
                                 />
                             </div>
                         </div>
+                        <div className={"date-filter"}>
+                            <p className = {"input-sorting-text"}>Fra dato: </p>
+                            <input
+                                className={"form-control"}
+                                type="date"
+                                onChange={e => {
+                                    setStartDate(formatDateToString(e.target.value))
+                                }}/>
+                        </div>
+                        <div className={"search-filter"}>
+                            <p className = {"input-sorting-text"}>Til dato: </p>
+                            <input
+                                className={"form-control"}
+                                type="date"
+                                onChange={e => {
+                                    setEndDate(formatDateToString(e.target.value))
+                                }}/>
+                        </div>
                     </div>
                 <div>
                     <div className={"projects-display"}>
@@ -100,14 +119,14 @@ export function Project(){
                             .filter(data => {
                                 console.log(startDate)
                                 if (startDate !== null ) {
-                                    return formatDate(data.period.startDate) >= startDate._d
+                                    return formatDate(data.period.startDate) >= formatDate(startDate)
                                 } else {
                                     return true
                                 }
                             })
                             .filter(data => {
                                 if (endDate !== null) {
-                                    return formatDate(data.period.endDate) <= endDate
+                                    return formatDate(data.period.endDate) <= formatDate(endDate)
                                 } else {
                                     return true
                                 }

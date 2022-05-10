@@ -194,8 +194,6 @@ function contactInformation(project) {
                     </ul>
                 </div>
             </section>
-
-
         </div>
 
     )
