@@ -22,7 +22,6 @@ const Map = ReactMapboxGl({
 });
 
 
-
 //mapboxgl.accessToken = 'pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ';
 /*
 //Todo refactor class to function
@@ -88,12 +87,12 @@ class PreViewClass extends React.Component {
 }*/
 
 
-function PreViewFunction(props){
+function PreViewFunction(props) {
     const data = props.data
 
 
-    return(
-        <div className = {"preView-Project-Main"}>
+    return (
+        <div className={"preView-Project-Main"}>
             <Map
                 style="mapbox://styles/mapbox/streets-v9" // eslint-disable-line
                 containerStyle={{
@@ -117,9 +116,6 @@ function PreViewFunction(props){
     )
 
 }
-
-
-
 
 
 function getProjectID() {
@@ -148,34 +144,60 @@ function scaffoldingComponents(data) {
 
 function contactInformation(project) {
     return (
-        <section className={"contact-highlights-cta preview-text"}>
-            <div className={"information-highlights"}>
-                <ul className={"contact-list"}>
-                    <li className={"horizontal-list-contact"}>
-                        <span className={"left-contact-text"}>Navn/Bedrift</span>
-                        <span className={"right-contact-text"}>{project[0].customer.name}</span>
-                    </li>
-                    <li className={"horizontal-list-contact"}>
-                        <span className={"left-contact-text"}>Telefon nummer</span>
-                        <span className={"right-contact-text"}>{project[0].customer.number}</span>
-                    </li>
-                    <li className={"horizontal-list-contact"}>
-                        <span className={"left-contact-text"}>Adresse</span>
-                        <span
-                            className={"right-contact-text"}>{project[0].address.street}, {project[0].address.zipcode} {project[0].address.municipality}</span>
-                    </li>
-                    <li className={"horizontal-list-contact"}>
-                        <span className={"left-contact-text"}>E-mail</span>
-                        <span className={"right-contact-text"}>{project[0].customer.email}</span>
-                    </li>
-                    <li className={"horizontal-list-contact"}>
-                        <span className={"left-contact-text"}>Periode</span>
-                        <span
-                            className={"right-contact-text"}>{project[0].period.startDate} to {project[0].period.endDate}  </span>
-                    </li>
-                </ul>
-            </div>
-        </section>
+        <div>
+            <section className={"info-card"}>
+                <div className={"information-highlights preview-info"}>
+                    <h3>Prosjekt Informasjon</h3>
+                    <ul className={"contact-list"}>
+                        <li className={"horizontal-list-contact"}>
+                            <span className={"left-contact-text"}>Kunde</span>
+                            <span className={"right-contact-text"}>{project[0].customer.name}</span>
+                        </li>
+                        <li className={"horizontal-list-contact"}>
+                            <span className={"left-contact-text"}>Størrelse</span>
+                            <span className={"right-contact-text"}>{project[0].size} &#13217;</span>
+                        </li>
+                        <li className={"horizontal-list-contact"}>
+                            <span className={"left-contact-text"}>Status</span>
+                            <span className={"right-contact-text"}>{project[0].state}</span>
+                        </li>
+
+                        <li className={"horizontal-list-contact"}>
+                            <span className={"left-contact-text"}>Periode</span>
+                            <span
+                                className={"right-contact-text"}>{project[0].period.startDate} - {project[0].period.endDate}  </span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+            <section className={"info-card"}>
+                <div className={"information-highlights preview-info"}>
+                    <h3>Kontakt Informasjon</h3>
+                    <ul className={"contact-list"}>
+                        <li className={"horizontal-list-contact"}>
+                            <span className={"left-contact-text"}>Kontakt person</span>
+                            <span className={"right-contact-text"}>{project[0].customer.name}</span>
+                        </li>
+                        <li className={"horizontal-list-contact"}>
+                            <span className={"left-contact-text"}>Telefon nummer</span>
+                            <span className={"right-contact-text"}>{project[0].customer.number}</span>
+                        </li>
+                        <li className={"horizontal-list-contact"}>
+                            <span className={"left-contact-text"}>E-mail</span>
+                            <span className={"right-contact-text"}>{project[0].customer.email}</span>
+                        </li>
+                        <li className={"horizontal-list-contact"}>
+                            <span className={"left-contact-text"}>Adresse</span>
+                            <span
+                                className={"right-contact-text"}>{project[0].address.street}, {project[0].address.zipcode} {project[0].address.municipality}</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+
+        </div>
+
     )
 }
 
@@ -203,7 +225,7 @@ export const PreView = () => {
     } else {
         return (
             <div className={"preView-Project-Main"}>
-                <div className = {"map-preview"}>
+                <div className={"map-preview"}>
                     <PreViewFunction data={project[0]}/>
                 </div>
                 <div className={"tabs"}>

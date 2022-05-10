@@ -16,6 +16,7 @@ import {UserAuthContextProvider, useUserAuth} from "./context/UserAuthContext";
 import auth from "./firebase";
 import AddProjectFunc from "./components/logistics/project/addProject";
 import AddScaffolding from "./components/logistics/scaffold/addScaffolding";
+import {UserInfo} from "./components/userinformation/userInfo";
 
 
 
@@ -39,6 +40,7 @@ function App() {
                     <Route path="/signup" element={<Signup/>}/>
                     <Route path="/addproject/" element={<ProtectedRoute> <AddProjectFunc/></ProtectedRoute>}/>
                     <Route path="/addscaffolding/" element={<ProtectedRoute> <AddScaffolding/></ProtectedRoute>}/>
+                    <Route path="/userinfo/" element={<ProtectedRoute> <UserInfo/></ProtectedRoute>}/>
 
 
                 </Routes>

@@ -30,14 +30,18 @@ function CardElement(props) {
                     <section className={"header"}>
                         <h3>{props.name}</h3>
                     </section>
-                    <IconButton className={"btn-delete"} onClick={DeleteProject}>
-                        <DeleteIcon style={{ fontSize: 50, float: "right" }} />
-                    </IconButton>
+                    <div className={"btn-delete"}>
+                        <IconButton  onClick={DeleteProject}>
+                            <DeleteIcon style={{ fontSize: 50}} />
+                        </IconButton>
+                    </div>
+
                 </div>
 
                 <section className={"image-project"}>
                     <img src={img} alt={""}/>
                 </section>
+
                 <section className={"information-highlights-cta"}>
                     <div className={"information-highlights"}>
                         <ul className={"information-list"}>
