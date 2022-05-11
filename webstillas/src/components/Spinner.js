@@ -1,5 +1,6 @@
 import {Spinner} from "react-bootstrap";
 import React from "react";
+import "./Spinner.css"
 
 export const SpinnerDefault = () =>{
     return(

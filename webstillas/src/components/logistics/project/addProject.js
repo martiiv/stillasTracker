@@ -4,25 +4,26 @@ import MapboxAutocomplete from "react-mapbox-autocomplete";
 import 'mapbox-gl/dist/mapbox-gl.css'
 import "./addProject.css"
 import {Alert} from "react-bootstrap";
+import {MapBoxAPIKey} from "../../../firebaseConfig";
 
+
+/**
+ Function that will allow the user to add a new project to the system.
+ */
 export default function AddProjectFunc() {
-
+    //Access token to the mapbox api.
     const mapAccess = {
         // Thanks to SomeSoftwareTeam (https://github.com/SomeSoftwareTeam/some-react-app/blob/acd17860b8b1f51edefa4e18486cc1fb07afff70/src/components/SomeComponent.js)
-        mapboxApiAccessToken:
-            "pk.eyJ1IjoiZmFrZXVzZXJnaXRodWIiLCJhIjoiY2pwOGlneGI4MDNnaDN1c2J0eW5zb2ZiNyJ9.mALv0tCpbYUPtzT7YysA2g"
+        mapboxApiAccessToken: MapBoxAPIKey
     };
 
-
+    /*
+   Initialise variables the user must fill in order to add a new project.
+     */
     const [address, setAddress] = useState({street: "", zipcode: 0, municipality: "", county: ""})
-
-
     const [period, setPeriod] = useState({startDate: "", endDate: ""})
-
     const [customer, setCustomer] = useState({name: "", email: ""})
-
     const [customerNumber, setCustomerNumber] = useState({number: 0})
-
     const [projectDetails, setProjectDetails] = useState({
         projectID: Math.round(Math.random() * 1000000),
         projectName: '',
@@ -30,9 +31,11 @@ export default function AddProjectFunc() {
         longitude: 0,
         state: "Inactive"
     })
-
     const [size, setSize] = useState({size: 0})
 
+    /*
+    Error messages that will be displayed to the user, if the user has entered invalid input.
+     */
     const [errors, setErrors] = useState({
         projectName: '',
         address: "",
@@ -43,6 +46,9 @@ export default function AddProjectFunc() {
         date: ""
     })
 
+    /*
+    Checks if the input is valid.
+     */
     const [valid, setValid] = useState({
         projectNameValid: false,
         streetValid: false,
@@ -57,6 +63,11 @@ export default function AddProjectFunc() {
     })
 
 
+    /**
+     * Function that will handle and check the user input
+     *
+     * @param e the input field name and value.
+     */
     const handleUserInputProjectDetails = (e) => {
         const name = e.target.name;
         const value = e.target.value;
@@ -69,6 +80,11 @@ export default function AddProjectFunc() {
         setProjectDetails({...projectDetails, [name]: value});
     }
 
+    /**
+     * Function that will handle and check the user input
+     *
+     * @param e the input field name and value.
+     */
     const handleUserInputCustomer = (e) => {
         const name = e.target.name;
         const value = e.target.value;
@@ -80,43 +96,24 @@ export default function AddProjectFunc() {
         setCustomer(({...customer, [name]: value}));
     }
 
-    const handleUserInputAddress = (e) => {
-        const name = e.target.name;
-        const value = e.target.value;
-        validateFieldProjectAddress(name, value)
-        setAddress({...address, [name]: value});
-    }
-
-
+    /**
+     * Function that will format input from "input date" to required API format
+     *
+     * @param date as "input date" format "mm-dd-yyyy"
+     * @returns {string} return to API format "dd-mm-yyyy"
+     */
     const dateFormat = (date) => {
         const dateArray = date.split('-')
         return dateArray[2] + '-' + dateArray[1] + '-' + dateArray[0]
     }
 
-    const validateFieldProjectAddress = (field, value) => {
-        switch (field) {
-            case "street":
-                setValid({...valid, streetValid: value.length > 3})
-                setErrors({...errors, street: (valid.streetValid ? '' : ' is too short')})
-                break;
-            case "zipcode":
-                setValid({...valid, zipcodeValid: ((value.length) === 4)})
-                setErrors({...errors, zipcode: (valid.zipcodeValid ? '' : ' needs to be of length 4')});
-                break;
-            case 'municipality':
-                setValid({...valid, municipalityValid: (value !== undefined)})
-                setErrors({...errors, municipalityErr: (valid.municipalityValid ? '' : 'Not a valid municipality')});
-
-                break;
-            case 'county':
-                setValid({...valid, countyValid: (value !== undefined)})
-                setErrors({...errors, countyErr: (valid.countyValid ? '' : 'Not a valid county')});
-                break;
-            default:
-                break;
-        }
-    }
-
+    /**
+     * Function that will validate the customer input
+     * If input is not valid, then a predefined error message is set.
+     *
+     * @param fieldName is the object field that is going to be set
+     * @param value is the object value to be set.
+     */
     const validateFieldProjectCustomer = (fieldName, value) => {
         switch (fieldName) {
             case 'name':
@@ -140,6 +137,13 @@ export default function AddProjectFunc() {
         }
     }
 
+    /**
+     * Function to validate date format.
+     * If input is not valid, then a predefined error message is set.
+     *
+     * @param fieldName is the object field that is going to be set
+     * @param value is the object value to be set.
+     */
     const validateFieldDate = (fieldName, value) => {
         switch (fieldName) {
             case 'startDate':
@@ -155,6 +159,13 @@ export default function AddProjectFunc() {
         }
     }
 
+    /**
+     * Function to validate projectDetails
+     * If input is not valid, then a predefined error message is set.
+     *
+     * @param fieldName is the object field that is going to be set
+     * @param value is the object value to be set.
+     */
     const validateFieldProjectDetails = (fieldName, value) => {
         switch (fieldName) {
             case 'projectName':
@@ -171,6 +182,11 @@ export default function AddProjectFunc() {
     }
 
 
+    /**
+     * Function that will set period fields
+     *
+     * @param e is value and name of input fields.
+     */
     const handleUserInputPeriod = (e) => {
         const name = e.target.name;
         const value = e.target.value;
@@ -180,29 +196,29 @@ export default function AddProjectFunc() {
     }
 
 
-    const [mapPage, setMapPage] = useState(false)
 
-    const nextPage = () => {
-        setMapPage(true)
-
-    }
-
+    // Query that will only allow norwegian addresses
     const queryParams = {
         country: "no",
         place_type: "address"
     };
 
-    const parseReverseGeo = async (geoData, lat, long) => {
+    /**
+     * Function that will fetch data of a spesific longitude and latitude, to set address/poi, postcode, county and municipality
+     *
+     * @param lat latitude of the place we would like to get information
+     * @param long longitude of the place we would like to get information
+     * @returns {Promise<void>}
+     */
+    const parseReverseGeo = async (lat, long) => {
         let street, postcode, region, place
         await fetch("https://api.mapbox.com/geocoding/v5/mapbox.places/" + long + "," + lat + ".json?access_token=pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ")
             .then(res => res.json())
             .then(res => {
-
                     let validStreet, validZip, validCounty, validMunicipality
                     for (const re of res.features) {
                         console.log((re.place_type[0]))
                         switch (re.place_type[0]) {
-
                             case "address": {
                                 street = re.text
                                 if ((re.text.length > 3)) {
@@ -247,6 +263,7 @@ export default function AddProjectFunc() {
 
                     }
 
+
                     if (validStreet && validZip && validCounty && validMunicipality) {
                         setValid({
                             ...valid,
@@ -255,6 +272,8 @@ export default function AddProjectFunc() {
                             zipcodeValid: validZip,
                             streetValid: validStreet
                         })
+
+                        //If region is oslo the municipality is not set.
                         if (region === "Oslo") {
                             setAddress({
                                 ...address,
@@ -279,10 +298,22 @@ export default function AddProjectFunc() {
             }))
     }
 
-    const _suggestionSelect = async (result, lat, long, country) => {
-        await parseReverseGeo(result, lat, long)
+    /**
+     *Function that will redirect to parseReverseGeo
+     *
+     * @param lat latitude from the suggested input of user
+     * @param long longitude from the suggested input of user
+     * @returns {Promise<void>}
+     */
+    const _suggestionSelect = async (_, lat, long) => {
+        await parseReverseGeo(lat, long)
     }
 
+
+    /**
+     * Struct of adding project that will set the variables the user has set.
+     *
+     */
     const finalProject = {
         projectID: projectDetails.projectID,
         projectName: projectDetails.projectName,
@@ -309,6 +340,11 @@ export default function AddProjectFunc() {
     }
 
 
+    /**
+     * Checks if all the fields are valid.
+     *
+     * @type {boolean} is set true if all the fields are valid.
+     */
     let formsValid = false
     if (valid.countyValid && valid.streetValid && valid.zipcodeValid && valid.municipalityValid
         && valid.dateValid && valid.sizeValid && valid.projectNameValid && valid.emailValid && valid.nameValid
@@ -318,19 +354,19 @@ export default function AddProjectFunc() {
     }
 
 
-
-console.log(address)
-
+    /**
+     *
+     * @returns {JSX.Element} with input that can set the customer information.
+     */
     const contactInformation = () => {
-
-        return(
+        return (
             <div>
                 <h3>Contact Information</h3>
                 <hr/>
                 <div className={"input-with-text"}>
                     <p className={"input-field-text"}>Name</p>
                     <input
-                        className = {"form-control"}
+                        className={"form-control"}
                         type={"text"}
                         required
                         name={"name"}
@@ -338,31 +374,32 @@ console.log(address)
                         onChange={handleUserInputCustomer}
                     />
                     <p className={"error-message"}>
-                        {(errors.name === "" || valid.nameValid) ?  null: <Alert variant="danger">{errors.name}</Alert> }
+                        {(errors.name === "" || valid.nameValid) ? null : <Alert variant="danger">{errors.name}</Alert>}
 
                     </p>
                 </div>
                 <div className={"input-with-text"}>
                     <p className={"input-field-text"}>Number</p>
                     <input
-                        className = {"form-control"}
+                        className={"form-control"}
 
                         type={"number"}
-                           min={0}
-                           required
-                           name={"number"}
-                           placeholder={"Enter Customer Number"}
-                           onChange={handleUserInputCustomer}
+                        min={0}
+                        required
+                        name={"number"}
+                        placeholder={"Enter Customer Number"}
+                        onChange={handleUserInputCustomer}
                     />
                     <p className={"error-message"}>
-                        {(errors.number === "" || valid.numberValid) ?  null: <Alert variant="danger">{errors.number}</Alert> }
+                        {(errors.number === "" || valid.numberValid) ? null :
+                            <Alert variant="danger">{errors.number}</Alert>}
                     </p>
 
                 </div>
                 <div className={"input-with-email"}>
                     <p className={"input-field-text"}>Email</p>
                     <input
-                        className = {"form-control"}
+                        className={"form-control"}
                         type={"email"}
                         required
                         name={"email"}
@@ -370,7 +407,8 @@ console.log(address)
                         onChange={handleUserInputCustomer}
                     />
                     <p className={"error-message"}>
-                        {(errors.email === "" || valid.emailValid) ?  null: <Alert variant="danger">{errors.email}</Alert> }
+                        {(errors.email === "" || valid.emailValid) ? null :
+                            <Alert variant="danger">{errors.email}</Alert>}
                     </p>
 
                 </div>
@@ -379,38 +417,31 @@ console.log(address)
     }
 
 
-
-
-
-
-    console.log(valid)
-
-
-    if (!mapPage) {
-        return (
-            <div className={"add-card"}>
-                <article className={"information"}>
-                <h1>Add project</h1>
+    return (
+        <div className={"add-card"}>
+            <article className={"information"}>
+                <h1>Legg til prosjekt</h1>
                 <h2>Generelt</h2>
                 <hr/>
                 <div>
                     <div className={"test"}>
                         <div className={"address-name"}>
-                                <div className={"input-with-text"}>
-                                    <p className={"input-field-text"}>Project Name </p>
-                                    <input
-                                        className = {"form-control name"}
-                                        type={"text"}
-                                        required
-                                        name={"projectName"}
-                                        placeholder={"Project Name"}
-                                        onChange={handleUserInputProjectDetails}
-                                    />
-                                    <p className={"error-message"}>
-                                        {(errors.projectName === "" || valid.projectNameValid) ?  null: <Alert variant="danger">{errors.projectName}</Alert> }
-                                    </p>
+                            <div className={"input-with-text"}>
+                                <p className={"input-field-text"}>Project Name </p>
+                                <input
+                                    className={"form-control name"}
+                                    type={"text"}
+                                    required
+                                    name={"projectName"}
+                                    placeholder={"Project Name"}
+                                    onChange={handleUserInputProjectDetails}
+                                />
+                                <p className={"error-message"}>
+                                    {(errors.projectName === "" || valid.projectNameValid) ? null :
+                                        <Alert variant="danger">{errors.projectName}</Alert>}
+                                </p>
 
-                                </div>
+                            </div>
 
                             <div className={"input-with-text"}>
                                 <p className={"input-field-text"}>Project size</p>
@@ -419,10 +450,11 @@ console.log(address)
                                        required
                                        name={"size"}
                                        placeholder={"Size"}
-                                       className = {"form-control number"}
+                                       className={"form-control number"}
                                        onChange={handleUserInputProjectDetails}/>
                                 <p className={"error-message"}>
-                                    {(errors.size === "" || valid.sizeValid) ?  null: <Alert variant="danger">{errors.size}</Alert> }
+                                    {(errors.size === "" || valid.sizeValid) ? null :
+                                        <Alert variant="danger">{errors.size}</Alert>}
                                 </p>
 
                             </div>
@@ -440,7 +472,8 @@ console.log(address)
                                            className={"input-text-add"}
                                            onChange={handleUserInputPeriod}/>
                                     <p className={"error-message"}>
-                                        {(errors.date === "" || valid.dateValid) ?  null: <Alert variant="danger">{errors.date}</Alert> }
+                                        {(errors.date === "" || valid.dateValid) ? null :
+                                            <Alert variant="danger">{errors.date}</Alert>}
 
                                     </p>
 
@@ -454,7 +487,8 @@ console.log(address)
                                            className={"input-text-add"}
                                            onChange={handleUserInputPeriod}/>
                                     <p className={"error-message"}>
-                                        {(errors.date === "" || valid.dateValid) ?  null: <Alert variant="danger">{errors.date}</Alert> }
+                                        {(errors.date === "" || valid.dateValid) ? null :
+                                            <Alert variant="danger">{errors.date}</Alert>}
                                     </p>
 
                                 </div>
@@ -467,15 +501,15 @@ console.log(address)
                                     inputClass='form-control address'
                                     publicKey={mapAccess.mapboxApiAccessToken}
                                     onSuggestionSelect={_suggestionSelect}
-
-                                    country="no"
                                     resetSearch={false}
+                                    country = "no"
                                     placeholder="Search Address..."
                                     queryParams={queryParams}
                                 />
 
                                 <p className={"error-message"}>
-                                    {(errors.address === "" || valid.streetValid) ?  null: <Alert variant="danger">{errors.address}</Alert> }
+                                    {(errors.address === "" || valid.streetValid) ? null :
+                                        <Alert variant="danger">{errors.address}</Alert>}
                                 </p>
                             </div>
                         </div>
@@ -483,14 +517,14 @@ console.log(address)
 
                     </div>
                 </div>
-                </article>
-                <MapClass props={finalProject}
-                          valid ={formsValid}
+            </article>
+            <MapClass props={finalProject}
+                      valid={formsValid}
 
-                />
-            </div>
-        )
-    }
+            />
+        </div>
+    )
+
 }
 
 

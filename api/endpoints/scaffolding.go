@@ -80,13 +80,6 @@ func createPart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Prints the amount of scaffolding parts added to the system
-	err = json.NewEncoder(w).Encode(strconv.Itoa(len(scaffoldList)) + " new scaffolding units added to the system the following units were added:")
-	if err != nil {
-		tool.HandleError(tool.ENCODINGERROR, w)
-		return
-	}
-
 	for i := range scaffoldList { //For loop iterates through the list of new scaffolding parts
 
 		newPartPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldList[i].Type).Doc(scaffoldList[i].Id)

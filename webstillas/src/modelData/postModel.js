@@ -20,7 +20,11 @@ export default function postModel(url, body) {
                     text: xhr.responseText
                 })));
             } else {
-                resolve((xhr.responseText));
+                resolve({
+                    statusCode: xhr.status,
+                    text: xhr.responseText
+                    }
+                );
             }
         });
 
