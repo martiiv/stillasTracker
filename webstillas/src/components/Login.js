@@ -4,6 +4,7 @@ import { Form, Alert } from "react-bootstrap";
 import { Button } from "react-bootstrap";
 import { useUserAuth } from "../context/UserAuthContext";
 import {PROJECT_URL, SIGNUP} from "./constants";
+import "../firebaselogin.css"
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -25,8 +26,8 @@ const Login = () => {
 
 
   return (
-    <>
-      <div className="p-4 box">
+    <div className={"card loginpage"}>
+      <div className="box">
         <h2 className="mb-3">Stillas Login</h2>
         {error && <Alert variant="danger">{error}</Alert>}
         <Form onSubmit={handleSubmit}>
@@ -46,7 +47,7 @@ const Login = () => {
             />
           </Form.Group>
 
-          <div className="d-grid gap-2">
+          <div className="loginbtn">
             <Button variant="primary" type="Submit">
               Logg inn
             </Button>
@@ -54,10 +55,10 @@ const Login = () => {
         </Form>
         <hr />
       </div>
-      <div className="p-4 box mt-3 text-center">
+      <div className="logintxt">
         Har du ikke en bruker? <Link to={SIGNUP}>Registrer</Link>
       </div>
-    </>
+    </div>
   );
 };
 

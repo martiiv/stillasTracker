@@ -51,11 +51,8 @@ export function UserAuthContextProvider({ children }) {
   }
 
 
-  /**
-   *
-   *
-   */
-  //Todo kommenter
+
+  //todo kommenter
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentuser) => {
       console.log("Auth", currentuser);

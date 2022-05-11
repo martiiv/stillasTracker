@@ -6,8 +6,15 @@ import {SpinnerDefault} from "../Spinner";
 import "./userInfo.css"
 import profileImg from "./profile-png-icon-2.png"
 
+
+/**
+ * Function that will return information about the user.
+ * @returns {JSX.Element}
+ * @constructor
+ */
 export function UserInfo(){
-    const {isLoading, data} = GetDummyData("user", USER_URL + auth.currentUser.uid)
+    //Todo add if error
+    const {isLoading, data, isError} = GetDummyData("user", USER_URL + auth.currentUser.uid)
 
     if (isLoading) {
         return (<SpinnerDefault/>)
@@ -17,7 +24,6 @@ export function UserInfo(){
                 <div className={"info-card"}>
                     <div className={"image-frame"}>
                         <img src={profileImg} alt={""} className={"profile-image"}/>
-
                     </div>
                     <div className={"information-text"}>
                         <h4 className={"header-information"}>

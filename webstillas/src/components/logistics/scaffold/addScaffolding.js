@@ -48,7 +48,7 @@ function AddScaffolding() {
                     <p className={"input-sorting-text"}>Stillasdel:</p>
                     <select
                         className={"form-select scaffolding-input"}
-                        value={"Test"}
+                        value={scaffolding.type}
                         onChange={(e) => {
                             //setting the type
                             setScaffolding({...scaffolding, type: e.target.value})

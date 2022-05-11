@@ -3,9 +3,16 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import {Button, Modal} from 'react-bootstrap';
 import img from "../../scaffolding/images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 import putModel from "../../../modelData/putData";
-import {TRANSFER_SCAFFOLDING} from "../../../modelData/constantsFile";
+import {
+    PROJECTS_URL_WITH_ID,
+    PROJECTS_WITH_SCAFFOLDING_URL,
+    TRANSFER_SCAFFOLDING,
+    WITH_SCAFFOLDING_URL
+} from "../../../modelData/constantsFile";
 import {useQueryClient} from "react-query";
 import "./Modal.css"
+import {GetDummyData} from "../../../modelData/addData";
+import {SpinnerDefault} from "../../Spinner";
 
 
 
@@ -69,9 +76,7 @@ export default function InfoModalFunc(props) {
     const handleShow = () => setShow(true);
     const queryClient = useQueryClient()
 
-    let jsonProjects
-    jsonProjects = queryClient.getQueryData("allProjects")
-
+    const {data: jsonProjects} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
     let jsonProject = queryClient.getQueryData(["project", props.id])
 
     const [scaffolding, setScaffolding] = useState(scaffoldingMove);
@@ -128,89 +133,94 @@ export default function InfoModalFunc(props) {
 
 
 
+
+
     //Checks if the user did not set to project equal to from project.
     const validFormat = ToProject !== FromProject
-    return (
-        <>
-            <Button className="nextButton" onClick={handleShow}>
-                Overfør deler til Prosjekt
-            </Button>
+        return (
+            <>
+                <Button className="nextButton" onClick={handleShow}>
+                    Overfør deler til Prosjekt
+                </Button>
 
-            <Modal show={show}
-                   onHide={handleClose}
-                   centered
-                   backdrop="static"
-                   dialogClassName="modal-dialog modal-xl"
-            >
-                <Modal.Header closeButton>
-                    <Modal.Title>Stillas Overføring</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <div className={"scaffoldingElement-modal"}>
-                        <div className={"transfer-options"}>
-                            <span>Overfør til prosjekt:</span>
-                            <select
-                                className={"form-select"}
-                                value={ToProject}
-                                onChange={(e) => setToProject(e.target.value)}>
-                                <option selected defaultValue="">Choose here</option>
-                                <option value={0}>Storage</option>
-                                {jsonProjects?.map(e => {
-                                    return (
-                                        <option value={e.projectID}>{e.projectName}</option>
-                                    )
-                                })}
-                            </select>
-                        </div>
-                        <div>
-                            <span>Overfør fra prosjekt:</span>
-                            <select
-                                className={"form-select"}
-                                value={FromProject}
+                <Modal show={show}
+                       onHide={handleClose}
+                       centered
+                       backdrop="static"
+                       dialogClassName="modal-dialog modal-xl"
+                >
+                    <Modal.Header closeButton>
+                        <Modal.Title>Stillas Overføring</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <div className={"scaffoldingElement-modal"}>
+                            <div className={"transfer-options"}>
+                                <span>Overfør til prosjekt:</span>
+                                <select
+                                    className={"form-select"}
+                                    value={ToProject}
+                                    onChange={(e) => setToProject(e.target.value)}>
+                                    <option selected defaultValue="">Choose here</option>
+                                    <option value={0}>Storage</option>
+                                    {jsonProjects?.map(e => {
+                                        return (
+                                            <option value={e.projectID}>{e.projectName}</option>
+                                        )
+                                    })}
+                                </select>
+                            </div>
+                            <div>
+                                <span>Overfør fra prosjekt:</span>
+                                <select
+                                    className={"form-select"}
+                                    value={FromProject}
                                     onChange={(e) => setFromProject(e.target.value)}>
-                                <option selected defaultValue="">Choose here</option>
-                                <option value={0}>Storage</option>
-                                {jsonProjects.map(e => {
+                                    <option selected defaultValue="">Choose here</option>
+                                    <option value={0}>Storage</option>
+                                    {jsonProjects?.map(e => {
+                                        return (
+                                            <option value={e.projectID}>{e.projectName}</option>
+                                        )
+                                    })}
+                                </select>
+                            </div>
+                            {jsonProject[0].scaffolding.map(e => {
                                     return (
-                                        <option value={e.projectID}>{e.projectName}</option>
+                                        <div key={e.type} className={"card"}>
+                                            <section className={"header"}>
+                                                <h3>{e.type.toUpperCase()}</h3>
+                                            </section>
+                                            <section className={"image"}>
+                                                <img className={"img"}
+                                                     src={require(`../../scaffolding/images/${e.type.charAt(0).toUpperCase() + e.type.slice(1)}.jpg`)}
+                                                     alt={""}></img>
+                                            </section>
+                                            <input
+                                                className={"form-control"}
+                                                placeholder={"Enter quantity of scaffolding parts to transfer"}
+                                                type="number"
+                                                min={0}
+                                                key={"input" + e.type}
+                                                onChange={(j) => setQuantity(j, e.type)}/>
+                                        </div>
                                     )
-                                })}
-                            </select>
-                        </div>
-                        {jsonProject[0].scaffolding.map(e => {
-                                return (
-                                    <div className={"card"}>
-                                        <section className={"header"}>
-                                            <h3>{e.type.toUpperCase()}</h3>
-                                        </section>
-                                        <section className={"image"}>
-                                            <img className={"img"} src={require(`../../scaffolding/images/${e.type.charAt(0).toUpperCase() + e.type.slice(1)}.jpg`)} alt={""}></img>
-                                        </section>
-                                        <input
-                                            className={"form-control"}
-                                            placeholder={"Enter quantity of scaffolding parts to transfer"}
-                                            type="number"
-                                            min={0}
-                                            key={"input" + e.type}
-                                               onChange={(j) => setQuantity(j, e.type)}/>
-                                    </div>
-                                )
-                            }
-                        )}
+                                }
+                            )}
 
-                    </div>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}>
-                        Close
-                    </Button>
-                    <Button variant="primary" disabled={!validFormat} onClick={AddScaffold}>
-                        Save Changes
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-        </>
-    );
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={handleClose}>
+                            Close
+                        </Button>
+                        <Button variant="primary" disabled={!validFormat} onClick={AddScaffold}>
+                            Save Changes
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+            </>
+        );
+
 }
 
 

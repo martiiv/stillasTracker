@@ -33,11 +33,11 @@ function CardElement(props) {
                     }
                 ]
             try {
-                const result = await deleteModel(PROJECTS_URL, (deleteBody))
+                await deleteModel(PROJECTS_URL, (deleteBody)).then(() =>
+                    window.alert("Sucsessfylly deleted project")
+                )
                 await queryClient.invalidateQueries("allProjects")
-
             } catch (e) {
-                console.log(e)
                 window.alert("Something wrong happened! Try again later")
         }
         }

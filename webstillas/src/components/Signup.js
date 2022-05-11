@@ -4,8 +4,17 @@ import {Form, Alert} from "react-bootstrap";
 import {Button} from "react-bootstrap";
 import {useUserAuth} from "../context/UserAuthContext";
 import postModel from "../modelData/postModel";
-import { formatDateToString} from "./projects/projects";
+import {formatDateToString} from "./projects/projects";
+import {LOGIN} from "./constants";
+import {USER_POST_URL, USER_URL} from "../modelData/constantsFile";
+import "../firebaselogin.css"
 
+/**
+ * Function that will register a new user to the system.
+ *
+ * @returns {JSX.Element}
+ * @constructor
+ */
 const Signup = () => {
     const [email, setEmail] = useState("");
     const [firstName, setFirstName] = useState("");
@@ -14,16 +23,18 @@ const Signup = () => {
     const [phone, setPhone] = useState(0);
     const [admin, setAdmin] = useState(false);
     const [birthDay, setBirthDay] = useState("");
-
     const [error, setError] = useState("");
     const [password, setPassword] = useState("");
     const {signUp} = useUserAuth();
-
     let navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError("");
+    /**
+     * Will sign up the user, then add the user to the database.
+     * On sucsess the user is navigated back to log in site
+     *
+     * @returns {Promise<void>}
+     */
+    const handleSubmit = async () => {
         try {
             signUp(email, password).then(newUser => {
                 const user =
@@ -39,13 +50,11 @@ const Signup = () => {
                         "admin": admin,
                         "dateOfBirth": birthDay
                     }
-                postModel("user", user)
-                    .then(() => navigate("/"))
-                    .catch(e => console.log(e))
-            }).catch(
-                e => console.log(e)
-            )
+                    JSON.stringify(user)
+                postModel(USER_POST_URL, user)
+                    .then(() => navigate(LOGIN))
 
+            })
         } catch (err) {
             setError(err.message);
         }
@@ -53,9 +62,8 @@ const Signup = () => {
 
 
     return (
-        <>
-            <div className="p-4 box">
-                <h2 className="mb-3">Firebase Auth Signup</h2>
+        <div className={"card signup-box"}>
+                <h2 className="mb-3">Stillas bruker registrering </h2>
                 {error && <Alert variant="danger">{error}</Alert>}
                 <Form onSubmit={handleSubmit}>
                     <Form.Group className="mb-3" controlId="firstName">
@@ -81,24 +89,29 @@ const Signup = () => {
                         />
                     </Form.Group>
 
-                    <Form.Group className="mb-3" controlId="admin">
-                        <Form.Select onChange={(e) => setAdmin(Boolean(e.target.value))}>
-                            <option value={"false"}>False</option>
-                            <option value={"true"}>True</option>
-                        </Form.Select>
-                    </Form.Group>
+                    <div className={"selectors"}>
+                        <Form.Group className="admin-select" controlId="admin">
+                            <Form.Select onChange={(e) => setAdmin(Boolean(e.target.value))}>
+                                <option value={"false"}>False</option>
+                                <option value={"true"}>True</option>
+                            </Form.Select>
+                        </Form.Group>
 
-                    <Form.Group className="mb-3" controlId="role">
-                        <Form.Select onChange={(e) => setRole(e.target.value)}>
-                            <option value={"admin"}>Administrator</option>
-                            <option value={"installer"}>Installatør</option>
-                            <option value={"storage"}>Lagerarbeider</option>
+                        <Form.Group className="role-select" controlId="role">
+                            <Form.Select onChange={(e) => setRole(e.target.value)}>
+                                <option value={"admin"}>Administrator</option>
+                                <option value={"installer"}>Installatør</option>
+                                <option value={"storage"}>Lagerarbeider</option>
 
-                        </Form.Select>
-                    </Form.Group>
+                            </Form.Select>
+                        </Form.Group>
+                    </div>
 
-                    <label htmlFor="startDate">Fødselsdag</label>
-                    <input type="date" onChange={(event) => setBirthDay(formatDateToString(event.target.value))}/>
+
+                    <div className={"date-picker-signup"}>
+                        <label className={"date"} htmlFor="startDate">Fødselsdag</label>
+                        <input  type="date" onChange={(event) => setBirthDay(formatDateToString(event.target.value))}/>
+                    </div>
 
                     <Form.Group className="mb-3" controlId="formBasicEmail">
                         <Form.Control
@@ -114,17 +127,17 @@ const Signup = () => {
                             onChange={(e) => setPassword(e.target.value)}
                         />
                     </Form.Group>
-                    <div className="d-grid gap-2">
+                    <div className="signup-btn">
                         <Button variant="primary" type="Submit">
                             Registrer
                         </Button>
+
                     </div>
                 </Form>
+            <div className="signup-text ">
+                Har du allerede en bruker? <Link to={LOGIN}>Logg inn</Link>
             </div>
-            <div className="p-4 box mt-3 text-center">
-                Har du allerede en bruker? <Link to="/">Logg inn</Link>
-            </div>
-        </>
+        </div>
     );
 };
 

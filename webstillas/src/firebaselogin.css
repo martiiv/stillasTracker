@@ -1,0 +1,56 @@
+.signup-box{
+    width: 50%;
+    margin-left: 25%;
+    margin-top: 5%;
+    padding: 20px 20px 20px 20px;
+}
+
+.selectors{
+    display: flex;
+}
+
+.admin-select{
+    padding-right: 40px;
+}
+
+.role-select{
+    padding-right: 40px;
+}
+
+.date-picker-signup{
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.date{
+    padding-right: 20px;
+}
+
+.signup-btn{
+    margin-left: 250px;
+}
+
+.signup-text {
+    padding-top: 10px;
+    margin-left: 250px;
+
+}
+
+.box{
+    padding: 20px 20px 20px 20px;
+}
+
+.loginpage{
+    margin-left: 35%;
+    margin-top: 5%;
+}
+
+.loginbtn{
+    margin-left: 20%;
+}
+
+.logintxt{
+    margin-left: 25%;
+    margin-top: -5%;
+    padding-bottom: 10px;
+}
