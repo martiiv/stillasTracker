@@ -7,11 +7,18 @@
 
 import FirebaseAuth
 
+/// https://www.youtube.com/watch?v=vPCEIPL0U_k
+/// https://firebase.google.com/docs/auth/ios/start
 class AppViewModel: ObservableObject {
     
     let auth = Auth.auth()
     
     @Published var signedIn: Bool = false
+    
+    var userID: String {
+        get { return auth.currentUser?.uid ?? "" }
+        set { self.userID = newValue }
+    }
     
     var isSignedIn: Bool {
         return auth.currentUser != nil
