@@ -721,7 +721,7 @@ func addScaffolding(documentPath *firestore.DocumentRef, batch *firestore.WriteB
 		scaffoldingTypeDocument := scaffoldingCollection.Doc(scaffoldingType)
 
 		scaffoldingStruct := _struct.Scaffolding{
-			Type: (scaffoldingType),
+			Type: scaffoldingType,
 			Quantity: _struct.Quantity{
 				Expected:   0,
 				Registered: 0,

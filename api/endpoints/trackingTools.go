@@ -62,6 +62,7 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 
 		printList = append(printList, "\nTag id:"+idList[i]+" Battery voltage: "+battery+"\n")
 	}
+	updateAmountProject(gatewayList[0].Gateway(), w, idList, batteryList)
 
 	fmt.Printf("\n-----------------------------------------------------")
 	fmt.Println("\nBeacon payload:")
@@ -70,8 +71,6 @@ func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Amount of tags registered: %v \n", len(idList))
 	fmt.Printf("List of tags:\n %v", printList)
 	fmt.Printf("\n-----------------------------------------------------\n")
-
-	updateAmountProject(gatewayList[0].Gateway(), w, idList, batteryList)
 }
 
 func updateAmountProject(beaconID string, w http.ResponseWriter, idList []string, batteryList map[string]float32) {
@@ -224,7 +223,6 @@ func getTagTypes(idList []string, projectName string, scaffoldingArray _struct.S
 	resultList := make(map[string]int)
 	var scaffoldingType string
 	for i := range idList {
-
 		for j := range scaffoldingArray {
 			scaffoldingType = scaffoldingArray[j].Type
 			documentPath := database.Client.Collection(constants.S_TrackingUnitCollection).Doc(constants.S_ScaffoldingParts).Collection(scaffoldingType).Doc(idList[i])

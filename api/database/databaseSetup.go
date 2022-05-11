@@ -20,11 +20,9 @@ var Client *firestore.Client
 //Code taken from https://firebase.google.com/docs/firestore/quickstart#go
 func DatabaseConnection() {
 	file, err := filepath.Abs("database/stillas-16563-firebase-adminsdk-wd82v-a9fe8919b7.json")
-
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	// Creates instance of firebase
 	Ctx = context.Background()
 	sa := option.WithCredentialsFile(file) //Initializes database
@@ -72,7 +70,6 @@ GetDocumentData inspired from https://firebase.google.com/docs/firestore/query-d
 The function will return a selected document from a selected collection.
 document is the path to the selected document.
 */
-
 func GetDocumentData(document *firestore.DocumentRef) (map[string]interface{}, error) {
 	dsnap, err := document.Get(Ctx)
 	if err != nil {
