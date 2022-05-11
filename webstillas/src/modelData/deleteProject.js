@@ -18,7 +18,11 @@ export default function deleteModel(url, body) {
                     text: xhr.responseText
                 })));
             } else {
-                resolve((xhr.responseText));
+                resolve({
+                        statusCode: xhr.status,
+                        text: xhr.responseText
+                    }
+                );
             }
         });
         xhr.open('DELETE',  BASE_URL + url);

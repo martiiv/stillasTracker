@@ -24,7 +24,7 @@ function AddScaffolding() {
     })
 
     //Verification of
-    const [postSuccsess, setPostSuccsess] = useState(null)
+    const [postSuccess, setPostSuccess] = useState(null)
     const [buttonPress, setButtonPress] = useState(false)
 
 
@@ -82,8 +82,10 @@ function AddScaffolding() {
         ]
         try {
             //posting body
-            const promise = await postModel(SCAFFOLDING_URL, (body))
-            setPostSuccsess(promise.statusCode)
+            const promise = await postModel(SCAFFOLDING_URL, (body)).catch(
+                e => console.log(e)
+            )
+            setPostSuccess(promise.statusCode)
         } catch (e) {
             console.log(e)
         }
@@ -92,12 +94,12 @@ function AddScaffolding() {
 
     return (
         <div className={"main-add-scaffolding"}>
-            {(postSuccsess === 201) ?
+            {(postSuccess === 201) ?
                 (<Alert className={"alert-success"}
                         key={"success"} variant={"success"}>
                     Stillasdel har blitt registrert
                 </Alert>) : null}
-            {(postSuccsess !== 201 && buttonPress) ?
+            {(postSuccess !== 201 && buttonPress) ?
                 (<Alert className={"alert-success"}
                         key={"danger"} variant={"danger"}>
                     Stillasdel har ikke blitt registrert

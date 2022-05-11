@@ -14,13 +14,17 @@ export default function putModel(url, body) {
                 return;
             }
             if (xhr.status !== 200) {
-                reject(new Error(JSON.stringify({
-                    status: xhr.status,
+                reject((({
+                    statusCode: xhr.status,
                     statusText: xhr.statusText,
                     text: xhr.responseText
                 })));
             } else {
-                resolve((xhr.responseText));
+                resolve({
+                        statusCode: xhr.status,
+                        text: xhr.responseText
+                    }
+                );
             }
         });
         xhr.send(body);

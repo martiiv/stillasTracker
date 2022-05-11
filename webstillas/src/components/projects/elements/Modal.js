@@ -10,6 +10,8 @@ import "./Modal.css"
 
 
 //https://ordinarycoders.com/blog/article/react-bootstrap-modal
+
+//JSON body that is used to send request.
 const scaffoldingMove =
     [
         {
@@ -55,28 +57,38 @@ const scaffoldingMove =
     ]
 
 
-
-
+/**
+ * Function that will endable the user to transfer scaffolding from one location to another.
+ *
+ * @param props information of a given project
+ * @returns {JSX.Element}
+ */
 export default function InfoModalFunc(props) {
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
-    //https://codesandbox.io/s/react-week-date-view-forked-ruxjr9?file=/src/App.js:857-868
     const queryClient = useQueryClient()
 
     let jsonProjects
     jsonProjects = queryClient.getQueryData("allProjects")
 
     let jsonProject = queryClient.getQueryData(["project", props.id])
-    console.log(jsonProject)
-    const [roomRent, setRoomRent] = useState(scaffoldingMove);
+
+    const [scaffolding, setScaffolding] = useState(scaffoldingMove);
     const [ToProject, setToProject] = useState("");
     const [FromProject, setFromProject] = useState("");
 
 
-    //Todo change variable
-    const handleroom = (e, id) => {
-        let result = [...roomRent];
+    /**
+     * Function to set quantity of scaffolding types
+     *
+     * Code taken from https://codesandbox.io/s/react-week-date-view-forked-ruxjr9?file=/src/App.js:857-868
+     *
+     * @param e quantity the user has passed
+     * @param id of the selected project.
+     */
+    const setQuantity = (e, id) => {
+        let result = [...scaffolding];
         result = result.map((x) => {
             if (x.type.toLowerCase() === id.toLowerCase()) {
                 const inputvalue = (e.target.value)
@@ -84,26 +96,40 @@ export default function InfoModalFunc(props) {
                 return x;
             } else return x;
         });
-        setRoomRent(result)
+        setScaffolding(result)
     };
 
-    //todo add a note to the user if the transaction was a success or a fail.
+
+    /**
+     * Function that will execute request to transfer scaffolding parts.
+     *
+     * @returns {Promise<void>}
+     */
     const AddScaffold = async () => {
         console.log(JSON.stringify(move))
-        await putModel(TRANSFER_SCAFFOLDING, JSON.stringify(move));
-        await queryClient.resetQueries(["project", props.id]).then(() => handleClose())
+        try {
+            await putModel(TRANSFER_SCAFFOLDING, JSON.stringify(move))
+            await queryClient.resetQueries(["project", props.id])
+        } catch (e) {
+            if (e.text === "invalid body"){
+                window.alert("500 Internal Server Error\nNoe gikk galt! Prøv igjen senere")
+            }else {
+                window.alert("Advarsel: Kan ikke overføre antall stillasdeler")
+            }
+        }
     }
 
+    //JSON body that is sent with request
     const move = {
         "toProjectID": Number(ToProject),
         "fromProjectID": Number(FromProject),
-        "scaffold": roomRent
+        "scaffold": scaffolding
     }
 
 
+
+    //Checks if the user did not set to project equal to from project.
     const validFormat = ToProject !== FromProject
-
-
     return (
         <>
             <Button className="nextButton" onClick={handleShow}>
@@ -129,7 +155,7 @@ export default function InfoModalFunc(props) {
                                 onChange={(e) => setToProject(e.target.value)}>
                                 <option selected defaultValue="">Choose here</option>
                                 <option value={0}>Storage</option>
-                                {jsonProjects.map(e => {
+                                {jsonProjects?.map(e => {
                                     return (
                                         <option value={e.projectID}>{e.projectName}</option>
                                     )
@@ -166,7 +192,7 @@ export default function InfoModalFunc(props) {
                                             type="number"
                                             min={0}
                                             key={"input" + e.type}
-                                               onChange={(j) => handleroom(j, e.type)}/>
+                                               onChange={(j) => setQuantity(j, e.type)}/>
                                     </div>
                                 )
                             }
