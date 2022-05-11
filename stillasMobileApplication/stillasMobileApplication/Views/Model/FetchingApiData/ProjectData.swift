@@ -9,7 +9,7 @@ import SwiftUI
 import Foundation
 
 class ProjectData: ObservableObject {
-    @Published var projects = [Project]()
+    @Published var projects = [Project]() // TODO: REMOVE IF NOT USED IN THE END
     @Published private var _isLoading: Bool = false
 
     var isLoading: Bool {
