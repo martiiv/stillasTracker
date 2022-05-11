@@ -23,7 +23,7 @@ const TopBar = () => {
 
     /*Checking if the user is authenticated
     * If so, fetch userdata
-    * */
+    */
     if (auth.currentUser !== null) {
         const {isLoading, data} = GetDummyData("user", USER_URL + auth.currentUser.uid)
         loading = isLoading
@@ -70,7 +70,7 @@ const TopBar = () => {
                         </DropdownItem>
                     </NavDropdown>
                     <DropdownButton id="dropdown-button"
-                                    title={userData.name.firstName}
+                                    title={"userData.name.firstName"}
                                     size="sm"
                     >
                         <DropdownItem>

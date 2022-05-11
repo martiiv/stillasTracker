@@ -26,7 +26,6 @@ const Signup = () => {
         setError("");
         try {
             signUp(email, password).then(newUser => {
-                console.log(newUser.user.uid)
                 const user =
                     {
                         "employeeID": newUser.user.uid,
@@ -40,11 +39,13 @@ const Signup = () => {
                         "admin": admin,
                         "dateOfBirth": birthDay
                     }
-                console.log(JSON.stringify(user))
                 postModel("user", user)
                     .then(() => navigate("/"))
                     .catch(e => console.log(e))
-            })
+            }).catch(
+                e => console.log(e)
+            )
+
         } catch (err) {
             setError(err.message);
         }
@@ -126,5 +127,6 @@ const Signup = () => {
         </>
     );
 };
+
 
 export default Signup;

@@ -27,8 +27,9 @@ import {
 } from "./components/constants";
 
 
+const queryClient = new QueryClient()
+
 function App() {
-    const queryClient = new QueryClient()
 
     return (
         //Authorisation of user

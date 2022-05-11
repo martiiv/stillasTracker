@@ -6,6 +6,7 @@ import {PROJECTS_WITH_SCAFFOLDING_URL} from "../../modelData/constantsFile";
 import {GetDummyData} from "../../modelData/addData";
 import {SpinnerDefault} from "../Spinner";
 import DatePicker from "react-datepicker"
+import {InternalServerError} from "../error/error";
 
 
 /**
@@ -33,11 +34,16 @@ export function Project(){
 
 
 
-    const {isLoading, data} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
+    const {isLoading, data, isError} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
+
+
+
     if (isLoading) {
         return(
           <SpinnerDefault />
         )
+    } else if (isError){
+        return <InternalServerError/>
     } else {
         return (
             <div className={"main-project-window"}>
