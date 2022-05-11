@@ -6,7 +6,6 @@ import {MapPage} from "./components/mapPage/mapPage";
 import {Scaffolding} from "./components/scaffolding/scaffolding";
 import TopBar from "./components/topBar/topBar";
 import {PreView} from "./components/projects/elements/preView";
-import Logistic from "./components/logistics/logistic";
 import {QueryClientProvider, QueryClient} from 'react-query'
 import {ReactQueryDevtools} from 'react-query/devtools'
 import ProtectedRoute from "./components/ProtectedRoute";

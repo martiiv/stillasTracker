@@ -9,7 +9,7 @@ import {
     PROJECTS_WITH_SCAFFOLDING_URL,
     WITH_SCAFFOLDING_URL
 } from "../../../modelData/constantsFile";
-import img from "./../../mapPage/mapbox-marker-icon-20px-orange.png"
+import img from "./../../mapPage/marker.png"
 import {GetDummyData} from "../../../modelData/addData";
 import {useQueryClient} from "react-query";
 import {SpinnerDefault} from "../../Spinner";

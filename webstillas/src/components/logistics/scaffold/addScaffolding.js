@@ -22,11 +22,10 @@ function AddScaffolding() {
             address: ""
         }
     })
-    const [postSucsess, setPostSucsess] = useState(null)
+
+    //Verification of
+    const [postSuccsess, setPostSuccsess] = useState(null)
     const [buttonPress, setButtonPress] = useState(false)
-
-
-
 
 
     /**
@@ -71,6 +70,11 @@ function AddScaffolding() {
     }
 
 
+    /**
+     * Function that will add the new scaffolding object
+     *
+     * @returns {Promise<void>}
+     */
     const postRequest = async () => {
         setButtonPress(true)
         const body = [
@@ -79,29 +83,25 @@ function AddScaffolding() {
         try {
             //posting body
             const promise = await postModel(SCAFFOLDING_URL, (body))
-            setPostSucsess(promise.statusCode)
+            setPostSuccsess(promise.statusCode)
         } catch (e) {
             console.log(e)
         }
     }
 
 
-
-
-
-    console.log(postSucsess, buttonPress)
     return (
         <div className={"main-add-scaffolding"}>
-            {(postSucsess === 201) ?
+            {(postSuccsess === 201) ?
                 (<Alert className={"alert-success"}
-                    key={"success"} variant={"success"}>
-                Stillasdel har blitt registrert
-            </Alert>): null }
-            {(postSucsess !== 201 && buttonPress) ?
+                        key={"success"} variant={"success"}>
+                    Stillasdel har blitt registrert
+                </Alert>) : null}
+            {(postSuccsess !== 201 && buttonPress) ?
                 (<Alert className={"alert-success"}
                         key={"danger"} variant={"danger"}>
                     Stillasdel har ikke blitt registrert
-                </Alert>): null }
+                </Alert>) : null}
             <div className={"info-card"}>
                 {scaffoldingInformation()}
                 <div className={"btn-add-scaffolding"}>
