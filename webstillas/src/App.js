@@ -30,7 +30,6 @@ import {
 const queryClient = new QueryClient()
 
 function App() {
-
     return (
         //Authorisation of user
         <UserAuthContextProvider>
