@@ -6,7 +6,6 @@ import InfoModal from "./Modal";
 import {
     MAP_STYLE_V11,
     PROJECTS_URL_WITH_ID,
-    PROJECTS_WITH_SCAFFOLDING_URL,
     WITH_SCAFFOLDING_URL
 } from "../../../modelData/constantsFile";
 import img from "./../../mapPage/marker.png"
@@ -165,8 +164,6 @@ export const PreView = () => {
         return <InternalServerError />
     } else {
         const project = JSON.parse(data.text)
-
-
             return (
             <div className={"preView-Project-Main"}>
                 <div className={"map-preview"}>

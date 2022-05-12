@@ -8,7 +8,13 @@ import {PROJECTS_WITH_SCAFFOLDING_URL} from "../../../modelData/constantsFile";
 import "./Modalscaffolding.css"
 
 
-function ScaffoldingInProject(type, projects) {
+/**
+ * Function will return information about quantity of scaffolding in a specific project, including the end date of the project.
+ *
+ * @param type of scaffolding, the user would like more information about
+ * @returns {JSX.Element|*}
+ */
+function ScaffoldingInProject(type) {
 
     const {isLoading, data} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
     if (isLoading){
@@ -65,6 +71,12 @@ function ScaffoldingInProject(type, projects) {
 }
 
 
+/**
+ * Function will display a Modal, of with information of the projects that has the selected scaffolding types.
+ *
+ * @param props is type of scaffolding.
+ * @returns {JSX.Element}
+ */
 export default function InfoModal(props) {
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);

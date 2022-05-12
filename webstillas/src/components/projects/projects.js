@@ -12,7 +12,7 @@ import {InternalServerError} from "../error/error";
 /**
  Class that will create an overview of the projects
  */
-export function Project(){
+export function Project() {
     const [fromSize, setFromSize] = useState(0)
     const [toSize, setToSize] = useState(0)
 
@@ -22,37 +22,27 @@ export function Project(){
 
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
-    const [focusedInput, setFocusedInput] = useState(null);
-    const handleDatesChange = ({ startDate, endDate }) => {
-        setStartDate(startDate);
-        setEndDate(endDate);
-    };
-
-
-
-
-
 
 
     const {isLoading, data, isError} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
 
 
-
+    //If data is loading
     if (isLoading) {
-        return(
-            <SpinnerDefault />
+        return (
+            <SpinnerDefault/>
         )
-    } else if (isError){
+    } else if (isError) //If an error while fetching data has occurred
+        {
         return <InternalServerError/>
     } else {
         const allProjects = (JSON.parse(data.text))
-
         return (
             <div className={"main-project-window"}>
 
-                <div className={"main-sidebar"} >
+                <div className={"main-sidebar"}>
                     <div className={"search-filter"}>
-                        <p className = {"input-sorting-text"}>Status</p>
+                        <p className={"input-sorting-text"}>Status</p>
                         <select className={"form-select options"} onChange={(e) =>
                             setSelectedOption(e.target.value)}>
                             <option defaultValue="">Velg her</option>
@@ -62,7 +52,7 @@ export function Project(){
                         </select>
                     </div>
                     <div className={"search-filter"}>
-                        <p className = {"input-sorting-text"}>Prosjekt navn: </p>
+                        <p className={"input-sorting-text"}>Prosjekt navn: </p>
                         <input
                             className={"form-control"}
                             type="text"
@@ -73,7 +63,7 @@ export function Project(){
                             }}/>
                     </div>
                     <div className={"search-filter"}>
-                        <p className = {"input-sorting-text"}>Stillsmengde: </p>
+                        <p className={"input-sorting-text"}>Stillsmengde: </p>
                         <div className={"search-filter size"}>
                             <input
                                 className={"form-control size-search"}
@@ -95,7 +85,7 @@ export function Project(){
                         </div>
                     </div>
                     <div className={"date-filter"}>
-                        <p className = {"input-sorting-text"}>Fra dato: </p>
+                        <p className={"input-sorting-text"}>Fra dato: </p>
                         <input
                             className={"form-control"}
                             type="date"
@@ -104,7 +94,7 @@ export function Project(){
                             }}/>
                     </div>
                     <div className={"search-filter"}>
-                        <p className = {"input-sorting-text"}>Til dato: </p>
+                        <p className={"input-sorting-text"}>Til dato: </p>
                         <input
                             className={"form-control"}
                             type="date"
@@ -126,7 +116,7 @@ export function Project(){
                             })
                             .filter(data => {
                                 console.log(startDate)
-                                if (startDate !== null ) {
+                                if (startDate !== null) {
                                     return formatDate(data.period.startDate) >= formatDate(startDate)
                                 } else {
                                     return true
@@ -184,13 +174,22 @@ export function Project(){
 }
 
 
-
-export function formatDate (inputDate) {
+/**
+ * Function to format date from "mm-dd-yyyy" to "dd-mm-yyyy"
+ * @param inputDate in format "mm-dd-yyyy"
+ * @returns {Date} in format "dd-mm-yyyy"
+ */
+export function formatDate(inputDate) {
     const dateArray = inputDate.split('-')
     return new Date(dateArray[2] + '-' + dateArray[1] + '-' + dateArray[0])
 }
 
-export function formatDateToString (inputDate) {
+/**
+ * Function to format date from "mm-dd-yyyy" to "dd-mm-yyyy"
+ * @param inputDate in format "mm-dd-yyyy"
+ * @returns {string} in format "dd-mm-yyyy"
+ */
+export function formatDateToString(inputDate) {
     const dateArray = inputDate.split('-')
     return (dateArray[2] + '-' + dateArray[1] + '-' + dateArray[0])
 }

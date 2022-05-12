@@ -83,7 +83,7 @@ export default function InfoModalFunc(props) {
     const [scaffolding, setScaffolding] = useState(scaffoldingMove);
     const [ToProject, setToProject] = useState("");
     const [FromProject, setFromProject] = useState("");
-
+    const [buttonPressed, setButtonPressed] = useState(false)
 
     /**
      * Function to set quantity of scaffolding types
@@ -112,8 +112,10 @@ export default function InfoModalFunc(props) {
      * @returns {Promise<void>}
      */
     const AddScaffold = async () => {
+        setButtonPressed(true)
         try {
-            await putModel(TRANSFER_SCAFFOLDING, JSON.stringify(move))
+            const adding = await putModel(TRANSFER_SCAFFOLDING, JSON.stringify(move))
+            console.log(adding)
             await queryClient.resetQueries(["project", props.id])
         } catch (e) {
             if (e.text === "invalid body"){
@@ -172,7 +174,7 @@ export default function InfoModalFunc(props) {
                                     className={"form-select"}
                                     value={ToProject}
                                     onChange={(e) => setToProject(e.target.value)}>
-                                    <option selected defaultValue="">Choose here</option>
+                                    <option  defaultValue="">Choose here</option>
                                     <option value={0}>Storage</option>
                                     {jsonProjects?.map(e => {
                                         return (
@@ -187,11 +189,11 @@ export default function InfoModalFunc(props) {
                                     className={"form-select"}
                                     value={FromProject}
                                     onChange={(e) => setFromProject(e.target.value)}>
-                                    <option selected defaultValue="">Choose here</option>
+                                    <option  defaultValue="">Choose here</option>
                                     <option value={0}>Storage</option>
                                     {jsonProjects?.map(e => {
                                         return (
-                                            <option value={e.projectID}>{e.projectName}</option>
+                                            <option key={e.projectID} value={e.projectID}>{e.projectName}</option>
                                         )
                                     })}
                                 </select>
@@ -225,9 +227,29 @@ export default function InfoModalFunc(props) {
                         <Button variant="secondary" onClick={handleClose}>
                             Close
                         </Button>
-                        <Button variant="primary" disabled={!validFormat} onClick={AddScaffold}>
-                            Save Changes
-                        </Button>
+
+
+                        {buttonPressed ? <Button disabled>
+                                <Spinner
+                                    as="span"
+                                    animation="grow"
+                                    size="sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                />
+                                Transferring...
+                            </Button> :
+                            <Button variant="primary" disabled={!validFormat} onClick={AddScaffold}>
+                                Save Changes
+                            </Button>}
+
+
+
+
+
+
+
+
                     </Modal.Footer>
                 </Modal>
             </>

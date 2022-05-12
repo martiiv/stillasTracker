@@ -45,6 +45,7 @@ function MapPageClass(props) {
             {projectData.map(res => {
                 return (
                     <Marker
+                        key = {res.projectID}
                         offsetTop={-48}
                         offsetLeft={-24}
                         coordinates={[res.longitude, res.latitude]}
