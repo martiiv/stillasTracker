@@ -2,7 +2,6 @@ import React, {useState} from "react";
 import {Button, Modal} from "react-bootstrap";
 import img from "../images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 import {Link} from "react-router-dom";
-import {useQueryClient} from 'react-query'
 import {GetDummyData} from "../../../modelData/addData";
 import {PROJECTS_WITH_SCAFFOLDING_URL} from "../../../modelData/constantsFile";
 import "./Modalscaffolding.css"

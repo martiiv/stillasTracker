@@ -18,7 +18,6 @@ import {UserInfo} from "./components/userinformation/userInfo";
 import {NotFound} from "./components/error/error";
 import {
     ADD_PROJECT_URL, ADD_SCAFFOLDING_URL, LOGIN,
-    LOGISTICS_URL,
     MAP_URL, NOTFOUND,
     PROJECT_URL,
     PROJECT_URL_ID,
@@ -28,6 +27,12 @@ import {
 
 const queryClient = new QueryClient()
 
+
+/**
+ * Function that will route the
+ * @returns {JSX.Element}
+ * @constructor
+ */
 function App() {
     return (
         //Authorisation of user

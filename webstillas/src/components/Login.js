@@ -6,6 +6,12 @@ import { useUserAuth } from "../context/UserAuthContext";
 import {PROJECT_URL, SIGNUP} from "./constants";
 import "../firebaselogin.css"
 
+
+/**
+ * Function to display login site.
+ * @returns {JSX.Element}
+ * @constructor
+ */
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,6 +19,11 @@ const Login = () => {
   const { logIn } = useUserAuth();
   const navigate = useNavigate();
 
+  /**
+   * Function to submit the users request to log in. On success navigate to project site.
+   * @param e forms submit
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");

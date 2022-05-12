@@ -17,8 +17,10 @@ import {ADD_PROJECT_URL, ADD_SCAFFOLDING_URL, MAP_URL, PROJECT_URL, SCAFFOLDING_
 /**
  Component that will be used as a top bar for the user to navigate throughout the application.
  */
+
 const TopBar = () => {
     const {logOut} = useUserAuth();
+
     let loading, user
 
 
@@ -27,12 +29,7 @@ const TopBar = () => {
         const {isLoading, data} = GetDummyData("user", USER_URL + auth.currentUser.uid)
         loading = isLoading
         user = data
-
     }
-
-
-
-
 
     /*
     If the user is not authenticated, the topbar will be empty.
@@ -41,7 +38,6 @@ const TopBar = () => {
         return (
             <AppBar position="sticky">
                 <Toolbar className="toolbar">
-
                 </Toolbar>
             </AppBar>
         )
@@ -63,23 +59,30 @@ const TopBar = () => {
                     <Link className="link" to={MAP_URL}>
                         <Button className="button">Kart</Button>
                     </Link>
+
                     <NavDropdown id="basic-nav-dropdown1"
                                  title={"Logistikk"}
                                  size="sm"
+                                 className={"dropDownMenu"}
                     >
                         <DropdownItem>
-                            <Link to={ADD_PROJECT_URL}>Legg til prosjekt </Link>
+                            <Link className={"link"}
+                                to={ADD_PROJECT_URL}>Legg til prosjekt </Link>
                         </DropdownItem>
                         <DropdownItem>
-                            <Link to={ADD_SCAFFOLDING_URL}>Legg til stillas</Link>
+                            <Link className={"link"}
+                                to={ADD_SCAFFOLDING_URL}>Legg til stillas</Link>
                         </DropdownItem>
                     </NavDropdown>
                     <DropdownButton id="dropdown-button"
                                     title={userData?.name.firstName}
                                     size="sm"
+                                    className={"dropDownMenu"}
                     >
                         <DropdownItem>
-                            <Link to={USERINFO_URL}>Bruker Informasjon</Link>
+                            <Link className={"link"}
+                                  to={USERINFO_URL}>
+                                Bruker Informasjon</Link>
                         </DropdownItem>
                         <DropdownItem onClick={logOut}>Logg ut</DropdownItem>
                     </DropdownButton>

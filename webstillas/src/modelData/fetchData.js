@@ -1,5 +1,11 @@
 import {BASE_URL} from "./constantsFile"
 
+/**
+ * Function to fetch data from an api
+ *
+ * @param url we would like to fetch data from.
+ * @returns {Promise<unknown>}
+ */
 export default function fetchModel(url) {
     return new Promise(function (resolve, reject) {
         const xhr = new XMLHttpRequest();

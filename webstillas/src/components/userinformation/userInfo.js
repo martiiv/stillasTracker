@@ -18,6 +18,7 @@ export function UserInfo(){
 
     let isLoadingUser, userData, isErrorUser
 
+    //If user is authenticated load user data
     if (auth.currentUser){
         const {isLoading, data, isError} = GetDummyData("user", USER_URL + auth.currentUser.uid)
         isLoadingUser = isLoading

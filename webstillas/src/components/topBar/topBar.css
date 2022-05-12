@@ -17,6 +17,16 @@
     position: fixed;
 }
 
-.dropdown-button{
-    text-decoration-color: rebeccapurple;
+
+
+.link-dropdown{
+    text-decoration-color: black;
+}
+
+.dropDownMenu{
+    color: black;
+}
+
+.dropDownMenu:focus{
+    background-color: black;
 }

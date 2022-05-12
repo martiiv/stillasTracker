@@ -3,14 +3,12 @@ import "./scaffolding.css"
 import CardElement from "./elements/scaffoldingCard";
 import {PROJECTS_WITH_SCAFFOLDING_URL, SCAFFOLDING_URL, STORAGE_URL} from "../../modelData/constantsFile";
 import {GetDummyData} from "../../modelData/addData";
-import {useQueryClient} from "react-query";
 import {SpinnerDefault} from "../Spinner";
 import {InternalServerError} from "../error/error";
 
 /**
  Class that will create an overview of the scaffolding parts
  */
-
 class ScaffoldingClass extends React.Component {
     constructor(props) {
         super(props);
@@ -25,6 +23,13 @@ class ScaffoldingClass extends React.Component {
     }
 
 
+    /**
+     * Function that will count numbers of occurrences different types of scaffolding.
+     *
+     * @param arr is the array we are iterating.
+     * @param key is the field we want to count.
+     * @returns {*[]}
+     */
     countObjects(arr, key){
         let arr2 = [];
         arr?.forEach((x)=>{
@@ -37,7 +42,6 @@ class ScaffoldingClass extends React.Component {
                         k["occurrence"]++
                     }
                 })
-
             }else{
                 // If not! Then create a new object initialize
                 // it with the present iteration key's value and
@@ -53,14 +57,21 @@ class ScaffoldingClass extends React.Component {
     }
 
 
+    /**
+     * Function to add occurrences of type scaffolding in desired body.
+     *
+     * @param scaffold count of occurrences
+     * @param storage objects in an array.
+     * @returns {{scaffolding: *[]}}
+     */
     scaffoldingAndStorage(scaffold, storage){
         const scaffoldVar = {
             scaffolding: []
         };
-        for(var scaffoldIndex of scaffold) {
-            var scaff = scaffoldIndex;
-            for (var storageIndex of storage){
-                var stor = storageIndex;
+        for(const scaffoldIndex of scaffold) {
+            const scaff = scaffoldIndex;
+            for (const storageIndex of storage){
+                const stor = storageIndex;
                 if (stor.type.toLowerCase() === scaff.type.toLowerCase()){
                     scaffoldVar.scaffolding.push({
                         "type"          :scaff.type,
@@ -80,9 +91,9 @@ class ScaffoldingClass extends React.Component {
 
         const objectArr = this.countObjects(scaffolding, "type")
         const scaffoldingObject = this.scaffoldingAndStorage(objectArr, storage)
-        console.log(scaffoldingObject);
         const result = Object.keys(scaffoldingObject).map((key) => scaffoldingObject[key]);
 
+        //If user would like to sort based on scaffolding
         if (selectedOption === "ascending") {
             result[0]?.sort((a, b) => (a.scaffolding < b.scaffolding) ? 1 : -1)
         } else if (selectedOption === "descending") {
@@ -91,7 +102,6 @@ class ScaffoldingClass extends React.Component {
             result[0]?.sort((a, b) => (a.type > b.type))
         }
         return (
-            //todo only scroll the scaffolding not the map
             <div className={"scaffolding"}>
                 <div className={"all-scaffolding"}>
                     <div className={"sorting"}>
@@ -126,6 +136,12 @@ class ScaffoldingClass extends React.Component {
 
 }
 
+
+/**
+ * Function to display information about scaffolding
+ * @returns {JSX.Element}
+ * @constructor
+ */
 export const Scaffolding = () => {
     const {isLoading: LoadingScaffolding, data: Scaffolding, isError: scaffoldingError} = GetDummyData("scaffolding", SCAFFOLDING_URL)
     const {isLoading: LoadingStorage, data: Storage, isError: storageError} = GetDummyData("storage", STORAGE_URL)
@@ -133,14 +149,13 @@ export const Scaffolding = () => {
 
 
 
-
-
-
+    //If loading
     if (LoadingScaffolding || LoadingStorage || LoadingAll) {
         return <SpinnerDefault />
-    } else if(scaffoldingError || storageError || allProjectError){
+    } else if(scaffoldingError || storageError || allProjectError) //If loading error
+    {
         return <InternalServerError />
-    } else {
+    } else { //On success
         const scaffoldingData = JSON.parse(Scaffolding.text)
         const storageData = JSON.parse(Storage.text)
         const projectData = JSON.parse(Project.text)

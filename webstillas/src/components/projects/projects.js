@@ -5,7 +5,6 @@ import {Route, Routes} from "react-router-dom";
 import {PROJECTS_WITH_SCAFFOLDING_URL} from "../../modelData/constantsFile";
 import {GetDummyData} from "../../modelData/addData";
 import {SpinnerDefault} from "../Spinner";
-import DatePicker from "react-datepicker"
 import {InternalServerError} from "../error/error";
 
 

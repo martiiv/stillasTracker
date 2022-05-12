@@ -1,5 +1,12 @@
 import {BASE_URL} from "./constantsFile"
 
+/**
+ * Function that will send a delete request to an api.
+ *
+ * @param url to the request we would like to send
+ * @param body request body
+ * @returns {Promise<unknown>}
+ */
 export default function deleteModel(url, body) {
     return new Promise(function (resolve, reject) {
         const xhr = new XMLHttpRequest();
