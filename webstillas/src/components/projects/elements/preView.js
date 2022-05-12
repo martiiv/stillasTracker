@@ -157,14 +157,17 @@ function contactInformation(project) {
  */
 export const PreView = () => {
     //Fetching the data of specific project.
-    const {isLoading: projectLoad, data: project, isError } = GetDummyData(["project", getProjectID()], PROJECTS_URL_WITH_ID + getProjectID() + WITH_SCAFFOLDING_URL)
+    const {isLoading: projectLoad, data, isError } = GetDummyData(["project", getProjectID()], PROJECTS_URL_WITH_ID + getProjectID() + WITH_SCAFFOLDING_URL)
 
     if (projectLoad) {
         return <SpinnerDefault/>
     } else if(isError){
         return <InternalServerError />
     } else {
-        return (
+        const project = JSON.parse(data.text)
+
+
+            return (
             <div className={"preView-Project-Main"}>
                 <div className={"map-preview"}>
                     <PreViewFunction data={project[0]}/>

@@ -15,7 +15,7 @@ export default function postModel(url, body) {
             }
             if (xhr.status !== 201) {
                 reject(new Error(JSON.stringify({
-                    status: xhr.status,
+                    statusCode: xhr.status,
                     statusText: xhr.statusText,
                     text: xhr.responseText
                 })));

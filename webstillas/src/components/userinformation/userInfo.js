@@ -5,6 +5,7 @@ import { USER_URL} from "../../modelData/constantsFile";
 import {SpinnerDefault} from "../Spinner";
 import "./userInfo.css"
 import profileImg from "./profile-png-icon-2.png"
+import {InternalServerError} from "../error/error";
 
 
 /**
@@ -14,11 +15,23 @@ import profileImg from "./profile-png-icon-2.png"
  */
 export function UserInfo(){
     //Todo add if error
-    const {isLoading, data, isError} = GetDummyData("user", USER_URL + auth.currentUser.uid)
 
-    if (isLoading) {
+    let isLoadingUser, userData, isErrorUser
+
+    if (auth.currentUser){
+        const {isLoading, data, isError} = GetDummyData("user", USER_URL + auth.currentUser.uid)
+        isLoadingUser = isLoading
+        userData = data
+        isErrorUser = isError
+    }
+
+    if (isLoadingUser) {
         return (<SpinnerDefault/>)
-    } else {
+    } else if( isErrorUser){
+        return <InternalServerError />
+    }
+    else {
+        const user = JSON.parse(userData.text)
         return (
             <div className={"main-userinfo"}>
                 <div className={"info-card"}>
@@ -27,7 +40,7 @@ export function UserInfo(){
                     </div>
                     <div className={"information-text"}>
                         <h4 className={"header-information"}>
-                            {data.name.firstName} {data.name.lastName}
+                            {user?.name.firstName} {user?.name.lastName}
                         </h4>
                         <h4 className={"under-information"}>
                             Navn
@@ -35,7 +48,7 @@ export function UserInfo(){
                     </div>
                     <div className={"information-text"}>
                         <h4 className={"header-information"}>
-                            {data.phone}
+                            {user?.phone}
                         </h4>
                         <h4 className={"under-information"}>
                             Telefonnummer
@@ -43,7 +56,7 @@ export function UserInfo(){
                     </div>
                     <div className={"information-text"}>
                         <h4 className={"header-information"}>
-                            {data.email}
+                            {user?.email}
                         </h4>
                         <h4 className={"under-information"}>
                             Email
@@ -51,7 +64,7 @@ export function UserInfo(){
                     </div>
                     <div className={"information-text"}>
                         <h4 className={"header-information"}>
-                            {data.employeeID}
+                            {user?.employeeID}
                         </h4>
                         <h4 className={"under-information"}>
                             Ansatt ID
@@ -59,7 +72,7 @@ export function UserInfo(){
                     </div>
                     <div className={"information-text"}>
                         <h4 className={"header-information"}>
-                            {data.dateOfBirth}
+                            {user?.dateOfBirth}
                         </h4>
                         <h4 className={"under-information"}>
                             Fødselsdato
@@ -67,7 +80,7 @@ export function UserInfo(){
                     </div>
                     <div className={"information-text"}>
                         <h4 className={"header-information"}>
-                            {data.role}
+                            {user?.role}
                         </h4>
                         <h4 className={"under-information"}>
                             Stilling
@@ -75,7 +88,7 @@ export function UserInfo(){
                     </div>
                     <div className={"information-text"}>
                         <h4 className={"header-information"}>
-                            {data.admin.toString()}
+                            {user?.admin.toString()}
                         </h4>
                         <h4 className={"under-information"}>
                             Administrerende rettigheter

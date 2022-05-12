@@ -6,7 +6,7 @@ import {useUserAuth} from "../context/UserAuthContext";
 import postModel from "../modelData/postModel";
 import {formatDateToString} from "./projects/projects";
 import {LOGIN} from "./constants";
-import {USER_POST_URL, USER_URL} from "../modelData/constantsFile";
+import {USER_POST_URL} from "../modelData/constantsFile";
 import "../firebaselogin.css"
 
 /**

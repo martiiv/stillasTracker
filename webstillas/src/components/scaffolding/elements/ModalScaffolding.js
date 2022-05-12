@@ -9,13 +9,13 @@ import "./Modalscaffolding.css"
 
 
 function ScaffoldingInProject(type, projects) {
-    const queryClient = useQueryClient()
 
     const {isLoading, data} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
     if (isLoading){
         return <h1>Loading</h1>
     }else {
-        const result = data.map((element) => {
+        const allProjects = JSON.parse(data.text)
+        const result = allProjects.map((element) => {
             return {
                 ...element, scaffolding: element.scaffolding.filter((subElement) =>
                     subElement.type.toLowerCase() === type.toLowerCase() && subElement.Quantity.expected !== 0)

@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {Button, Modal} from 'react-bootstrap';
+import {Button, Modal, Spinner} from 'react-bootstrap';
 import img from "../../scaffolding/images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 import putModel from "../../../modelData/putData";
 import {
@@ -76,8 +76,9 @@ export default function InfoModalFunc(props) {
     const handleShow = () => setShow(true);
     const queryClient = useQueryClient()
 
-    const {data: jsonProjects} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
-    let jsonProject = queryClient.getQueryData(["project", props.id])
+    const {isLoading, data: projects} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
+    let project = queryClient.getQueryData(["project", props.id])
+    let jsonProject = JSON.parse(project.text)
 
     const [scaffolding, setScaffolding] = useState(scaffoldingMove);
     const [ToProject, setToProject] = useState("");
@@ -111,7 +112,6 @@ export default function InfoModalFunc(props) {
      * @returns {Promise<void>}
      */
     const AddScaffold = async () => {
-        console.log(JSON.stringify(move))
         try {
             await putModel(TRANSFER_SCAFFOLDING, JSON.stringify(move))
             await queryClient.resetQueries(["project", props.id])
@@ -133,15 +133,27 @@ export default function InfoModalFunc(props) {
 
 
 
-
-
     //Checks if the user did not set to project equal to from project.
     const validFormat = ToProject !== FromProject
+    let jsonProjects
+    if (!isLoading){
+        jsonProjects = JSON.parse(projects.text)
+    }
         return (
             <>
-                <Button className="nextButton" onClick={handleShow}>
+                {isLoading ? <Button className="nextButton" disabled>
+                    <Spinner
+                        as="span"
+                        animation="grow"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                    />
+                    Loading
+                </Button> :
+                    <Button className="nextButton" onClick={handleShow}>
                     Overfør deler til Prosjekt
-                </Button>
+                </Button>}
 
                 <Modal show={show}
                        onHide={handleClose}
@@ -164,7 +176,7 @@ export default function InfoModalFunc(props) {
                                     <option value={0}>Storage</option>
                                     {jsonProjects?.map(e => {
                                         return (
-                                            <option value={e.projectID}>{e.projectName}</option>
+                                            <option key={e.projectID} value={e.projectID}>{e.projectName}</option>
                                         )
                                     })}
                                 </select>
@@ -220,6 +232,7 @@ export default function InfoModalFunc(props) {
                 </Modal>
             </>
         );
+
 
 }
 

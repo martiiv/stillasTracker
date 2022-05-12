@@ -5,6 +5,7 @@ import {PROJECTS_WITH_SCAFFOLDING_URL, SCAFFOLDING_URL, STORAGE_URL} from "../..
 import {GetDummyData} from "../../modelData/addData";
 import {useQueryClient} from "react-query";
 import {SpinnerDefault} from "../Spinner";
+import {InternalServerError} from "../error/error";
 
 /**
  Class that will create an overview of the scaffolding parts
@@ -26,12 +27,12 @@ class ScaffoldingClass extends React.Component {
 
     countObjects(arr, key){
         let arr2 = [];
-        arr.forEach((x)=>{
+        arr?.forEach((x)=>{
             // Checking if there is any object in arr2
             // which contains the key value
-            if(arr2.some((val)=>{return val[key] === x[key]})){
+            if(arr2?.some((val)=>{return val[key] === x[key]})){
                 // If yes! then increase the occurrence by 1
-                arr2.forEach((k)=>{
+                arr2?.forEach((k)=>{
                     if(k[key] !== x[key]){
                         k["occurrence"]++
                     }
@@ -44,7 +45,7 @@ class ScaffoldingClass extends React.Component {
                 let a = {}
                 a[key] = x[key]
                 a["occurrence"] = 1
-                arr2.push(a);
+                arr2?.push(a);
             }
         })
 
@@ -83,11 +84,11 @@ class ScaffoldingClass extends React.Component {
         const result = Object.keys(scaffoldingObject).map((key) => scaffoldingObject[key]);
 
         if (selectedOption === "ascending") {
-            result[0].sort((a, b) => (a.scaffolding < b.scaffolding) ? 1 : -1)
+            result[0]?.sort((a, b) => (a.scaffolding < b.scaffolding) ? 1 : -1)
         } else if (selectedOption === "descending") {
-            result[0].sort((a, b) => (a.scaffolding > b.scaffolding) ? 1 : -1)
+            result[0]?.sort((a, b) => (a.scaffolding > b.scaffolding) ? 1 : -1)
         } else {
-            result[0].sort((a, b) => (a.type > b.type))
+            result[0]?.sort((a, b) => (a.type > b.type))
         }
         return (
             //todo only scroll the scaffolding not the map
@@ -104,7 +105,7 @@ class ScaffoldingClass extends React.Component {
                     </div>
 
                     <div className={"grid-container"}>
-                    {result[0].map((e) => {
+                    {result[0]?.map((e) => {
 
                         return (
                             <CardElement key={e.type}
@@ -126,17 +127,10 @@ class ScaffoldingClass extends React.Component {
 }
 
 export const Scaffolding = () => {
-    const {isLoading: LoadingScaffolding, data: Scaffolding} = GetDummyData("scaffolding", SCAFFOLDING_URL)
-    const {isLoading: LoadingStorage, data: Storage} = GetDummyData("storage", STORAGE_URL)
-    const queryClient = useQueryClient()
-    let LoadingAll
-    let ProjectsData
-    if (queryClient.getQueryData("allProjects") !== undefined) {
-        ProjectsData = queryClient.getQueryData("allProjects")
-    }
-        const {isLoading: LoadingAllProjects, data} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
-        ProjectsData = data
-        LoadingAll = LoadingAllProjects
+    const {isLoading: LoadingScaffolding, data: Scaffolding, isError: scaffoldingError} = GetDummyData("scaffolding", SCAFFOLDING_URL)
+    const {isLoading: LoadingStorage, data: Storage, isError: storageError} = GetDummyData("storage", STORAGE_URL)
+    const {isLoading: LoadingAll, data: Project, isError: allProjectError} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
+
 
 
 
@@ -144,10 +138,16 @@ export const Scaffolding = () => {
 
     if (LoadingScaffolding || LoadingStorage || LoadingAll) {
         return <SpinnerDefault />
+    } else if(scaffoldingError || storageError || allProjectError){
+        return <InternalServerError />
     } else {
-        return <ScaffoldingClass scaffolding = {Scaffolding}
-                                 storage = {Storage}
-                                 projects = {ProjectsData}
+        const scaffoldingData = JSON.parse(Scaffolding.text)
+        const storageData = JSON.parse(Storage.text)
+        const projectData = JSON.parse(Project.text)
+
+        return <ScaffoldingClass scaffolding = {scaffoldingData}
+                                 storage = {storageData}
+                                 projects = {projectData}
         />
     }
 }

@@ -12,13 +12,17 @@ export default function fetchModel(url) {
                 return;
             }
             if (xhr.status !== 200) {
-                reject(new Error(JSON.stringify({
+                reject({
                     status: xhr.status,
                     statusText: xhr.statusText,
                     text: xhr.responseText
-                })));
+                });
             } else {
-                resolve(JSON.parse(xhr.responseText));
+                resolve({
+                        statusCode: xhr.status,
+                        text: xhr.responseText
+                    }
+                );
             }
         });
         xhr.open('GET',  BASE_URL + url);

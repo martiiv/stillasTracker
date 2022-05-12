@@ -5,6 +5,8 @@ import {GetDummyData} from "../../modelData/addData";
 import ReactMapboxGl, {ScaleControl, Marker, ZoomControl} from "react-mapbox-gl";
 import {MapBoxAPIKey} from "../../firebaseConfig";
 import img from "./marker.png"
+import {InternalServerError} from "../error/error";
+import {SpinnerDefault} from "../Spinner";
 
 const Map = ReactMapboxGl({
     accessToken: MapBoxAPIKey
@@ -72,10 +74,13 @@ function MapPageClass(props) {
  * @returns {JSX.Element}
  */
 export const MapPage = () => {
-    const {isLoading, data} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
+    const {isLoading, data, isError} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
     if (isLoading) {
-        return <h1>Loading</h1>
+        return <SpinnerDefault />
+    } else if(isError){
+        return <InternalServerError />
     } else {
-        return <MapPageClass data={data}/>
+        const projects = JSON.parse(data.text)
+        return <MapPageClass data={projects}/>
     }
 }

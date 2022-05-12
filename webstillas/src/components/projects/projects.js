@@ -40,80 +40,82 @@ export function Project(){
 
     if (isLoading) {
         return(
-          <SpinnerDefault />
+            <SpinnerDefault />
         )
     } else if (isError){
         return <InternalServerError/>
     } else {
+        const allProjects = (JSON.parse(data.text))
+
         return (
             <div className={"main-project-window"}>
 
-                    <div className={"main-sidebar"} >
-                        <div className={"search-filter"}>
-                            <p className = {"input-sorting-text"}>Status</p>
-                            <select className={"form-select options"} onChange={(e) =>
-                                setSelectedOption(e.target.value)}>
-                                <option defaultValue="">Velg her</option>
-                                <option value={"Active"}>Aktiv</option>
-                                <option value={"Inactive"}>Inaktiv</option>
-                                <option value={"Upcoming"}>Kommende</option>
-                            </select>
-                        </div>
-                        <div className={"search-filter"}>
-                            <p className = {"input-sorting-text"}>Prosjekt navn: </p>
+                <div className={"main-sidebar"} >
+                    <div className={"search-filter"}>
+                        <p className = {"input-sorting-text"}>Status</p>
+                        <select className={"form-select options"} onChange={(e) =>
+                            setSelectedOption(e.target.value)}>
+                            <option defaultValue="">Velg her</option>
+                            <option value={"Active"}>Aktiv</option>
+                            <option value={"Inactive"}>Inaktiv</option>
+                            <option value={"Upcoming"}>Kommende</option>
+                        </select>
+                    </div>
+                    <div className={"search-filter"}>
+                        <p className = {"input-sorting-text"}>Prosjekt navn: </p>
+                        <input
+                            className={"form-control"}
+                            type="text"
+                            placeholder={"Søk prosjekt navn"}
+                            value={searchName}
+                            onChange={e => {
+                                setSearchName(e.target.value)
+                            }}/>
+                    </div>
+                    <div className={"search-filter"}>
+                        <p className = {"input-sorting-text"}>Stillsmengde: </p>
+                        <div className={"search-filter size"}>
                             <input
-                                className={"form-control"}
-                                type="text"
-                                   placeholder={"Søk prosjekt navn"}
-                                   value={searchName}
-                                   onChange={e => {
-                                       setSearchName(e.target.value)
-                                   }}/>
-                        </div>
-                        <div className={"search-filter"}>
-                            <p className = {"input-sorting-text"}>Stillsmengde: </p>
-                            <div className={"search-filter size"}>
-                                <input
-                                    className={"form-control size-search"}
-                                    type="number"
-                                    placeholder={"Fra"}
-                                    min={0}
-                                    onWheel={(e) => e.prototype}
-                                    onChange={e => setFromSize(Number(e.target.value))}
-                                />
-                                <input
-                                    className={"form-control size-search"}
-                                    type="number"
-                                    placeholder={"Til"}
-                                    min={0}
-                                    onChange={e => {
-                                        setToSize(Number(e.target.value))
-                                    }}
-                                />
-                            </div>
-                        </div>
-                        <div className={"date-filter"}>
-                            <p className = {"input-sorting-text"}>Fra dato: </p>
+                                className={"form-control size-search"}
+                                type="number"
+                                placeholder={"Fra"}
+                                min={0}
+                                onWheel={(e) => e.prototype}
+                                onChange={e => setFromSize(Number(e.target.value))}
+                            />
                             <input
-                                className={"form-control"}
-                                type="date"
+                                className={"form-control size-search"}
+                                type="number"
+                                placeholder={"Til"}
+                                min={0}
                                 onChange={e => {
-                                    setStartDate(formatDateToString(e.target.value))
-                                }}/>
-                        </div>
-                        <div className={"search-filter"}>
-                            <p className = {"input-sorting-text"}>Til dato: </p>
-                            <input
-                                className={"form-control"}
-                                type="date"
-                                onChange={e => {
-                                    setEndDate(formatDateToString(e.target.value))
-                                }}/>
+                                    setToSize(Number(e.target.value))
+                                }}
+                            />
                         </div>
                     </div>
+                    <div className={"date-filter"}>
+                        <p className = {"input-sorting-text"}>Fra dato: </p>
+                        <input
+                            className={"form-control"}
+                            type="date"
+                            onChange={e => {
+                                setStartDate(formatDateToString(e.target.value))
+                            }}/>
+                    </div>
+                    <div className={"search-filter"}>
+                        <p className = {"input-sorting-text"}>Til dato: </p>
+                        <input
+                            className={"form-control"}
+                            type="date"
+                            onChange={e => {
+                                setEndDate(formatDateToString(e.target.value))
+                            }}/>
+                    </div>
+                </div>
                 <div>
                     <div className={"projects-display"}>
-                        {data.filter(data => (data.projectName.toLowerCase()).includes(searchName.toLowerCase()))
+                        {allProjects.filter(data => (data.projectName.toLowerCase()).includes(searchName.toLowerCase()))
                             .filter(data => {
                                 if (fromSize !== 0) {
                                     console.log(fromSize)

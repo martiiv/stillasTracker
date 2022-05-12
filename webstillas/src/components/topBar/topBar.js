@@ -19,16 +19,20 @@ import {ADD_PROJECT_URL, ADD_SCAFFOLDING_URL, MAP_URL, PROJECT_URL, SCAFFOLDING_
  */
 const TopBar = () => {
     const {logOut} = useUserAuth();
-    let loading, userData
+    let loading, user
 
-    /*Checking if the user is authenticated
-    * If so, fetch userdata
-    */
-    if (auth.currentUser !== null) {
+
+    //If the user is authenticated, fetch data from database
+    if (auth.currentUser){
         const {isLoading, data} = GetDummyData("user", USER_URL + auth.currentUser.uid)
         loading = isLoading
-        userData = data
+        user = data
+
     }
+
+
+
+
 
     /*
     If the user is not authenticated, the topbar will be empty.
@@ -45,6 +49,7 @@ const TopBar = () => {
         //If data is loading, the user will get a spinner displayed
         return <SpinnerDefault/>
     } else {
+        const userData = JSON.parse(user.text)
         //Top bar with interactive buttons to navigate.
         return (
             <AppBar position="sticky">
@@ -70,7 +75,7 @@ const TopBar = () => {
                         </DropdownItem>
                     </NavDropdown>
                     <DropdownButton id="dropdown-button"
-                                    title={"userData.name.firstName"}
+                                    title={userData?.name.firstName}
                                     size="sm"
                     >
                         <DropdownItem>
