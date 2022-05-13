@@ -7,20 +7,27 @@
 
 import SwiftUI
 
+/// **FilterProjectPeriod**
+/// The View for selecting a period filter
 struct FilterProjectPeriod: View {
-    //@State private var date = Date()
+    /// Selected start date and end date
     @Binding var selStartDateBind: Date
     @Binding var selEndDateBind: Date
+    
+    /// Tells if filter is activated or not
     @Binding var periodFilterActiveBind: Bool
     @State var periodFilterActive: Bool = true
+    
+    /// Initializes the start date and end date to be the date of the day
     @State private var selStartDate = Date()
     @State private var selEndDate = Date()
     
-    
     var body: some View {
         VStack {
+            /// CalendarView with calendars for both start date and end date
             CalendarView(selStartDate: $selStartDate, selEndDate: $selEndDate, periodFilterActive: $periodFilterActive)
                 .onAppear {
+                    /// Resets the calendars selected date
                     selStartDateBind = selStartDate
                     selEndDateBind = selEndDate
                 }
@@ -34,7 +41,6 @@ struct FilterProjectPeriod: View {
                 }
         }
         .navigationTitle(Text("Prosjekt periode"))
-        //.ignoresSafeArea(edges: .top)
     }
 }
 

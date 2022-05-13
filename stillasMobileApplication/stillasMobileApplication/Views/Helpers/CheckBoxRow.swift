@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+/// **CheckBoxRow**
+/// Creates a checkbox row to be used in lists etc.
 struct CheckBoxRow: View {
     var title: String
     @Binding var selectedItems: Set<String>
@@ -29,6 +31,8 @@ struct CheckBoxRow: View {
     }
 }
 
+/// **CheckBoxView**
+/// Creates the view of the checkboxes
 struct CheckBoxView: View {
     @Binding var checked: Bool
     @State var title: String

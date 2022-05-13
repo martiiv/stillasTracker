@@ -8,13 +8,6 @@
 import Foundation
 import SwiftUI
 
-/*
-struct Response: Codable{
-    var results: [Project]
-}
- */
-
-// MARK: - Project
 struct Project: Codable {
     let projectID: Int
     let projectName: String
@@ -28,19 +21,16 @@ struct Project: Codable {
     let scaffolding: [Scaffolding]?
 }
 
-// MARK: - Address
 struct Address: Codable {
     let street, zipcode, municipality, county: String
 }
 
-// MARK: - Customer
 struct Customer: Codable {
     let name: String
     let number: Int
     let email: String
 }
 
-// MARK: - Geofence
 struct Geofence: Codable {
     let wPosition, xPosition, yPosition, zPosition: Position
 
@@ -52,17 +42,14 @@ struct Geofence: Codable {
     }
 }
 
-// MARK: - Position
 struct Position: Codable {
     let latitude, longitude: Double
 }
 
-// MARK: - Period
 struct Period: Codable {
     let startDate, endDate: String
 }
 
-// MARK: - Scaffolding
 struct Scaffolding: Codable {
     let type: String
     let quantity: Quantity
@@ -73,7 +60,6 @@ struct Scaffolding: Codable {
     }
 }
 
-// MARK: - Quantity
 struct Quantity: Codable {
     let expected, registered: Int
 }
