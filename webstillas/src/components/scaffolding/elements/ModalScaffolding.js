@@ -79,7 +79,6 @@ export default function InfoModal(props) {
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
     //https://codesandbox.io/s/react-week-date-view-forked-ruxjr9?file=/src/App.js:857-868
-    //todo gjør om variablenavn
     return (
         <div>
             <Button className="nextButton" onClick={handleShow}>
