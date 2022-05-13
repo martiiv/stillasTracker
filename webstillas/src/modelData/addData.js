@@ -3,7 +3,15 @@ import fetchModel from "./fetchData";
 import { useQuery } from 'react-query'
 
 //Todo set timeout
-export const GetDummyData = (dataName, url) => {
+
+/**
+ * Function that will fetch data from api, and cache data
+ *
+ * @param dataName key to data caching
+ * @param url to the api
+ * @returns {{isLoading: boolean, isLoadingError: boolean, isError: boolean, data: unknown}}
+ */
+export const GetCachingData = (dataName, url) => {
     const { isLoading, data, isError, isLoadingError} = useQuery(dataName, ()=>{
         return fetchModel(url)
     }, {
@@ -12,7 +20,6 @@ export const GetDummyData = (dataName, url) => {
         refetchOnReconnect: false
 
     })
-
     return {isLoading, data, isError, isLoadingError}
 }
 

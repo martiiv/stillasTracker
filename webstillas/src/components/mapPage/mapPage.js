@@ -1,37 +1,39 @@
 import React from "react";
 import "./mapPage.css"
-import {PROJECTS_WITH_SCAFFOLDING_URL} from "../../modelData/constantsFile";
-import {GetDummyData} from "../../modelData/addData";
-import ReactMapboxGl, {ScaleControl, Source, Layer, Marker, ZoomControl} from "react-mapbox-gl";
-import img from "./mapbox-marker-icon-20px-orange.png"
-import {NavigationControl} from "react-map-gl";
-
+import {MAP_STYLE_V11, PROJECTS_WITH_SCAFFOLDING_URL} from "../../modelData/constantsFile";
+import {GetCachingData} from "../../modelData/addData";
+import ReactMapboxGl, {ScaleControl, Marker, ZoomControl} from "react-mapbox-gl";
+import {MapBoxAPIKey} from "../../firebaseConfig";
+import img from "./marker.png"
+import {InternalServerError} from "../error/error";
+import {SpinnerDefault} from "../Spinner";
 
 const Map = ReactMapboxGl({
-    accessToken:
-        "pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ"
+    accessToken: MapBoxAPIKey
 });
 
 
-/**
- Class that will create the map-page of the application
- */
 //Kode hentet fra https://docs.mapbox.com/help/tutorials/use-mapbox-gl-js-with-react/
+/**
+ * Function that will display a map on the website, with markers on lat, long.
+ *
+ * @param props information of project
+ * @returns {JSX.Element}
+ */
 function MapPageClass(props) {
+
     const projectData = props.data
     const lng = 10.69155
     const lat = 60.79574
-    const zoom = 9
 
-
-    const onClick = (data) =>{
+    const onClick = (data) => {
         window.alert(data.projectName)
     }
 
-
+    //Returns a map centered at desired longitude and latitude.
     return (
         <Map
-            style="mapbox://styles/mapbox/streets-v10"
+            style={MAP_STYLE_V11}
             containerStyle={{
                 height: '100vh',
                 width: '100vw'
@@ -41,13 +43,14 @@ function MapPageClass(props) {
 
 
             {projectData.map(res => {
-                return(
+                return (
                     <Marker
+                        key = {res.projectID}
                         offsetTop={-48}
                         offsetLeft={-24}
                         coordinates={[res.longitude, res.latitude]}
                         onClick={() => onClick(res)}
-                       >
+                    >
                         <img src={img} alt={""}/>
                     </Marker>
                 )
@@ -57,7 +60,6 @@ function MapPageClass(props) {
                 position="top-right"
             />
 
-
             <ScaleControl/>
         </Map>
 
@@ -66,11 +68,20 @@ function MapPageClass(props) {
 }
 
 
+/**
+ * Function that will fetch the information from API/Cache.
+ * If loading a spinner will be displayed.
+ *
+ * @returns {JSX.Element}
+ */
 export const MapPage = () => {
-    const {isLoading, data} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
+    const {isLoading, data, isError} = GetCachingData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
     if (isLoading) {
-        return <h1>Loading</h1>
+        return <SpinnerDefault />
+    } else if(isError){
+        return <InternalServerError />
     } else {
-        return <MapPageClass data={data}/>
+        const projects = JSON.parse(data.text)
+        return <MapPageClass data={projects}/>
     }
 }

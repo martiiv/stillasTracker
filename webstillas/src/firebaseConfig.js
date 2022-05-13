@@ -1,0 +1,7 @@
+export const FirbaseAPIKEY = "AIzaSyB5XxJ-AIC_Bm38oOH4TjdeIBA0eNLRl7w"
+export const FirebaseAuthDomain = "stillas-16563.firebaseapp.com"
+export const FirbaseprojectId = "stillas-16563"
+export const FirbaseStorageBucket = "stillas-16563.appspot.com"
+export const FirbaseMessagingSenderId = "586975019426"
+export const FirbaseAppID = "1:586975019426:web:83a11475b6ae32ffbc32fb"
+export const MapBoxAPIKey = "pk.eyJ1IjoiZmFrZXVzZXJnaXRodWIiLCJhIjoiY2pwOGlneGI4MDNnaDN1c2J0eW5zb2ZiNyJ9.mALv0tCpbYUPtzT7YysA2g"

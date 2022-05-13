@@ -1,27 +1,47 @@
 import React from "react";
 import { auth } from "../../firebase";
-import {GetDummyData} from "../../modelData/addData";
+import {GetCachingData} from "../../modelData/addData";
 import { USER_URL} from "../../modelData/constantsFile";
 import {SpinnerDefault} from "../Spinner";
 import "./userInfo.css"
 import profileImg from "./profile-png-icon-2.png"
+import {InternalServerError} from "../error/error";
 
+
+/**
+ * Function that will return information about the user.
+ * @returns {JSX.Element}
+ * @constructor
+ */
 export function UserInfo(){
-    const {isLoading, data} = GetDummyData("user", USER_URL + auth.currentUser.uid)
+    //Todo add if error
 
-    if (isLoading) {
+    let isLoadingUser, userData, isErrorUser
+
+    //If user is authenticated load user data
+    if (auth.currentUser){
+        const {isLoading, data, isError} = GetCachingData("user", USER_URL + auth.currentUser.uid)
+        isLoadingUser = isLoading
+        userData = data
+        isErrorUser = isError
+    }
+
+    if (isLoadingUser) {
         return (<SpinnerDefault/>)
-    } else {
+    } else if( isErrorUser){
+        return <InternalServerError />
+    }
+    else {
+        const user = JSON.parse(userData.text)
         return (
             <div className={"main-userinfo"}>
                 <div className={"info-card"}>
                     <div className={"image-frame"}>
                         <img src={profileImg} alt={""} className={"profile-image"}/>
-
                     </div>
                     <div className={"information-text"}>
                         <h4 className={"header-information"}>
-                            {data.name.firstName} {data.name.lastName}
+                            {user?.name.firstName} {user?.name.lastName}
                         </h4>
                         <h4 className={"under-information"}>
                             Navn
@@ -29,7 +49,7 @@ export function UserInfo(){
                     </div>
                     <div className={"information-text"}>
                         <h4 className={"header-information"}>
-                            {data.phone}
+                            {user?.phone}
                         </h4>
                         <h4 className={"under-information"}>
                             Telefonnummer
@@ -37,7 +57,7 @@ export function UserInfo(){
                     </div>
                     <div className={"information-text"}>
                         <h4 className={"header-information"}>
-                            {data.email}
+                            {user?.email}
                         </h4>
                         <h4 className={"under-information"}>
                             Email
@@ -45,7 +65,7 @@ export function UserInfo(){
                     </div>
                     <div className={"information-text"}>
                         <h4 className={"header-information"}>
-                            {data.employeeID}
+                            {user?.employeeID}
                         </h4>
                         <h4 className={"under-information"}>
                             Ansatt ID
@@ -53,7 +73,7 @@ export function UserInfo(){
                     </div>
                     <div className={"information-text"}>
                         <h4 className={"header-information"}>
-                            {data.dateOfBirth}
+                            {user?.dateOfBirth}
                         </h4>
                         <h4 className={"under-information"}>
                             Fødselsdato
@@ -61,7 +81,7 @@ export function UserInfo(){
                     </div>
                     <div className={"information-text"}>
                         <h4 className={"header-information"}>
-                            {data.role}
+                            {user?.role}
                         </h4>
                         <h4 className={"under-information"}>
                             Stilling
@@ -69,7 +89,7 @@ export function UserInfo(){
                     </div>
                     <div className={"information-text"}>
                         <h4 className={"header-information"}>
-                            {data.admin.toString()}
+                            {user?.admin.toString()}
                         </h4>
                         <h4 className={"under-information"}>
                             Administrerende rettigheter

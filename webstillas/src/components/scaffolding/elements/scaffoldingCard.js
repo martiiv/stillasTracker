@@ -3,7 +3,13 @@ import './scaffoldingCard.css'
 import InfoModal from "./ModalScaffolding";
 
 
-
+/**
+ * Will return an infromation card, where the user get information about how many of the specific
+ * scaffolding the storage has, including total amount that is in projects.
+ *
+ * @param props type of scaffolding
+ * @returns {JSX.Element}
+ */
 function CardElement(props){
     console.log(props.type)
     console.log(`../images/${props.type}.jpg`)

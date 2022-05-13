@@ -83,8 +83,7 @@ export function MapClass(props) {
      */
     const AddProjectRequest = async () => {
         try {
-            console.log(JSON.stringify(project))
-            await postModel(PROJECTS_URL, JSON.stringify(project))
+            await postModel(PROJECTS_URL, (project))
             await queryClient.refetchQueries("allProjects")
         } catch (e) {
             AlertCatch()

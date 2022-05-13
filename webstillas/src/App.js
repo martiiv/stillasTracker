@@ -6,7 +6,6 @@ import {MapPage} from "./components/mapPage/mapPage";
 import {Scaffolding} from "./components/scaffolding/scaffolding";
 import TopBar from "./components/topBar/topBar";
 import {PreView} from "./components/projects/elements/preView";
-import Logistic from "./components/logistics/logistic";
 import {QueryClientProvider, QueryClient} from 'react-query'
 import {ReactQueryDevtools} from 'react-query/devtools'
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -19,7 +18,6 @@ import {UserInfo} from "./components/userinformation/userInfo";
 import {NotFound} from "./components/error/error";
 import {
     ADD_PROJECT_URL, ADD_SCAFFOLDING_URL, LOGIN,
-    LOGISTICS_URL,
     MAP_URL, NOTFOUND,
     PROJECT_URL,
     PROJECT_URL_ID,
@@ -29,6 +27,12 @@ import {
 
 const queryClient = new QueryClient()
 
+
+/**
+ * Function that will route the
+ * @returns {JSX.Element}
+ * @constructor
+ */
 function App() {
     return (
         //Authorisation of user

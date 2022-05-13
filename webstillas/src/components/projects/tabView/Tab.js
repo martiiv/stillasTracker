@@ -2,7 +2,11 @@ import React  from 'react';
 import PropTypes from 'prop-types';
 
 
-//https://www.digitalocean.com/community/tutorials/react-tabs-component
+/**
+ * Class of a single tab.
+ *
+ * Code acquired from https://www.digitalocean.com/community/tutorials/react-tabs-component
+ */
 class Tab extends React.Component {
     static propTypes = {
         activeTab: PropTypes.string.isRequired,

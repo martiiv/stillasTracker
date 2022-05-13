@@ -1,5 +1,12 @@
 import React from "react";
 
+
+/**
+ * Function that will display number of expected and registered scaffolding parts in the project.
+ *
+ * @param props wil return key, type, expected and registered, of that scaffolding
+ * @returns {JSX.Element}
+ */
 function ScaffoldingProject(props){
     return(
         <div className={"scaffoldingElement"}>

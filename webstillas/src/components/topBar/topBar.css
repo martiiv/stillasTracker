@@ -3,6 +3,11 @@
     justify-content: space-between;
 }
 
+.dropdown-toggle-topbar{
+    height: 70px;
+    width: 150px;
+
+}
 
 .button{
     width: 150px;
@@ -17,6 +22,15 @@
     position: fixed;
 }
 
-.dropdown-button{
-    text-decoration-color: rebeccapurple;
+
+.link-dropdown{
+    text-decoration-color: black;
+}
+
+.user-button-topbar{
+    justify-content: center;
+}
+
+.profile-img{
+
 }

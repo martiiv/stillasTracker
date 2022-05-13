@@ -22,11 +22,8 @@ function AddScaffolding() {
             address: ""
         }
     })
-    const [postSucsess, setPostSucsess] = useState(null)
+    //Verification of a buttonPress
     const [buttonPress, setButtonPress] = useState(false)
-
-
-
 
 
     /**
@@ -49,7 +46,7 @@ function AddScaffolding() {
                     <p className={"input-sorting-text"}>Stillasdel:</p>
                     <select
                         className={"form-select scaffolding-input"}
-                        value={"Test"}
+                        value={scaffolding.type}
                         onChange={(e) => {
                             //setting the type
                             setScaffolding({...scaffolding, type: e.target.value})
@@ -71,37 +68,40 @@ function AddScaffolding() {
     }
 
 
+    const [type, setType] = useState("")
+
+
+    /**
+     * Function that will add the new scaffolding object
+     *
+     * @returns {Promise<void>}
+     */
     const postRequest = async () => {
         setButtonPress(true)
         const body = [
             scaffolding
         ]
         try {
-            //posting body
-            const promise = await postModel(SCAFFOLDING_URL, (body))
-            setPostSucsess(promise.statusCode)
+            await postModel(SCAFFOLDING_URL, (body))
+            setType("success")
+
         } catch (e) {
-            console.log(e)
+            setType("danger")
         }
     }
 
-
-
-
-
-    console.log(postSucsess, buttonPress)
     return (
         <div className={"main-add-scaffolding"}>
-            {(postSucsess === 201) ?
+            {(type === "success") ?
                 (<Alert className={"alert-success"}
-                    key={"success"} variant={"success"}>
-                Stillasdel har blitt registrert
-            </Alert>): null }
-            {(postSucsess !== 201 && buttonPress) ?
+                        key={"success"} variant={"success"}>
+                    Stillasdel har blitt registrert
+                </Alert>) : null}
+            {(type === "danger" && buttonPress) ?
                 (<Alert className={"alert-success"}
                         key={"danger"} variant={"danger"}>
                     Stillasdel har ikke blitt registrert
-                </Alert>): null }
+                </Alert>) : null}
             <div className={"info-card"}>
                 {scaffoldingInformation()}
                 <div className={"btn-add-scaffolding"}>

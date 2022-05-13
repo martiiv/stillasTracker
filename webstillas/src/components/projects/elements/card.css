@@ -14,11 +14,6 @@
     overflow: hidden;
 }
 
-.btn-delete{
-    height: fit-content;
-    width: fit-content;
-    background-size: cover;
-}
 
 .header {
     display: flex;
@@ -66,9 +61,6 @@
     border-left-color: gray;
 }
 
-.card-btn{
-    padding: 0 24px 24px;
-}
 .btn{
     background-color: #F28A04;
     border-radius: 10px;
@@ -82,9 +74,10 @@
 
 .card-btns{
     display: flex;
-    padding-top: 24px;
     align-items: center;
     justify-content: center;
+    padding: 0 24px 24px;
+
 }
 
 .left-contact-text{

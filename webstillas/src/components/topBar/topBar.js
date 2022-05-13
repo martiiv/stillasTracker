@@ -4,30 +4,34 @@ import {
     AppBar, Toolbar, Button
 } from '@material-ui/core';
 import {Link} from "react-router-dom";
-import {DropdownButton, NavDropdown} from "react-bootstrap";
+import {Dropdown } from "react-bootstrap";
 import DropdownItem from "react-bootstrap/DropdownItem";
 import {useUserAuth} from "../../context/UserAuthContext";
 import {auth} from "../../firebase"
-import {GetDummyData} from "../../modelData/addData";
+import {GetCachingData} from "../../modelData/addData";
 import {USER_URL} from "../../modelData/constantsFile";
 import {SpinnerDefault} from "../Spinner";
 import "bootstrap/dist/css/bootstrap.min.css";
 import {ADD_PROJECT_URL, ADD_SCAFFOLDING_URL, MAP_URL, PROJECT_URL, SCAFFOLDING_URL, USERINFO_URL} from "../constants";
+import DropdownToggle from "react-bootstrap/DropdownToggle";
+import DropdownMenu from "react-bootstrap/DropdownMenu";
+import profileImg from "../userinformation/profile-png-icon-2.png"
 
 /**
  Component that will be used as a top bar for the user to navigate throughout the application.
  */
+
 const TopBar = () => {
     const {logOut} = useUserAuth();
-    let loading, userData
 
-    /*Checking if the user is authenticated
-    * If so, fetch userdata
-    */
-    if (auth.currentUser !== null) {
-        const {isLoading, data} = GetDummyData("user", USER_URL + auth.currentUser.uid)
+    let loading, user
+
+
+    //If the user is authenticated, fetch data from database
+    if (auth.currentUser){
+        const {isLoading, data} = GetCachingData("user", USER_URL + auth.currentUser.uid)
         loading = isLoading
-        userData = data
+        user = data
     }
 
     /*
@@ -37,7 +41,6 @@ const TopBar = () => {
         return (
             <AppBar position="sticky">
                 <Toolbar className="toolbar">
-
                 </Toolbar>
             </AppBar>
         )
@@ -45,6 +48,7 @@ const TopBar = () => {
         //If data is loading, the user will get a spinner displayed
         return <SpinnerDefault/>
     } else {
+        const userData = JSON.parse(user.text)
         //Top bar with interactive buttons to navigate.
         return (
             <AppBar position="sticky">
@@ -58,26 +62,40 @@ const TopBar = () => {
                     <Link className="link" to={MAP_URL}>
                         <Button className="button">Kart</Button>
                     </Link>
-                    <NavDropdown id="basic-nav-dropdown1"
-                                 title={"Logistikk"}
-                                 size="sm"
-                    >
-                        <DropdownItem>
-                            <Link to={ADD_PROJECT_URL}>Legg til prosjekt </Link>
-                        </DropdownItem>
-                        <DropdownItem>
-                            <Link to={ADD_SCAFFOLDING_URL}>Legg til stillas</Link>
-                        </DropdownItem>
-                    </NavDropdown>
-                    <DropdownButton id="dropdown-button"
-                                    title={"userData.name.firstName"}
-                                    size="sm"
-                    >
-                        <DropdownItem>
-                            <Link to={USERINFO_URL}>Bruker Informasjon</Link>
-                        </DropdownItem>
-                        <DropdownItem onClick={logOut}>Logg ut</DropdownItem>
-                    </DropdownButton>
+
+                    <Dropdown>
+                        <DropdownToggle className={"dropdown-toggle-topbar"}  variant=" primary" id="dropdown-basic">
+                            Logistikk
+                        </DropdownToggle>
+                        <DropdownMenu>
+                            <DropdownItem className={"dropdown-item-topbar"}>
+                                <Link className={"dropdown-item"}
+                                      to={ADD_PROJECT_URL}>Legg til prosjekt </Link>
+                            </DropdownItem>
+                            <DropdownItem>
+                                <Link className={"dropdown-item"}
+                                      to={ADD_SCAFFOLDING_URL}>Legg til stillas</Link>
+                            </DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+
+                    <Dropdown>
+                        <DropdownToggle className={"dropdown-toggle-topbar user-button-topbar"} variant=" primary"  id="dropdown-basic">
+                            <img  src={profileImg} alt={""} style={{height: "30px"}}/>
+                            <p>{userData?.name.firstName}</p>
+                        </DropdownToggle>
+                        <DropdownMenu >
+                            <DropdownItem >
+                                <Link className={"dropdown-item"}
+                                      to={USERINFO_URL}>
+                                    Bruker Informasjon</Link>
+                            </DropdownItem>
+                            <div className="dropdown-divider"></div>
+                            <DropdownItem
+                                className={"dropdown-item"}
+                                onClick={logOut}>Logg ut</DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
                 </Toolbar>
             </AppBar>
         );

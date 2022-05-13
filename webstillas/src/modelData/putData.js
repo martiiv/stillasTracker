@@ -1,5 +1,13 @@
 import {BASE_URL} from "./constantsFile";
 
+
+/**
+ * Function to change data to the API
+ *
+ * @param url of the request we would like to send.
+ * @param body put body the user is sending to the api
+ * @returns {Promise<unknown>}
+ */
 export default function putModel(url, body) {
     return new Promise(function (resolve, reject) {
         const xhr = new XMLHttpRequest();
@@ -14,13 +22,17 @@ export default function putModel(url, body) {
                 return;
             }
             if (xhr.status !== 200) {
-                reject(new Error(JSON.stringify({
-                    status: xhr.status,
+                reject((({
+                    statusCode: xhr.status,
                     statusText: xhr.statusText,
                     text: xhr.responseText
                 })));
             } else {
-                resolve((xhr.responseText));
+                resolve({
+                        statusCode: xhr.status,
+                        text: xhr.responseText
+                    }
+                );
             }
         });
         xhr.send(body);
