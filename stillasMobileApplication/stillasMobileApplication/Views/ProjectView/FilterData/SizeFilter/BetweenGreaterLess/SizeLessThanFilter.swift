@@ -7,23 +7,34 @@
 
 import SwiftUI
 
+/// **SizeLessThanFilter**
+/// The View for selecting a project with size less than a values
 struct SizeLessThanFilter: View {
+    
+    /// Enum for input
     enum Field: Int, CaseIterable {
         case input
     }
 
+    /// Size filter active
     @Binding var sizeFilterActive: Bool
     
+    /// Has textfield been activated and should be in focus?
     @FocusState var focusedField: Field?
     
+    /// First slider values
     @State var scoreFrom: Int = 100
     @Binding var scoreFromBind: Int
+    
+    /// The input of maximum size
     @ObservedObject var input = NumbersOnly()
     
+    /// Slider data
     var sliderSizeMin = 100.0
     var sliderSizeMax = 1000.0
     var stepLength = 50.0
 
+    /// Slider value
     var intProxyS1: Binding<Double>{
         Binding<Double>(
             get: {
@@ -42,8 +53,8 @@ struct SizeLessThanFilter: View {
             HStack {
                 VStack {
                     Text("Under")
-                    
                     HStack {
+                        /// Adds textfield with bind to slider
                         TextField("\(Int(sliderSizeMin))", text: $input.value)
                             .font(Font.system(size: 30, design: .default))
                             .onChange(of: input.value) { value in
@@ -91,6 +102,7 @@ struct SizeLessThanFilter: View {
                     .font(Font.system(size: 20, design: .default))
                     .padding(.top, 20)
                     
+                    /// Adds slider for maximum size
                     Slider(value: intProxyS1 , in: sliderSizeMin...sliderSizeMax, step: stepLength, onEditingChanged: {_ in
                         print(scoreFrom.description)
                     })
@@ -99,23 +111,25 @@ struct SizeLessThanFilter: View {
                 }
             }
         }
-        Spacer()
-        Button(action: {
-            print("Bruk")
-            scoreFrom = Int(input.value) ?? 100
-            scoreFromBind = scoreFrom
-            sizeFilterActive = true
-        }) {
-            Text("Bruk")
-                .frame(width: 300, height: 50, alignment: .center)
+        .overlay(alignment: .bottom) {
+            Spacer()
+            
+            /// Returnerer den brukte størrelsedataen til parent Viewen
+            Button(action: {
+                print("Bruk")
+                scoreFrom = Int(input.value) ?? 100
+                scoreFromBind = scoreFrom
+                sizeFilterActive = true
+            }) {
+                Text("Bruk")
+                    .frame(width: 300, height: 50, alignment: .center)
+            }
+            .foregroundColor(.white)
+            .background(Color.blue)
+            .cornerRadius(10)
+            .padding(.bottom, 50)
         }
-        .foregroundColor(.white)
-        //.padding(.vertical, 10)
-        .background(Color.blue)
-        .cornerRadius(10)
-        
-        Spacer()
-            .frame(height:50)  // limit spacer size by applying a frame
+        .ignoresSafeArea(.keyboard)
     }
 }
 /*

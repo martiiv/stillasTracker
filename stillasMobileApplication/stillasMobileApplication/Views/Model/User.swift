@@ -8,9 +8,6 @@
 import SwiftUI
 import Foundation
 
-/**
-    User - decode Data into struct
- */
 struct User: Codable, Hashable, Identifiable {
     var id: Int
     var name: String

@@ -7,22 +7,30 @@
 
 import SwiftUI
 
+/// **FilterProjectSize**
+/// Responsible for switching between the different filtering Views
 struct FilterProjectSize: View {
+    /// Slider values
     @State var scoreFrom: Int = 100
     @State var scoreTo: Int = 1000
     
+    /// Slider selection to be returned to parent View
     @Binding var scoreFromBind: Int
     @Binding var scoreToBind: Int
     
+    /// Size filter active
     @Binding var sizeFilterActive: Bool
-    @Binding var selection: String
     
-    let sizeSelections = ["Less Than", "Between", "Greater Than"]
+    /// The selected size filtering method (Mindre enn, Mellom, Større enn)
+    @Binding var selection: String
+
+    /// Filtrering metoder
+    let sizeSelections = ["Mindre enn", "Mellom", "Større enn"]
 
     var body: some View {
-        
         VStack {
             VStack {
+                /// Picker for velging av filtrering metode
                 Picker("Select a state: ", selection: $selection) {
                     ForEach(sizeSelections, id: \.self) {
                         Text($0)
@@ -34,13 +42,15 @@ struct FilterProjectSize: View {
                 Spacer()
                 
                 switch selection {
-                case "Less Than":
+                case "Mindre enn":
+                    /// Redirects to the SizeLessThanFilter View
                     SizeLessThanFilter(sizeFilterActive: $sizeFilterActive, scoreFrom: scoreFrom, scoreFromBind: $scoreFromBind)
                         .onChange(of: scoreFrom) { val in
                             scoreFromBind = val
                             sizeFilterActive = true
                         }
-                case "Between":
+                case "Mellom":
+                    /// Redirects to the SizeBetweenFilter View
                     SizeBetweenFilter(sizeFilterActive: $sizeFilterActive, scoreFrom: scoreFrom, scoreFromBind: $scoreFromBind, scoreTo: scoreTo, scoreToBind: $scoreToBind)
                         .onChange(of: scoreTo) { val in
                             scoreToBind = val
@@ -50,7 +60,8 @@ struct FilterProjectSize: View {
                             scoreFromBind = val
                             sizeFilterActive = true
                         }
-                case "Greater Than":
+                case "Større enn":
+                    /// Redirects to the SizeGreaterThanFilter View
                     SizeGreaterThanFilter(sizeFilterActive: $sizeFilterActive, scoreTo: scoreTo, scoreToBind: $scoreToBind)
                         .onChange(of: scoreFrom) { val in
                             scoreFromBind = val
@@ -71,44 +82,6 @@ extension UIScreen {
    static let screenSize = UIScreen.main.bounds.size
 }
 
-struct CornerRadiusStyle: ViewModifier {
-    var radius: CGFloat
-    var corners: UIRectCorner
-    
-    struct CornerRadiusShape: Shape {
-
-        var radius = CGFloat.infinity
-        var corners = UIRectCorner.allCorners
-
-        func path(in rect: CGRect) -> Path {
-            let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
-            return Path(path.cgPath)
-        }
-    }
-
-    func body(content: Content) -> some View {
-        content
-            .clipShape(CornerRadiusShape(radius: radius, corners: corners))
-    }
-}
-
-extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        ModifiedContent(content: self, modifier: CornerRadiusStyle(radius: radius, corners: corners))
-    }
-}
-
-class NumbersOnly: ObservableObject {
-    @Published var value = "" {
-        didSet {
-            let filtered = value.filter { $0.isNumber }
-            
-            if value != filtered {
-                value = filtered
-            }
-        }
-    }
-}
 /*
 struct FilterProjectSize_Previews: PreviewProvider {
     static var previews: some View {
