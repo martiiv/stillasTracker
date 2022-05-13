@@ -22,8 +22,7 @@ function AddScaffolding() {
             address: ""
         }
     })
-
-    //Verification of
+    //Verification of a buttonPress
     const [buttonPress, setButtonPress] = useState(false)
 
 

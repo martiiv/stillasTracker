@@ -1,7 +1,7 @@
 import React from "react";
 import "./mapPage.css"
 import {MAP_STYLE_V11, PROJECTS_WITH_SCAFFOLDING_URL} from "../../modelData/constantsFile";
-import {GetDummyData} from "../../modelData/addData";
+import {GetCachingData} from "../../modelData/addData";
 import ReactMapboxGl, {ScaleControl, Marker, ZoomControl} from "react-mapbox-gl";
 import {MapBoxAPIKey} from "../../firebaseConfig";
 import img from "./marker.png"
@@ -75,7 +75,7 @@ function MapPageClass(props) {
  * @returns {JSX.Element}
  */
 export const MapPage = () => {
-    const {isLoading, data, isError} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
+    const {isLoading, data, isError} = GetCachingData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
     if (isLoading) {
         return <SpinnerDefault />
     } else if(isError){

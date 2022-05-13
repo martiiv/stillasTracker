@@ -1,6 +1,6 @@
 import React from "react";
 import { auth } from "../../firebase";
-import {GetDummyData} from "../../modelData/addData";
+import {GetCachingData} from "../../modelData/addData";
 import { USER_URL} from "../../modelData/constantsFile";
 import {SpinnerDefault} from "../Spinner";
 import "./userInfo.css"
@@ -20,7 +20,7 @@ export function UserInfo(){
 
     //If user is authenticated load user data
     if (auth.currentUser){
-        const {isLoading, data, isError} = GetDummyData("user", USER_URL + auth.currentUser.uid)
+        const {isLoading, data, isError} = GetCachingData("user", USER_URL + auth.currentUser.uid)
         isLoadingUser = isLoading
         userData = data
         isErrorUser = isError

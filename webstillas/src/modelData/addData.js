@@ -11,7 +11,7 @@ import { useQuery } from 'react-query'
  * @param url to the api
  * @returns {{isLoading: boolean, isLoadingError: boolean, isError: boolean, data: unknown}}
  */
-export const GetDummyData = (dataName, url) => {
+export const GetCachingData = (dataName, url) => {
     const { isLoading, data, isError, isLoadingError} = useQuery(dataName, ()=>{
         return fetchModel(url)
     }, {

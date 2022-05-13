@@ -2,7 +2,7 @@ import React from "react";
 import "./scaffolding.css"
 import CardElement from "./elements/scaffoldingCard";
 import {PROJECTS_WITH_SCAFFOLDING_URL, SCAFFOLDING_URL, STORAGE_URL} from "../../modelData/constantsFile";
-import {GetDummyData} from "../../modelData/addData";
+import {GetCachingData} from "../../modelData/addData";
 import {SpinnerDefault} from "../Spinner";
 import {InternalServerError} from "../error/error";
 
@@ -143,9 +143,9 @@ class ScaffoldingClass extends React.Component {
  * @constructor
  */
 export const Scaffolding = () => {
-    const {isLoading: LoadingScaffolding, data: Scaffolding, isError: scaffoldingError} = GetDummyData("scaffolding", SCAFFOLDING_URL)
-    const {isLoading: LoadingStorage, data: Storage, isError: storageError} = GetDummyData("storage", STORAGE_URL)
-    const {isLoading: LoadingAll, data: Project, isError: allProjectError} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
+    const {isLoading: LoadingScaffolding, data: Scaffolding, isError: scaffoldingError} = GetCachingData("scaffolding", SCAFFOLDING_URL)
+    const {isLoading: LoadingStorage, data: Storage, isError: storageError} = GetCachingData("storage", STORAGE_URL)
+    const {isLoading: LoadingAll, data: Project, isError: allProjectError} = GetCachingData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
 
 
 

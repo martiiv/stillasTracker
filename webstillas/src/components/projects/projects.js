@@ -3,7 +3,7 @@ import "./projects.css"
 import CardElement from './elements/card'
 import {Route, Routes} from "react-router-dom";
 import {PROJECTS_WITH_SCAFFOLDING_URL} from "../../modelData/constantsFile";
-import {GetDummyData} from "../../modelData/addData";
+import {GetCachingData} from "../../modelData/addData";
 import {SpinnerDefault} from "../Spinner";
 import {InternalServerError} from "../error/error";
 
@@ -18,12 +18,11 @@ export function Project() {
     const [searchName, setSearchName] = useState("")
     const [selectedOption, setSelectedOption] = useState("")
 
-
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
 
 
-    const {isLoading, data, isError} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
+    const {isLoading, data, isError} = GetCachingData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
 
 
     //If data is loading

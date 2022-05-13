@@ -9,7 +9,7 @@ import {
     WITH_SCAFFOLDING_URL
 } from "../../../modelData/constantsFile";
 import img from "./../../mapPage/marker.png"
-import {GetDummyData} from "../../../modelData/addData";
+import {GetCachingData} from "../../../modelData/addData";
 import {SpinnerDefault} from "../../Spinner";
 import ReactMapboxGl, {Marker} from "react-mapbox-gl";
 import {MapBoxAPIKey} from "../../../firebaseConfig";
@@ -156,7 +156,7 @@ function contactInformation(project) {
  */
 export const PreView = () => {
     //Fetching the data of specific project.
-    const {isLoading: projectLoad, data, isError } = GetDummyData(["project", getProjectID()], PROJECTS_URL_WITH_ID + getProjectID() + WITH_SCAFFOLDING_URL)
+    const {isLoading: projectLoad, data, isError } = GetCachingData(["project", getProjectID()], PROJECTS_URL_WITH_ID + getProjectID() + WITH_SCAFFOLDING_URL)
 
     if (projectLoad) {
         return <SpinnerDefault/>

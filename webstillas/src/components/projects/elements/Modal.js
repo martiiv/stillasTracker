@@ -1,18 +1,14 @@
 import React, {useState} from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {Button, Modal, Spinner} from 'react-bootstrap';
-import img from "../../scaffolding/images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 import putModel from "../../../modelData/putData";
 import {
-    PROJECTS_URL_WITH_ID,
     PROJECTS_WITH_SCAFFOLDING_URL,
     TRANSFER_SCAFFOLDING,
-    WITH_SCAFFOLDING_URL
 } from "../../../modelData/constantsFile";
 import {useQueryClient} from "react-query";
 import "./Modal.css"
-import {GetDummyData} from "../../../modelData/addData";
-import {SpinnerDefault} from "../../Spinner";
+import {GetCachingData} from "../../../modelData/addData";
 
 
 
@@ -76,7 +72,7 @@ export default function InfoModalFunc(props) {
     const handleShow = () => setShow(true);
     const queryClient = useQueryClient()
 
-    const {isLoading, data: projects} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
+    const {isLoading, data: projects} = GetCachingData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
     let project = queryClient.getQueryData(["project", props.id])
     let jsonProject = JSON.parse(project.text)
 
@@ -112,12 +108,14 @@ export default function InfoModalFunc(props) {
      * @returns {Promise<void>}
      */
     const AddScaffold = async () => {
-        setButtonPressed(true)
+
+        JSON.stringify(move)
         try {
-            const adding = await putModel(TRANSFER_SCAFFOLDING, JSON.stringify(move))
-            console.log(adding)
+            setButtonPressed(true)
+            await putModel(TRANSFER_SCAFFOLDING, JSON.stringify(move))
             await queryClient.resetQueries(["project", props.id])
         } catch (e) {
+            setButtonPressed(false)
             if (e.text === "invalid body"){
                 window.alert("500 Internal Server Error\nNoe gikk galt! Prøv igjen senere")
             }else {
@@ -242,12 +240,6 @@ export default function InfoModalFunc(props) {
                             <Button variant="primary" disabled={!validFormat} onClick={AddScaffold}>
                                 Save Changes
                             </Button>}
-
-
-
-
-
-
 
 
                     </Modal.Footer>

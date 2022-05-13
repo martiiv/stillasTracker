@@ -3,6 +3,11 @@
     justify-content: space-between;
 }
 
+.dropdown-toggle-topbar{
+    height: 70px;
+    width: 150px;
+
+}
 
 .button{
     width: 150px;
@@ -18,15 +23,14 @@
 }
 
 
-
 .link-dropdown{
     text-decoration-color: black;
 }
 
-.dropDownMenu{
-    color: black;
+.user-button-topbar{
+    justify-content: center;
 }
 
-.dropDownMenu:focus{
-    background-color: black;
+.profile-img{
+
 }

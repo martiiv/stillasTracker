@@ -1,7 +1,7 @@
-import React, {useState} from 'react'
+import React from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './card.css'
-import img from '../images/blog-item.jpg'
+import img from '../images/scaffoldingimg.jpg'
 import {Link} from "react-router-dom";
 import {PROJECTS_URL} from "../../../modelData/constantsFile";
 import deleteModel from "../../../modelData/deleteProject";

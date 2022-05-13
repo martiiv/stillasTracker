@@ -9,10 +9,7 @@ import {BASE_URL} from "./constantsFile"
 export default function fetchModel(url) {
     return new Promise(function (resolve, reject) {
         const xhr = new XMLHttpRequest();
-        /*
-            load event is also ok to use here,
-            but readystatechange was giving me more descriptive errors
-        */
+
         xhr.addEventListener('readystatechange', () => {
             if (xhr.readyState !== 4) {
                 return;

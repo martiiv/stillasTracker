@@ -1,10 +1,10 @@
 import React, {useState} from "react";
 import {Button, Modal} from "react-bootstrap";
-import img from "../images/spirstillas_solideq_spir_klasse_5_stillas_135_1.jpg";
 import {Link} from "react-router-dom";
-import {GetDummyData} from "../../../modelData/addData";
+import {GetCachingData} from "../../../modelData/addData";
 import {PROJECTS_WITH_SCAFFOLDING_URL} from "../../../modelData/constantsFile";
 import "./Modalscaffolding.css"
+import img from "../../projects/images/scaffoldingimg.jpg"
 
 
 /**
@@ -15,7 +15,7 @@ import "./Modalscaffolding.css"
  */
 function ScaffoldingInProject(type) {
 
-    const {isLoading, data} = GetDummyData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
+    const {isLoading, data} = GetCachingData("allProjects", PROJECTS_WITH_SCAFFOLDING_URL)
     if (isLoading){
         return <h1>Loading</h1>
     }else {
@@ -59,8 +59,6 @@ function ScaffoldingInProject(type) {
                                 <Link className={"btn"} to={"/project/" + e.projectID}>Mer infromasjon</Link>
                             </div>
                         </div>
-                        <hr/>
-
                     </div>
                 )
                 }
