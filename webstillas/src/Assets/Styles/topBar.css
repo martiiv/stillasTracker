@@ -1,0 +1,43 @@
+.toolbar{
+    background: #F28A04;
+    justify-content: space-between;
+}
+
+.dropdown-toggle-topbar{
+    height: 70px;
+    width: 150px;
+    border-style: none;
+    border-radius: 0;
+
+}
+
+
+.dropdown-toggle-topbar:hover .button{
+    background-color:#d07506; ;
+}
+
+.button{
+    width: 150px;
+    height: 70px;
+}
+
+.links{
+    margin-inside: 50px;
+}
+
+.appbar{
+    position: fixed;
+}
+
+
+.link-dropdown{
+    text-decoration-color: black;
+}
+
+.user-button-topbar{
+    justify-content: center;
+}
+
+.profile-img{
+
+}

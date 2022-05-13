@@ -1,0 +1,45 @@
+
+.input-transfer-scaffolding{
+    flood-color: #9f9e9e;
+}
+
+
+
+.scaffoldingElement-modal{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding-bottom: 50px;
+    justify-items: center;
+}
+
+@media (max-width: 1200px) {
+    .scaffoldingElement-modal {
+        grid-template-columns: 1fr;
+    }
+}
+
+.modal-header{
+    margin-top: 50px;
+}
+
+
+.transfer-options{
+    padding-bottom: 20px;
+}
+
+
+.card{
+    width: 450px;
+    margin-bottom: 20px;
+    Box-shadow:0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+}
+
+@media (max-width: 800px){
+    .card {
+        width: 200px;
+    }
+}
+
+.nextButton{
+    margin-bottom: 20px;
+}
