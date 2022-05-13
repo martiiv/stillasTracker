@@ -25,7 +25,7 @@ function CardElement(props) {
      * @returns {Promise<void>}
      */
     const DeleteProject = async () => {
-        if (window.confirm("Are you sure you want to delete " + props.name + "?")) {
+        if (window.confirm("Er du sikker på at du vil slette? " + props.name + "?")) {
             const deleteBody =
                 [
                     {
@@ -34,11 +34,11 @@ function CardElement(props) {
                 ]
             try {
                 await deleteModel(PROJECTS_URL, (deleteBody)).then(() =>
-                    window.alert("Sucsessfylly deleted project")
+                    window.alert("Prosjektet er slettet")
                 )
                 await queryClient.invalidateQueries("allProjects")
             } catch (e) {
-                window.alert("Something wrong happened! Try again later")
+                window.alert("Noe gikk galt! Prøv igjen senere")
         }
         }
     }

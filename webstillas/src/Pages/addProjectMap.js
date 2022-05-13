@@ -9,6 +9,9 @@ import polygon from "@mapbox/mapbox-gl-draw/src/feature_types/polygon";
 import "../Assets/Styles/map.css"
 import {MapBoxAPIKey} from "../Config/firebaseConfig";
 import {AlertCatch} from "../components/Indicators/error";
+import {Button, Spinner} from "react-bootstrap";
+import {PROJECT_URL} from "../Constants/webURL";
+import {useNavigate} from "react-router-dom";
 
 const AddProjectMap = ReactMapboxGl({
     accessToken: MapBoxAPIKey
@@ -23,9 +26,13 @@ const AddProjectMap = ReactMapboxGl({
 export function MapClass(props) {
     //Query client that will manage the caching.
     const queryClient = useQueryClient()
+    let navigate = useNavigate();
+
     //Setting variables
     const [ok, setOk] = useState(false)
     const [mapInfo, setMapInfo] = useState([])
+    const [buttonPressed, setButtonPressed] = useState(false)
+
 
     /**
      * Function that will validate the polygon the user has drawn.
@@ -35,8 +42,7 @@ export function MapClass(props) {
      */
     const onDrawCreate = ({features}) => {
         if (features[0].geometry.coordinates[0].length !== 5) {
-            console.log("length is invalid")
-            window.alert("Invalid geo format. Only valid is 4 points")
+            window.alert("Format ikke godkjent! Kun fire punkter er tillatt ")
         } else {
             setMapInfo(features)
             setOk(true)
@@ -82,10 +88,15 @@ export function MapClass(props) {
      * @constructor
      */
     const AddProjectRequest = async () => {
+
         try {
+            setButtonPressed(true)
             await postModel(PROJECTS_URL, (project))
-            await queryClient.refetchQueries("allProjects")
+            await queryClient.refetchQueries("allProjects").then(
+                navigate(PROJECT_URL)
+            )
         } catch (e) {
+            setButtonPressed(true)
             AlertCatch()
         }
     }
@@ -122,7 +133,22 @@ export function MapClass(props) {
                     />
                 </AddProjectMap>
             </div>
-            <button className={"confirm-btn"} disabled={!ok || !props.valid} onClick={AddProjectRequest}>Add Project</button>
+
+            {buttonPressed ? <Button className={"confirm-btn"}
+                    disabled>
+                    <Spinner
+                        as="span"
+                        animation="grow"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                    />
+                    Legger til
+                </Button> :
+                <button className={"confirm-btn"} disabled={!ok || !props.valid} onClick={AddProjectRequest}>Add Project</button>}
+
+
+
         </div>
     );
 }

@@ -22,5 +22,5 @@ export function InternalServerError() {
 
 
 export function AlertCatch(){
-    window.alert("Something went wrong. Please try again later")
+    window.alert("En feil oppstod! Prøv igjen senere.")
 }

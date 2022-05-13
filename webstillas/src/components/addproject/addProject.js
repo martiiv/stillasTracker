@@ -29,7 +29,7 @@ export default function AddProjectFunc() {
         projectName: '',
         latitude: 0,
         longitude: 0,
-        state: "Inactive"
+        state: ""
     })
     const [size, setSize] = useState({size: 0})
 
@@ -212,89 +212,95 @@ export default function AddProjectFunc() {
      */
     const parseReverseGeo = async (lat, long) => {
         let street, postcode, region, place
-        await fetch("https://api.mapbox.com/geocoding/v5/mapbox.places/" + long + "," + lat + ".json?access_token=pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ")
-            .then(res => res.json())
-            .then(res => {
-                    let validStreet, validZip, validCounty, validMunicipality
-                    for (const re of res.features) {
-                        console.log((re.place_type[0]))
-                        switch (re.place_type[0]) {
-                            case "address": {
-                                street = re.text
-                                if ((re.text.length > 3)) {
-                                    validStreet = true
+        try {
+            await fetch("https://api.mapbox.com/geocoding/v5/mapbox.places/" + long + "," + lat + ".json?access_token=pk.eyJ1IjoiYWxla3NhYWIxIiwiYSI6ImNrbnFjbms1ODBkaWEyb3F3OTZiMWd6M2gifQ.vzOmLzHH3RXFlSsCRrxODQ")
+                .then(res => res.json())
+                .then(res => {
+                        let validStreet, validZip, validCounty, validMunicipality
+                        for (const re of res.features) {
+                            console.log((re.place_type[0]))
+                            switch (re.place_type[0]) {
+                                case "address": {
+                                    street = re.text
+                                    if ((re.text.length > 3)) {
+                                        validStreet = true
+                                    }
                                 }
-                            }
-                                break;
-                            case "poi": {
-                                street = re.text
-                                if ((re.text.length > 3)) {
-                                    validStreet = true
-                                }
+                                    break;
+                                case "poi": {
+                                    street = re.text
+                                    if ((re.text.length > 3)) {
+                                        validStreet = true
+                                    }
 
-                            }
-                                break;
-                            case "postcode": {
-                                postcode = re.text
-                                if ((re.text.length === 4)) {
-                                    validZip = true
                                 }
+                                    break;
+                                case "postcode": {
+                                    postcode = re.text
+                                    if ((re.text.length === 4)) {
+                                        validZip = true
+                                    }
 
-                            }
-                                break;
-                            case ("region"): {
-                                region = re.text
-                                if ((re.text.length !== undefined)) {
-                                    validCounty = true
                                 }
-                            }
-                                break;
-                            case ("place") : {
-                                place = re.text
-                                if ((re.text.length !== undefined)) {
-                                    validMunicipality = true
+                                    break;
+                                case ("region"): {
+                                    region = re.text
+                                    if ((re.text.length !== undefined)) {
+                                        validCounty = true
+                                    }
                                 }
+                                    break;
+                                case ("place") : {
+                                    place = re.text
+                                    if ((re.text.length !== undefined)) {
+                                        validMunicipality = true
+                                    }
 
+                                }
+                                    break;
+                                default:
+                                    console.log("Ikke validert")
                             }
-                                break;
-                            default:
-                                console.log("Ikke validert")
+
                         }
 
-                    }
-
-                    if (validStreet && validZip && validCounty && validMunicipality) {
-                        setValid({
-                            ...valid,
-                            countyValid: validCounty,
-                            municipalityValid: validMunicipality,
-                            zipcodeValid: validZip,
-                            streetValid: validStreet
-                        })
-
-                        //If region is oslo the municipality is not set.
-                        if (region === "Oslo") {
-                            setAddress({
-                                ...address,
-                                street: street,
-                                county: region,
-                                municipality: region,
-                                zipcode: postcode
+                        if (validStreet && validZip && validCounty && validMunicipality) {
+                            setValid({
+                                ...valid,
+                                countyValid: validCounty,
+                                municipalityValid: validMunicipality,
+                                zipcodeValid: validZip,
+                                streetValid: validStreet
                             })
+
+                            //If region is oslo the municipality is not set.
+                            if (region === "Oslo") {
+                                setAddress({
+                                    ...address,
+                                    street: street,
+                                    county: region,
+                                    municipality: region,
+                                    zipcode: postcode
+                                })
+                            } else {
+                                setAddress({...address, street: street, county: region, municipality: place, zipcode: postcode})
+                            }
                         } else {
-                            setAddress({...address, street: street, county: region, municipality: place, zipcode: postcode})
+                            setErrors({...errors, address: "You have entered an invalid address"})
                         }
-                    } else {
-                        setErrors({...errors, address: "You have entered an invalid address"})
+
+
                     }
+                ).then(() => setProjectDetails({
+                    ...projectDetails,
+                    longitude: long,
+                    latitude: lat
+                }))
+        }catch (e) {
+            console.log(e)
 
+        }
 
-                }
-            ).then(() => setProjectDetails({
-                ...projectDetails,
-                longitude: long,
-                latitude: lat
-            }))
     }
 
     /**
@@ -491,6 +497,24 @@ export default function AddProjectFunc() {
                                     </p>
 
                                 </div>
+
+
+                                <div className="col">
+                                    <p className={"input-field-text"}>Prosjekt status</p>
+                                    <select className={"form-select options"} onChange={(e) =>
+                                        setProjectDetails({...projectDetails, state: e.target.value})}>
+                                        <option defaultValue="">Velg her</option>
+                                        <option value={"Active"}>Aktiv</option>
+                                        <option value={"Inactive"}>Inaktiv</option>
+                                        <option value={"Upcoming"}>Kommende</option>
+                                    </select>
+                                </div>
+
+
+
+
+
+
                             </div>
                         </div>
                         <div className="col">
