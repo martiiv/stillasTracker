@@ -3,81 +3,85 @@ import './topBar.css';
 import {
     AppBar, Toolbar, Button
 } from '@material-ui/core';
-import {Link, NavLink} from "react-router-dom";
+import {Link} from "react-router-dom";
 import {DropdownButton, NavDropdown} from "react-bootstrap";
 import DropdownItem from "react-bootstrap/DropdownItem";
 import {useUserAuth} from "../../context/UserAuthContext";
 import {auth} from "../../firebase"
-import {orange} from "@material-ui/core/colors";
+import {GetDummyData} from "../../modelData/addData";
+import {USER_URL} from "../../modelData/constantsFile";
+import {SpinnerDefault} from "../Spinner";
+import "bootstrap/dist/css/bootstrap.min.css";
+import {ADD_PROJECT_URL, ADD_SCAFFOLDING_URL, MAP_URL, PROJECT_URL, SCAFFOLDING_URL, USERINFO_URL} from "../constants";
 
 /**
- Class that will create a topbar for the application.
+ Component that will be used as a top bar for the user to navigate throughout the application.
  */
-
-//Todo make list instead of toolbar
-    //se hva andre nettsider har gjort
 const TopBar = () => {
-        const {logOut} = useUserAuth();
+    const {logOut} = useUserAuth();
+    let loading, userData
 
-
-        if (!auth.currentUser) {
-            return (
-                <AppBar position="sticky">
-                    <Toolbar className="toolbar">
-
-                    </Toolbar>
-                </AppBar>
-            )
-        } else {
-            return (
-                <AppBar position="sticky">
-                    <Toolbar className="toolbar">
-                        <Link className="link" to="/prosjekt">
-                            <Button className="button">Prosjekter</Button>
-                        </Link>
-                        <Link className="link" to="/stillas">
-                            <Button className="button">Stillasdeler</Button>
-                        </Link>
-
-                        <Link className="link" to="/kart">
-                            <Button className="button">Kart</Button>
-                        </Link>
-                        {/* <Link className="link" to="/logistics">
-                        <Button className="button">Logistikk</Button>
-                    </Link>*/}
-
-                        <NavDropdown id="basic-nav-dropdown1"
-                                        title={"Logistikk"}
-                                        size="sm"
-                                     menuVariant={"dark"}
-
-                        >
-                            <DropdownItem>
-                                <Link to={"/addproject/"}>Legg til prosjekt </Link>
-                            </DropdownItem>
-                            <DropdownItem>
-                                <Link to={"/addscaffolding/"}>Legg til stillas</Link>
-                            </DropdownItem>
-                        </NavDropdown>
-
-
-                        <DropdownButton id="dropdown-button"
-                                        title={"Bruker"}
-                                        size="sm"
-
-                        >
-                            <DropdownItem>
-                                <Link to={"/userinfo/"}>Bruker Informasjon</Link>
-                            </DropdownItem>
-
-                            <DropdownItem onClick={logOut}>Logg ut</DropdownItem>
-                        </DropdownButton>
-                    </Toolbar>
-                </AppBar>
-            );
-        }
-
-
+    /*Checking if the user is authenticated
+    * If so, fetch userdata
+    */
+    if (auth.currentUser !== null) {
+        const {isLoading, data} = GetDummyData("user", USER_URL + auth.currentUser.uid)
+        loading = isLoading
+        userData = data
     }
+
+    /*
+    If the user is not authenticated, the topbar will be empty.
+     */
+    if (!auth.currentUser) {
+        return (
+            <AppBar position="sticky">
+                <Toolbar className="toolbar">
+
+                </Toolbar>
+            </AppBar>
+        )
+    } else if (loading) {
+        //If data is loading, the user will get a spinner displayed
+        return <SpinnerDefault/>
+    } else {
+        //Top bar with interactive buttons to navigate.
+        return (
+            <AppBar position="sticky">
+                <Toolbar className="toolbar">
+                    <Link className="link" to={PROJECT_URL}>
+                        <Button className="button">Prosjekter</Button>
+                    </Link>
+                    <Link className="link" to={SCAFFOLDING_URL}>
+                        <Button className="button">Stillasdeler</Button>
+                    </Link>
+                    <Link className="link" to={MAP_URL}>
+                        <Button className="button">Kart</Button>
+                    </Link>
+                    <NavDropdown id="basic-nav-dropdown1"
+                                 title={"Logistikk"}
+                                 size="sm"
+                    >
+                        <DropdownItem>
+                            <Link to={ADD_PROJECT_URL}>Legg til prosjekt </Link>
+                        </DropdownItem>
+                        <DropdownItem>
+                            <Link to={ADD_SCAFFOLDING_URL}>Legg til stillas</Link>
+                        </DropdownItem>
+                    </NavDropdown>
+                    <DropdownButton id="dropdown-button"
+                                    title={"userData.name.firstName"}
+                                    size="sm"
+                    >
+                        <DropdownItem>
+                            <Link to={USERINFO_URL}>Bruker Informasjon</Link>
+                        </DropdownItem>
+                        <DropdownItem onClick={logOut}>Logg ut</DropdownItem>
+                    </DropdownButton>
+                </Toolbar>
+            </AppBar>
+        );
+    }
+}
 
 export default TopBar;

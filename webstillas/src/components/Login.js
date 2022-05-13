@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Form, Alert } from "react-bootstrap";
 import { Button } from "react-bootstrap";
 import { useUserAuth } from "../context/UserAuthContext";
+import {PROJECT_URL, SIGNUP} from "./constants";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -16,7 +17,7 @@ const Login = () => {
     setError("");
     try {
       await logIn(email, password);
-      navigate("/prosjekt");
+      navigate(PROJECT_URL);
     } catch (err) {
       setError("Feil brukernavn eller passord. \nVennligst prøv igjen");
     }
@@ -47,14 +48,14 @@ const Login = () => {
 
           <div className="d-grid gap-2">
             <Button variant="primary" type="Submit">
-              Log In
+              Logg inn
             </Button>
           </div>
         </Form>
         <hr />
       </div>
       <div className="p-4 box mt-3 text-center">
-        Don't have an account? <Link to="/signup">Sign up</Link>
+        Har du ikke en bruker? <Link to={SIGNUP}>Registrer</Link>
       </div>
     </>
   );
