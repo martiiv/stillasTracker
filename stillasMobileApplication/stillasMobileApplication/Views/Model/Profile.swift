@@ -7,7 +7,6 @@
 
 import Foundation
 
-// MARK: - Profile
 struct Profile: Codable {
     let employeeID: String
     var name: Name
@@ -17,7 +16,6 @@ struct Profile: Codable {
     let admin: Bool
 }
 
-// MARK: - Name
 struct Name: Codable {
     let firstName, lastName: String
 }

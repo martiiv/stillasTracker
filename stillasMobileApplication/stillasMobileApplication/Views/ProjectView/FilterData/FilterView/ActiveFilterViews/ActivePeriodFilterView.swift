@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+/// **ActivePeriodFilterView**
+/// The view presented on top of the size-navigation row to display a preview of the selected periodfilter.
 struct ActivePeriodFilterView: View {
     @Binding var startDate: Date
     @Binding var endDate: Date
@@ -17,6 +19,7 @@ struct ActivePeriodFilterView: View {
 
     var body: some View {
 
+        /// if there is a filter applied, display a preview of the selected filter
         if periodFilterActive {
             HStack {
                 HStack {
@@ -33,6 +36,7 @@ struct ActivePeriodFilterView: View {
                 .font(.system(size: 11).bold())
                 .padding(.vertical, 5)
                 
+                /// Deletes the selected filter and removes it from the preview
                 Button(action: {
                     deleteFilterItem(filterItem: "period")
                     self.periodFilterActive.toggle()
@@ -50,6 +54,8 @@ struct ActivePeriodFilterView: View {
         }
     }
     
+    /// Removes the filter from the array with filters
+    /// - Parameter filterItem: the selected filter you want to remove
     func deleteFilterItem(filterItem: String) {
         if let i = filterArr.firstIndex(of: filterItem) {
             filterArr.remove(at: i)

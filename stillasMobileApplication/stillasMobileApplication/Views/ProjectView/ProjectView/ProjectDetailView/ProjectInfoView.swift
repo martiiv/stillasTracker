@@ -8,14 +8,25 @@
 import SwiftUI
 import MapKit
 
+/// **ProjectInfoView**
+/// The View responsible for displaying the project info and scaffolding info Views
 struct ProjectInfoView: View {
+    /// Darkmode or light mode?
     @Environment(\.colorScheme) var colorScheme
+    
+    /// Transfere scaffolding Modal View showing?
     @State private var isShowingSheet = false
-        
+    
+    /// All projects
     var projects: [Project]
+    
+    /// Specific project
     var project: Project
     
-    let sizeSelections = ["Stillas", "Prosjekt Info"]
+    /// The two views available
+    let siteSelections = ["Stillas", "Prosjekt Info"]
+    
+    /// Initialize selection
     @State var selection: String = "Prosjekt Info"
 
     var body: some View {
@@ -31,7 +42,7 @@ struct ProjectInfoView: View {
                 
                 VStack {
                     Picker("Select a state: ", selection: $selection) {
-                        ForEach(sizeSelections, id: \.self) {
+                        ForEach(siteSelections, id: \.self) {
                             Text($0)
                         }
                     }
@@ -43,7 +54,6 @@ struct ProjectInfoView: View {
                     switch selection {
                     case "Prosjekt Info":
                         VStack {
-                            //ProjectInfoDetailedView(project: project)
                             ProjectInfoDetailedView(project: project)
                         }
                     case "Stillas":

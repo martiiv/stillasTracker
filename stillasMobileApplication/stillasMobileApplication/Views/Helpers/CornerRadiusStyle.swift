@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+/// **CornedRadiusStyle**
+/// Custom corner radius for corner
 struct CornerRadiusStyle: ViewModifier {
     var radius: CGFloat
     var corners: UIRectCorner
@@ -33,9 +35,9 @@ extension View {
         ModifiedContent(content: self, modifier: CornerRadiusStyle(radius: radius, corners: corners))
     }
 }
-
+/*
 struct CornerRadius_Previews: PreviewProvider {
     static var previews: some View {
         CornerRadius()
     }
-}
+}*/

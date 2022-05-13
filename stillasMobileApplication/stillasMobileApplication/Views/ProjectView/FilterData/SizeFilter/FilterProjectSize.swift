@@ -7,27 +7,30 @@
 
 import SwiftUI
 
-/*enum SwipeHorizontalDirection: String {
-        case left, right, none
-    }*/
-
+/// **FilterProjectSize**
+/// Responsible for switching between the different filtering Views
 struct FilterProjectSize: View {
+    /// Slider values
     @State var scoreFrom: Int = 100
     @State var scoreTo: Int = 1000
     
+    /// Slider selection to be returned to parent View
     @Binding var scoreFromBind: Int
     @Binding var scoreToBind: Int
     
+    /// Size filter active
     @Binding var sizeFilterActive: Bool
+    
+    /// The selected size filtering method (Mindre enn, Mellom, Større enn)
     @Binding var selection: String
-    //@State var swipeHorizontalDirection: SwipeHorizontalDirection = .none { didSet { print(swipeHorizontalDirection) } }
 
+    /// Filtrering metoder
     let sizeSelections = ["Mindre enn", "Mellom", "Større enn"]
 
     var body: some View {
-        
         VStack {
             VStack {
+                /// Picker for velging av filtrering metode
                 Picker("Select a state: ", selection: $selection) {
                     ForEach(sizeSelections, id: \.self) {
                         Text($0)
@@ -40,21 +43,14 @@ struct FilterProjectSize: View {
                 
                 switch selection {
                 case "Mindre enn":
+                    /// Redirects to the SizeLessThanFilter View
                     SizeLessThanFilter(sizeFilterActive: $sizeFilterActive, scoreFrom: scoreFrom, scoreFromBind: $scoreFromBind)
                         .onChange(of: scoreFrom) { val in
                             scoreFromBind = val
                             sizeFilterActive = true
                         }
-                        /*.gesture(DragGesture().onChanged {
-                            if $0.startLocation.x == $0.location.x {
-                                                    self.swipeHorizontalDirection = .none
-                                                    selection = selection
-                            } else if $0.startLocation.x > $0.location.x {
-                                                    self.swipeHorizontalDirection = .right
-                                                    selection = "Between"
-                                                }
-                        }).transition(.asymmetric(insertion: .scale, removal: .opacity))*/
                 case "Mellom":
+                    /// Redirects to the SizeBetweenFilter View
                     SizeBetweenFilter(sizeFilterActive: $sizeFilterActive, scoreFrom: scoreFrom, scoreFromBind: $scoreFromBind, scoreTo: scoreTo, scoreToBind: $scoreToBind)
                         .onChange(of: scoreTo) { val in
                             scoreToBind = val
@@ -65,6 +61,7 @@ struct FilterProjectSize: View {
                             sizeFilterActive = true
                         }
                 case "Større enn":
+                    /// Redirects to the SizeGreaterThanFilter View
                     SizeGreaterThanFilter(sizeFilterActive: $sizeFilterActive, scoreTo: scoreTo, scoreToBind: $scoreToBind)
                         .onChange(of: scoreFrom) { val in
                             scoreFromBind = val
@@ -85,17 +82,6 @@ extension UIScreen {
    static let screenSize = UIScreen.main.bounds.size
 }
 
-class NumbersOnly: ObservableObject {
-    @Published var value = "" {
-        didSet {
-            let filtered = value.filter { $0.isNumber }
-            
-            if value != filtered {
-                value = filtered
-            }
-        }
-    }
-}
 /*
 struct FilterProjectSize_Previews: PreviewProvider {
     static var previews: some View {

@@ -7,19 +7,23 @@
 
 import SwiftUI
 
+/// **NavigationBarBottom**
+/// The navigationbar View responsible for the navigation between the three main views Project, Map and Profile
 struct NavigationBarBottom: View {
-    @State private var selection: Tab = .map
+    /// Sets selection to project
+    @State private var selection: Tab = .project
+    
+    /// All projects
     @State var projects = [Project]()
+    
+    /// Enum for the different pages
     enum Tab {
         case project
         case map
         case profile
-        case projectViewAPI
     }
     
-    
     var body: some View {
-        
         TabView(selection: $selection) {
             ProjectListView()
                 .tabItem {
@@ -40,7 +44,7 @@ struct NavigationBarBottom: View {
                 .tag(Tab.profile)
         }
         .onAppear() {
-            /// https://www.bigmountainstudio.com/community/public/posts/86559-how-to-customize-the-background-of-the-tabview-in-swiftui
+            /// The transparrent effect is taken from: https://www.bigmountainstudio.com/community/public/posts/86559-how-to-customize-the-background-of-the-tabview-in-swiftui
             let appearance = UITabBarAppearance()
                         appearance.backgroundEffect = UIBlurEffect(style: .systemThinMaterial)
                         // Use this appearance when scrolling behind the TabView:
@@ -54,6 +58,6 @@ struct NavigationBarBottom: View {
 struct NavigationBarBottom_Previews: PreviewProvider {
     static var previews: some View {
         NavigationBarBottom()
-            .environmentObject(ModelData())
+            //.environmentObject(ModelData())
     }
 }

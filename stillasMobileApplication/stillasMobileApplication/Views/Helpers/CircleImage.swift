@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+/// **CircleImage**
+/// Creates a circle frame with an image
 struct CircleImage: View {
     var image: Image
     

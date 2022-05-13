@@ -8,26 +8,30 @@
 import SwiftUI
 import Foundation
 
+/// **TrandsfereScaffolding**
+/// Background view of TransfereScaffolding
 struct TransfereScaffolding: View {
+    /// All projects used for transfering
     var projects: [Project]
+    
+    /// Lightmode or darkmode?
     @Environment(\.colorScheme) var colorScheme
 
+    /// Scaffolding type
     var scaffolding: Scaffolding
-    @Binding var isShowingSheet: Bool
     
-    @State private var quantity: Int = 1
-    @State private var name: String = "Tim"
-    @State private var projectFrom: String = ""
-    @State private var projectTo: String = ""
-
+    /// Transfere Modal View is showing
+    @Binding var isShowingSheet: Bool
     
     var body: some View {
         VStack {
+            /// Transfere scaffolding view
             TransfereScaffoldingView(isShowingSheet: $isShowingSheet, projects: projects, scaffolding: scaffolding)
                 .navigationTitle(Text("Overfør \(scaffolding.type)"))
             }
     }
     
+    /// Modal view dismissed
     func didDismiss() {
         // Handle the dismissing action.
     }

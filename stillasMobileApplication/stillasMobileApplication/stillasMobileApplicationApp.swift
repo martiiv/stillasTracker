@@ -7,16 +7,10 @@
 
 import SwiftUI
 import Firebase
-/*
-@main
-struct stillasMobileApplicationApp: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-    }
-}*/
 
+
+/// **AppDelegate**
+/// Initializes the application with FirebaseApp
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         FirebaseApp.configure()
@@ -25,6 +19,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 }
 
 @main
+/// **stillasMobileApplication**
+/// Create an app by declaring a structure that conforms to the App protocol.
+/// Assigns the AppDelegate.
 struct stillasMobileApplication: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 

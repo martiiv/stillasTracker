@@ -7,13 +7,23 @@
 
 import SwiftUI
 
+/// **HistoryOfScaffolding**
+/// A View for showing the history of a scaffolding type for a project
+/// As of now, it is hard coded due to missing implementation in the API, however, the design and concept is the same.
 struct HistoryOfScaffolding: View {
+    /// All projects
     var projects: [Project]
+    
+    /// Darkmode or lightmode activated?
     @Environment(\.colorScheme) var colorScheme
 
+    /// Scaffolding type
     var scaffolding: Scaffolding
+    
+    /// Transfere scaffolding Modal View showing
     @Binding var isShowingSheet: Bool
     
+    /// Used to show dates in history
     let dateNow = Date()
 
     var body: some View {
@@ -21,12 +31,14 @@ struct HistoryOfScaffolding: View {
             VStack (alignment: .leading){
                 HStack {
                     VStack {
+                        /// Each "blob" with history info
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
                         .fill(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
                         .frame(width: UIScreen.screenWidth / 2.3 , height: 60)
                         .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: -2, y: 2)
                         .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: -10, y: 10)
                         .overlay(VStack {
+                            /// Preview data for scaffolding on the project on a given date
                             Text(Date(), style: .date)
                                 .foregroundColor(Color.gray)
                             HStack {
@@ -38,6 +50,7 @@ struct HistoryOfScaffolding: View {
                                         .font(.system(size: 10))
                                 }
                                 VStack {
+                                    /// Changes color of registered depending on how close it is to be equal to expected
                                     amountOfScaffoldingRegistered(expected: scaffolding.quantity.expected, registered: scaffolding.quantity.registered)
                                     Text("REGISTRERT")
                                         .foregroundColor(.gray)
@@ -55,6 +68,7 @@ struct HistoryOfScaffolding: View {
                         .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: -2, y: 2)
                         .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: -10, y: 10)
                         .overlay(VStack {
+                            /// Sets date to go back in time for each history "blob"
                             Text(Calendar.current.date(byAdding: .day, value: -2, to: dateNow)!, style: .date)
                                 .foregroundColor(Color.gray)
                             HStack {
