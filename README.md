@@ -180,6 +180,7 @@ Example body:
 
 The endpoint deletes users from the database
 ```
+/stillastracking/v1/api/user
 
 Example body:
 [    
