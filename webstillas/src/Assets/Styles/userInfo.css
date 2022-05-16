@@ -1,0 +1,46 @@
+.under-information{
+    display: flex;
+    justify-content: center;
+    color: #9f9e9e;
+
+}
+
+.image-frame{
+    display: flex;
+    justify-content: center;
+    padding-bottom: 10px;
+}
+
+body {
+    font-family: sans-serif;
+}
+.profile-image{
+    width: 100px;
+
+}
+
+.header-information{
+    display: flex;
+    justify-content: center;
+}
+
+.main-userinfo{
+    margin-top: 5%;
+    margin-left: 35%;
+}
+
+
+
+
+.info-card{
+    alignment: center;
+    width: fit-content;
+    padding: 20px 20px 20px 20px;
+    Box-shadow:0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+}
+
+.information-text{
+    justify-content: center;
+    padding-bottom: 10px;
+}
+

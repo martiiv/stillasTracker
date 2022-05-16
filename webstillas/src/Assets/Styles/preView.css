@@ -1,0 +1,61 @@
+
+.preView-Project-Main{
+    display: flex;
+}
+
+.transfer-scaffolding-btn{
+    background-color: #F28A04;
+    border-radius: 8px;
+    width: 500px;
+
+}
+.transfer-scaffolding-btn:hover{
+    background-color: #d07506;
+}
+
+.map-container-project{
+    width: 40%;
+    height: 93%;
+}
+
+
+.tabs{
+    float: right;
+    padding-top: 10px;
+    width: fit-content;
+    margin-left: 45%;
+
+}
+
+.stillas-komponenter{
+    justify-items: center;
+
+}
+
+.grid-container-project-scaffolding{
+    display: grid;
+    justify-content: center;
+    overflow-y:scroll;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 30px;
+    row-gap: 20px;
+    grid-template-rows: 1fr;
+}
+
+@media (max-width: 1450px){
+    .grid-container-project-scaffolding {
+        grid-template-columns: 1fr;
+    }
+}
+
+.map-preview{
+    position: fixed ;
+}
+
+.preview-text{
+    width: 600px;
+}
+
+.contact-information{
+    margin-top: 50px;
+}

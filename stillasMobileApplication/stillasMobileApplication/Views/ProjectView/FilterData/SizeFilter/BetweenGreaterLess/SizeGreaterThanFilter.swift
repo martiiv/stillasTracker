@@ -7,24 +7,34 @@
 
 import SwiftUI
 
+/// **SizeGreaterThanFilter**
+/// The View for selecting a project with size greater than a values
 struct SizeGreaterThanFilter: View {
+   
+    /// Enum for input
     enum Field: Int, CaseIterable {
         case input
     }
-
+    
+    /// Size filter active
     @Binding var sizeFilterActive: Bool
     
+    /// Has textfield been activated and should be in focus?
     @FocusState var focusedField: Field?
     
+    /// Slider values
     @State var scoreTo: Int = 1000
     @Binding var scoreToBind: Int
-
+    
+    /// The input of minimum size
     @ObservedObject var input = NumbersOnly()
     
+    /// Slider data
     var sliderSizeMin = 100.0
     var sliderSizeMax = 1000.0
     var stepLength = 50.0
     
+    /// Slider value
     var intProxyS2: Binding<Double>{
         Binding<Double>(
             get: {
@@ -43,8 +53,8 @@ struct SizeGreaterThanFilter: View {
             HStack {
                 VStack {
                     Text("Over")
-                    
                     HStack {
+                        /// Adds textfield with bind to slider
                         TextField("\(Int(sliderSizeMax))", text: $input.value)
                             .font(Font.system(size: 30, design: .default))
                             .onChange(of: input.value) { value in
@@ -92,7 +102,6 @@ struct SizeGreaterThanFilter: View {
             .font(Font.system(size: 60, design: .default))
             
             VStack {
-                
                 VStack (alignment: .leading) {
                     HStack {
                         Text("Fra")
@@ -102,6 +111,7 @@ struct SizeGreaterThanFilter: View {
                     .font(Font.system(size: 20, design: .default))
                     .padding(.top, 20)
                     
+                    /// Adds slider for minimum size
                     Slider(value: intProxyS2 , in: sliderSizeMin...sliderSizeMax, step: stepLength, onEditingChanged: {_ in
                         print(scoreTo.description)
                     })
@@ -111,6 +121,8 @@ struct SizeGreaterThanFilter: View {
             }
         }
         Spacer()
+        
+        /// Returnerer den brukte størrelsedataen til parent Viewen
         Button(action: {
             print("Bruk")
             scoreTo = Int(input.value) ?? 1000

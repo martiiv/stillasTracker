@@ -9,10 +9,13 @@ import SwiftUI
 
 // TODO: Add enum for switch case instead of hard-coded values
 
+/// **FilterView**
+/// Creates a View displaying the a NavigationView for the different project filters.
 struct FilterView: View {
-    // TODO: Add buttons for switching between start before only, period between etc.
+    /// Filter options
     @State private var filterItems = ["Område", "Periode", "Størrelse", "Status"]
     
+    /// All the different filtervalues
     @Binding var selStartDateBind: Date
     @Binding var selEndDateBind: Date
     @Binding var projectArea: String
@@ -20,35 +23,41 @@ struct FilterView: View {
     @Binding var projectStatus: String
     @Binding var minProjectSize: Int
     @Binding var maxProjectSize: Int
-    // TODO: DENNA TINGEN HER ISTEDENFOR scoreFrom
-    
     @Binding var sizeSortType: String
     
+    /// Returns whether a filter is active or not
     @State var periodFilterActive: Bool = false
     @State var areaFilterActive: Bool = false
     @State var sizeFilterActive: Bool = false
     @State var statusFilterActive: Bool = false
     
+    /// Array of all the filters active
     @Binding var filterArr: [String]
+    
+    /// All selected areas to be filtered on
     @Binding var filterArrArea: [String]
 
+    /// Selected filter start date and end date
     @State var selStartDate = Date()
     @State var selEndDate = Date()
     
     var body: some View {
         NavigationView {
             List {
+                /// For each filter type, add it to the List with its respective navigation destination
                 ForEach(filterItems, id: \.self) { filterItem in
                     NavigationLink {
                         switch filterItem {
                         case "Område":
                             FilterProjectArea(selArr: $filterArrArea, areaFilterActive: $areaFilterActive)
                                 .onAppear {
+                                    /// Resets the filter
                                     filterArrArea.removeAll()
                                 }
                         case "Periode":
                             FilterProjectPeriod(selStartDateBind: $selStartDate, selEndDateBind: $selEndDate, periodFilterActiveBind: $periodFilterActive)
                                 .onAppear {
+                                    /// Resets the filter
                                     selStartDateBind = Date.distantPast
                                     selEndDateBind = Date.distantFuture
                                     if (selStartDateBind != Date.distantPast || selEndDateBind != Date.distantFuture) {
@@ -75,13 +84,13 @@ struct FilterView: View {
                             FilterProjectStatus(filterArr: $filterArr, selection: $projectStatus)
                                 .onChange(of: projectStatus) { status in
                                     projectStatus = status
-                                    print(projectStatus)
                                     statusFilterActive = true
                                 }
                         default:
                             Text("No views available")
                         }
                     } label: {
+                        /// Adds label to list as well as adding the filter preview to the list item if it is active
                         HStack {
                             Text(filterItem)
                             Spacer()
@@ -132,6 +141,7 @@ struct FilterView: View {
             .navigationTitle(Text("Filter"))
             .navigationViewStyle(StackNavigationViewStyle())
             .overlay(alignment: .bottom) {
+                /// Adds and removes active filters based on current selection
                 Button(action: {
                     // TODO: Change to use for loop?
                     /*for filterItem in filterArr {
@@ -157,8 +167,6 @@ struct FilterView: View {
                     } else {
                         deleteFilterItem(filterItem: "status")
                     }
-                    
-                    print(filterArr)
                 }) {
                     Text("Bruk")
                         .frame(width: 300, height: 50, alignment: .center)
@@ -171,12 +179,17 @@ struct FilterView: View {
         }
     }
     
+    
+    /// If the selected filter is newly added and not only updated, add it to the array of filters
+    /// - Parameter filterItem: the selected filter you want to add
     func addFilterItem(filterItem: String){
         if !filterArr.contains(filterItem) {
             filterArr.append(filterItem)
         }
     }
     
+    /// Remove filter item from the array of filters
+    /// - Parameter filterItem: the selected filter you want to remove
     func deleteFilterItem(filterItem: String) {
         if let i = filterArr.firstIndex(of: filterItem) {
             filterArr.remove(at: i)

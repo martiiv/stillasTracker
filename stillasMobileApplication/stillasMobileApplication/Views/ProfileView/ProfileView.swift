@@ -7,30 +7,28 @@
 
 import SwiftUI
 
-/**
-    ProfileView - Calls the ProfileDetails view containing information about a user
- */
+/// **ProfileView**
+/// Calls the ProfileDetails View containing information about a user
 struct ProfileView: View {
     var body: some View {
         VStack {
-            // TODO: Change input to not take the ModelData's first element only, but get info from API
-            ProfileDetails(user: ModelData().users[0])
+            ProfileDetails()
         }
     }
 }
 
-/**
-    ProfileDetails - A view responsible for the layout of the user information and showing the details about the user
- */
+/// **ProfileDetails**
+/// A View responsible for the layout of the user information and showing the details about the user
 struct ProfileDetails: View {
-    @EnvironmentObject var modelData: ModelData
-    
-    var user: User
-    
-    /// Retrieves the user from the json object with ID equal to the object passed into the voew
-    var userIndex: Int {
-        modelData.users.firstIndex(where: { $0.id == user.id })!
-    }
+    /// Darkmode or lightmode?
+    @Environment(\.colorScheme) var colorScheme
+
+    /// Models
+    @EnvironmentObject var viewModel: AppViewModel
+    @ObservedObject var profileModel: ProfileData = ProfileData()
+
+    /// Initializes a user object
+    @State var user: [Profile] = [Profile]()
     
     var body: some View {
         ScrollView {
@@ -38,47 +36,137 @@ struct ProfileDetails: View {
             MapView()
                 .ignoresSafeArea(edges: .top)
                 .frame(height: 300)
-        
             /// CircleImage responsible for displaying the user profile image
-            CircleImage(image: user.image)
+            CircleImage(image: Image("UserProfile"))
                 .offset(y: -130)
                 .padding(.bottom, -130)
         
-            /// A VStack used to display all the user profile data
-            VStack(alignment: .leading) {
-                HStack {
-                   Text(user.name)
-                       .font(.largeTitle)
-               }
+            /// If there are user data
+            if (!user.isEmpty) {
                 
-                HStack {
-                    // TODO: Change to not hard coded values when API is updated
-                    Text("MBStillas")
-                        //.font(.subheadline)
-                    Spacer()
-                    Text("Role: \(user.role)")
-                        //.font(.subheadline)
-                }
-                //.font(.subheadline)
-                .foregroundColor(.secondary)
-                
-                Divider()
-
                 VStack {
-                    Text("Date of birth")
-                        .font(.title2)
-                    Text("\(user.dateOfBirth)")
-                        .foregroundColor(.secondary)
+                    VStack {
+                        Image(systemName: "person.crop.circle.badge.checkmark")
+                            .resizable()
+                            .frame(width: 35, height: 30)
+                            .foregroundColor(.blue)
+                        
+                        Text("Bruker info")
+                            .font(Font.system(size: 20).bold())
+                            .padding(.bottom, 2)
+                        
+                        Text("Nedenfor finner du brukerinformasjonen din.")
+                            .font(.caption)
+                            .foregroundColor(Color.gray)
+                            .padding(.bottom, 5)
+                    }
+                                            
+                    VStack {
+                        HStack {
+                            Text("\(user[0].name.firstName) \(user[0].name.lastName)")
+                       }
+                        .font(.title3.bold())
+                    }
+                    .padding(.bottom, 5)
+                    
+                    VStack {
+                        Text("\(user[0].employeeID)")
+                                .font(.body)
+                        
+                        Text("ANSATT NUMMER")
+                            .foregroundColor(.gray)
+                            .font(.system(size: 15))
+                    }
+                    .padding(.bottom, 5)
+                    
+                    VStack {
+                        Text("\(user[0].dateOfBirth)")
+                                .font(.body)
+                        
+                        Text("FØDSELSNUMMER")
+                            .foregroundColor(.gray)
+                            .font(.system(size: 15))
+                    }
+                    .padding(.bottom, 5)
+
+                    VStack {
+                        Text("\(user[0].role)")
+                                .font(.body)
+                        
+                        Text("ROLLE")
+                            .foregroundColor(.gray)
+                            .font(.system(size: 15))
+                    }
+                    .padding(.bottom, 5)
+
+                    VStack {
+                        Text("\(user[0].admin.description)")
+                                .font(.body)
+                        
+                        Text("ADMIN")
+                            .foregroundColor(.gray)
+                            .font(.system(size: 15))
+                    }
                 }
-        
-                Spacer()
-            }
-            .padding()
+                .padding()
+                .frame(width: (UIScreen.screenWidth / 1.2), alignment: .center)
+                .contentShape(RoundedRectangle(cornerRadius: 5))
+                .background(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
+                .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: 0, y: 2)
+                .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: 0, y: 10)
             
-        Spacer()
+                VStack {
+                    VStack {
+                        Image(systemName: "person.circle")
+                            .resizable()
+                            .frame(width: 30, height: 30)
+                            .foregroundColor(.blue)
+                        
+                        Text("Kontakt info")
+                            .font(Font.system(size: 20).bold())
+                            .padding(.bottom, 2)
+                        
+                        Text("Nedenfor finner du kontaktinformasjonen din.")
+                            .font(.caption)
+                            .foregroundColor(Color.gray)
+                            .padding(.bottom, 5)
+                    }
+                    
+                    VStack {
+                        Text("\(user[0].phone)")
+                                .font(.body)
+                        
+                        Text("TELEFONNUMMER")
+                            .foregroundColor(.gray)
+                            .font(.system(size: 15))
+                    }
+                    .padding(.bottom, 5)
+
+                    VStack {
+                        Text("\(user[0].email)")
+                                .font(.body)
+                        
+                        Text("EMAIL")
+                            .foregroundColor(.gray)
+                            .font(.system(size: 15))
+                    }
+                    .padding(.bottom, 5)
+                }
+                .padding()
+                .frame(width: (UIScreen.screenWidth / 1.2), alignment: .center)
+                .contentShape(RoundedRectangle(cornerRadius: 5))
+                .background(colorScheme == .dark ? Color(UIColor.white) : Color(UIColor.white)).cornerRadius(7)
+                .shadow(color: Color(UIColor.black).opacity(0.1), radius: 5, x: 0, y: 2)
+                .shadow(color: Color(UIColor.black).opacity(0.2), radius: 20, x: 0, y: 10)
+            }
         }
-        .navigationTitle(user.name)
-        .navigationBarTitleDisplayMode(.inline)
+        .task {
+            /// Get user data from the API with the logged in users ID
+            await profileModel.loadData(userID: viewModel.userID) { (user) in
+                self.user.append(user)
+            }
+        }
+        .ignoresSafeArea(edges: .top)
     }
 }
 

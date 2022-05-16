@@ -7,11 +7,17 @@
 
 import SwiftUI
 
+/// **CalendarView**
+/// Displays the period filter View with two calendars for the user to interact with.
 struct CalendarView: View {
+    /// The selected start date and end date
     @Binding var selStartDate: Date
     @Binding var selEndDate: Date
+    
+    /// Checks if the period filter is active
     @Binding var periodFilterActive: Bool
 
+    /// Base values for the calendar
     @State private var startDate = Date()
     @State private var endDate = Date()
     
@@ -21,6 +27,7 @@ struct CalendarView: View {
                 VStack {
                     Section {
                         VStack {
+                            /// First calendar
                             DatePicker(
                                 "Start dato",
                                 selection: $startDate,
@@ -30,6 +37,7 @@ struct CalendarView: View {
                             
                             Divider()
                             
+                            /// Second calendar
                             DatePicker(
                                 "Slutt dato",
                                 selection: $endDate,
@@ -43,14 +51,12 @@ struct CalendarView: View {
                 .padding(.top, 40)
             }
             Spacer()
+            
+            /// Returns the selected dates to the parent View
             Button(action: {
                 selStartDate = $startDate.wrappedValue
                 selEndDate = $endDate.wrappedValue
                 periodFilterActive = true
-                print("______")
-                print(selStartDate)
-                print(selEndDate)
-                print("______")
             }) {
                 Text("Bruk")
                     .frame(width: 300, height: 50, alignment: .center)
