@@ -24,8 +24,8 @@ Class gateway
 The class wil handle all information regarding the cellular gateways in the system
 The class will contain the following functions:
 
-Version 0.1
-Last modified Martin Iversen
+Version 1.0
+Last modified Martin Iversen 19.05.2022
 */
 func UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")

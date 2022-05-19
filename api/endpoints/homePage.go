@@ -6,6 +6,12 @@ import (
 	tool "stillasTracker/api/apiTools"
 )
 
+/**
+Class homepage.go created but never used,
+@version 1.0
+last edit 19.05.2022
+*/
+
 func homePage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")

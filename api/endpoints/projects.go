@@ -22,7 +22,7 @@ import (
 Class projects
 This class will contain all data formatting and handling of the clients projects
 Class contains the following functions:
-Version 0.9
+Version 1.0
 Last modified Martin Iversen 07.04.2022
 TODO Find alternative for strings.Title since the function is deprecated
 TODO If possible modularize the unmarshalling and encoding of lists since there is a lot of duplicate code doing this

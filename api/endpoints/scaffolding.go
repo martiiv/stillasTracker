@@ -15,7 +15,7 @@ import (
 /**
 Class scaffolding
 This class will contain all functions used for the handling of scaffolding units
-Version 0.9
+Version 1.0
 Last modified Martin Iversen 07.04.2022
 TODO make type non case sensitive
 */

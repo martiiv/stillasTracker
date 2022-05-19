@@ -17,7 +17,7 @@ import (
 /*
 projectTools File contains tools used in the projects.go file
 Last edited Martin Iversen 07.04.2022
-Version 0.9
+Version 1.0
 TODO Delete checkProjectBody? It isn't used
 */
 

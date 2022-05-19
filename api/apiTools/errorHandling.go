@@ -10,7 +10,7 @@ Code inspired by:
 	Page authored by Matt Silverlock from questionable serviecs
 	Last visit: 08.03.2022
 
-version 0.1
+version 1.0
 Last edited 08.03.2022 by Martin Iversen
 */
 

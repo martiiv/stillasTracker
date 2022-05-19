@@ -9,7 +9,7 @@ import (
 /**
 Class main
 Will run the api
-Version 0.1
+Version 1.0
 Last update 08.03.2022 Martin Iversen
 */
 

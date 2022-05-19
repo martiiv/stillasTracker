@@ -16,6 +16,11 @@ import (
 	"strconv"
 )
 
+/**
+Class gateway.go created for managing gateways
+@version 1.0
+Last edit 19.05.2022
+*/
 var gatewayCollection *firestore.CollectionRef
 var projectCollection *firestore.DocumentRef
 

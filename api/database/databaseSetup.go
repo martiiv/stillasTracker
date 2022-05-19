@@ -11,6 +11,11 @@ import (
 	"path/filepath"
 )
 
+/*
+Class databaseSetup.go created for communicating with database
+Last update 19.05.2022
+@version 1.0
+*/
 // Ctx Initializing the context to be used with firebase
 var Ctx context.Context
 

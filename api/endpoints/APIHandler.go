@@ -13,7 +13,7 @@ Class APIHandler.go
 Class forwards requests to the appropriate endpoint and assigns the port of the program
 Last modified by martiiv@stud.ntnu.no
 Date: 06.04.2022
-Version 0.8
+Version 1.0
 */
 var (
 	InfoLogger     *log.Logger

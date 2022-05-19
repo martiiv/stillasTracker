@@ -10,6 +10,12 @@ import (
 	"strings"
 )
 
+/**
+Class mqttBroker.go created for implementing an mqtt broker
+This functionality was never implemented fully given time constraints
+@version 0.5
+last edited Martin Iversen 19.05.2022
+*/
 type AdvPacket struct {
 	msg    *igs.Message
 	packet *ibs.Payload

@@ -9,6 +9,12 @@ import (
 	"strings"
 )
 
+/*
+Class basicTools contains functions for assisting API endpoints
+Last update 19.05.2022 Martin Ivesren
+@version 1.0
+*/
+
 func CreatePath(segments []string) string {
 	var finalPath string
 	for _, s := range segments {
